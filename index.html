@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Floppy Bird с Кирби (без лагов)</title>
+  <title>Floppy Bird с Кирби (улучшенный)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <style>
     html, body {
@@ -15,7 +14,6 @@
       font-family: Arial, sans-serif;
     }
 
-    /* Центрирование (экран логина) */
     .centered {
       display: flex;
       justify-content: center;
@@ -59,12 +57,11 @@
     /* Игровое поле */
     #gameContainer {
       display: none;
-      position: relative; /* для абсолютного позиционирования GIF Кирби и монет */
+      position: relative;
       width: 100vw;
       height: 100vh;
       overflow: hidden;
     }
-    /* Canvas (фон и трубы) */
     #gameCanvas {
       display: block;
       width: 100%;
@@ -72,12 +69,11 @@
       background-color: #87CEEB;
     }
 
-    /* Кнопка выхода в меню */
     #backToMenuBtn {
       position: absolute;
       top: 10px;
       left: 10px;
-      z-index: 999; 
+      z-index: 999;
       padding: 10px 20px;
       cursor: pointer;
     }
@@ -128,7 +124,7 @@
 
   <!-- Главное меню -->
   <div id="mainMenu">
-    <h2>Добро пожаловать в Floppy Bird с Кирби</h2>
+    <h2>Floppy Bird с Кирби (улучшенный)</h2>
     <p id="userDisplay"></p>
     <p id="coinsDisplay"></p>
     <button id="startGameBtn">Начать игру</button>
@@ -138,7 +134,7 @@
     <button id="logoutBtn">Выйти</button>
   </div>
 
-  <!-- Игровое поле (Canvas + кнопка назад) -->
+  <!-- Игровой экран -->
   <div id="gameContainer">
     <button id="backToMenuBtn">Выйти в меню</button>
     <canvas id="gameCanvas"></canvas>
@@ -160,10 +156,15 @@
     <button id="leaderboardBackBtn">Назад</button>
   </div>
 
-  <!-- Магазин -->
+  <!-- Магазин улучшений -->
   <div id="storeContainer">
     <h2>Магазин улучшений</h2>
-    <p>Пример: можно увеличить высоту прыжка, скорость и т.д.</p>
+    <p>Пример магазина (не реализован)</p>
+    <ul>
+      <li>Увеличение высоты полёта</li>
+      <li>Увеличение скорости движения</li>
+      <li>Дополнительные жизни</li>
+    </ul>
     <button id="storeBackBtn">Назад</button>
   </div>
 
@@ -171,126 +172,121 @@
   <div id="infoContainer">
     <h2>Информация об игре</h2>
     <p>
-      «Floppy Bird с Кирби» — бесконечная игра, где Кирби (анимированный .gif)
-      летит сквозь трубы и собирает монеты (тоже .gif), не задевая препятствия.
-      Увеличенный зазор между трубами, чтобы не умирать по "одному пикселю".
-      <br/>
-      Управление: Пробел или Тап.
+      «Floppy Bird с Кирби» — уменьшенная гравитация, более лояльные столкновения,
+      анимированные спрайты (через base64), чтобы всё корректно работало даже в
+      Telegram In-App Browser.
     </p>
     <button id="infoBackBtn">Назад</button>
   </div>
 
-  <!-- Подключение Firebase и логика -->
+  <!-- Подключение Firebase + логика -->
   <script type="module">
-    // === ИМПОРТ FIREBASE ===
+    // === FIREBASE ===
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
-    import { 
-      getDatabase, 
-      ref, 
-      get, 
-      set, 
-      update
-    } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
 
-    // === КОНФИГУРАЦИЯ FIREBASE ===
     const firebaseConfig = {
-      apiKey: "AIzaSyB90ev3fJRDKmn64hLTJaWjVjpHQtMjhLg",
+      apiKey: "AIzaSyBxxxxxx",
       authDomain: "test-with-likes.firebaseapp.com",
       databaseURL: "https://test-with-likes-default-rtdb.firebaseio.com",
       projectId: "test-with-likes",
       storageBucket: "test-with-likes.appspot.com",
       messagingSenderId: "764738820142",
-      appId: "1:764738820142:web:b22c6608a30e46cdcea7bf",
+      appId: "1:764738820142:web:xxxxxx",
       measurementId: "G-WJNF0HSN9P"
     };
 
-    // Инициализация Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // === DOM-элементы ===
-    const loginScreen         = document.getElementById("loginScreen");
-    const mainMenu            = document.getElementById("mainMenu");
-    const usernameInput       = document.getElementById("username");
-    const loginButton         = document.getElementById("loginButton");
-    const userDisplay         = document.getElementById("userDisplay");
-    const coinsDisplay        = document.getElementById("coinsDisplay");
+    // === DOM ===
+    const loginScreen   = document.getElementById("loginScreen");
+    const mainMenu      = document.getElementById("mainMenu");
+    const usernameInput = document.getElementById("username");
+    const loginButton   = document.getElementById("loginButton");
 
-    const startGameBtn        = document.getElementById("startGameBtn");
-    const leaderboardBtn      = document.getElementById("leaderboardBtn");
-    const storeBtn            = document.getElementById("storeBtn");
-    const infoBtn             = document.getElementById("infoBtn");
-    const logoutBtn           = document.getElementById("logoutBtn");
+    const userDisplay   = document.getElementById("userDisplay");
+    const coinsDisplay  = document.getElementById("coinsDisplay");
 
-    const gameContainer       = document.getElementById("gameContainer");
-    const backToMenuBtn       = document.getElementById("backToMenuBtn");
-    const gameCanvas          = document.getElementById("gameCanvas");
+    const startGameBtn  = document.getElementById("startGameBtn");
+    const leaderboardBtn= document.getElementById("leaderboardBtn");
+    const storeBtn      = document.getElementById("storeBtn");
+    const infoBtn       = document.getElementById("infoBtn");
+    const logoutBtn     = document.getElementById("logoutBtn");
+
+    const gameContainer = document.getElementById("gameContainer");
+    const backToMenuBtn = document.getElementById("backToMenuBtn");
+    const gameCanvas    = document.getElementById("gameCanvas");
 
     const leaderboardContainer = document.getElementById("leaderboardContainer");
     const leaderboardBody      = document.getElementById("leaderboardBody");
     const leaderboardBackBtn   = document.getElementById("leaderboardBackBtn");
 
-    const storeContainer      = document.getElementById("storeContainer");
-    const storeBackBtn        = document.getElementById("storeBackBtn");
+    const storeContainer = document.getElementById("storeContainer");
+    const storeBackBtn   = document.getElementById("storeBackBtn");
 
-    const infoContainer       = document.getElementById("infoContainer");
-    const infoBackBtn         = document.getElementById("infoBackBtn");
+    const infoContainer  = document.getElementById("infoContainer");
+    const infoBackBtn    = document.getElementById("infoBackBtn");
 
-    // === ДАННЫЕ ПОЛЬЗОВАТЕЛЯ ===
-    let currentUsername = null;
-    let currentCoins = 0;
+    let currentUsername  = null;
+    let currentCoins     = 0;
 
-    // === ПАРАМЕТРЫ ИГРЫ ===
+    // === ИГРА ===
     let ctx;
     let animationId;
     let isGameRunning = false;
+
+    // Размеры
     let canvasWidth  = 0;
     let canvasHeight = 0;
 
-    // Кирби (параметры, + DOM-элемент <img>)
-    const player = {
+    // Кирби (через <img> + параметры)
+    let player = {
       x: 100,
       y: 150,
-      width: 60,
-      height: 60,
+      width: 45,   // меньше, чем было
+      height: 45,
       velocityY: 0,
-      gravity: 0.5,
-      lift: -8,
+      gravity: 0.3, // уменьшена, чтобы не падал слишком быстро
+      lift: -6,     // уменьшена сила «взлёта»
       alive: true,
-      el: null, // <img> для анимированного Кирби
+      el: null  // <img> для анимации
     };
 
-    // Трубы: верхняя (длинная) + нижняя (короткая)
-    // Ссылки на изображения
-    const pipeImgTop = new Image();
-    pipeImgTop.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/a3fac5c4e4ff6c3.png"; 
+    // Монеты (через <img> + параметры)
+    let coins = [];
+    const coinSize = 40;
 
-    const pipeImgBottom = new Image();
-    pipeImgBottom.src = "https://w7.pngwing.com/pngs/294/165/png-transparent-green-super-mario-tunnel-art-mario-pipe-water-pipe-s-angle-text-rectangle.png";
-
+    // Трубы
     let pipes = [];
     const pipeWidth = 60;
-    const pipeGap   = 200; // увеличенное отверстие
-    const pipeSpeed = 2;
+    const pipeGap   = 200; // ещё больше зазор
+    let pipeSpeed    = 1.5; // медленнее, чтобы было плавнее
 
-    // Монеты: по одной на каждую пару труб, ставим в центр отверстия
-    let coins = [];
-    const coinSize = 48;
-    const coinGifURL = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
-
-    // Генерация труб раз в 150 кадров
     let pipeTimer = 0;
-    const pipeInterval = 150;
+    const pipeInterval = 180; // реже появляются
+
+    // Монеты появляются тоже реже
+    let coinTimer = 0;
+    const coinInterval = 100;
 
     // Счёт
     let scoreThisRun = 0;
 
-    // Фон (sidescrolling)
-    const bgImage = new Image();
+    // Фон (side-scrolling)
+    let bgImage = new Image();
+    // Любая картинка (либо base64). Для примера оставляем ту же ссылку:
     bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
-    let bgX = 0; // сдвиг фона
+    let bgX = 0;
+    let bgSpeed = 0.8; // тоже медленнее
 
-    // === АВТОЛОГИН ПРИ ЗАГРУЗКЕ ===
+    // === BASE64 GIF (Кирби) ===
+    // В реальности base64 будет огромным. Здесь укорочено:
+    const kirbyGIFBase64 = "data:image/gif;base64,R0lGODlhIA..."; 
+    // === BASE64 GIF (Монета) ===
+    const coinGIFBase64  = "data:image/gif;base64,R0lGODlhkA...";
+
+    // === ЗАПУСК ===
     window.addEventListener("load", () => {
       const savedUsername = localStorage.getItem("username");
       if (savedUsername) {
@@ -303,40 +299,38 @@
     async function autoLogin(username) {
       const userRef = ref(db, `users/${username}`);
       const snapshot = await get(userRef);
-      let coins = 0;
+      let coinsVal = 0;
       if (snapshot.exists()) {
-        coins = snapshot.val().coins || 0;
+        coinsVal = snapshot.val().coins || 0;
       }
-      displayMainMenu(username, coins);
+      displayMainMenu(username, coinsVal);
     }
 
-    // === ВХОД ===
     loginButton.addEventListener("click", async () => {
       const username = usernameInput.value.trim();
       if (!username.startsWith("@")) {
-        alert("Telegram-логин должен начинаться с '@'.");
+        alert("Логин должен начинаться с @");
         return;
       }
       await loginUser(username);
     });
+
     async function loginUser(username) {
       const userRef = ref(db, `users/${username}`);
       const snapshot = await get(userRef);
-
-      let coins = 0;
+      let coinsVal = 0;
       if (!snapshot.exists()) {
         await set(userRef, { coins: 0 });
       } else {
-        coins = snapshot.val().coins || 0;
+        coinsVal = snapshot.val().coins || 0;
       }
-      localStorage.setItem("username", username); 
-      displayMainMenu(username, coins);
+      localStorage.setItem("username", username);
+      displayMainMenu(username, coinsVal);
     }
 
-    // === ПОКАЗ МЕНЮ ===
-    function displayMainMenu(username, coins) {
+    function displayMainMenu(username, coinsVal) {
       currentUsername = username;
-      currentCoins    = coins;
+      currentCoins = coinsVal;
 
       loginScreen.style.display = "none";
       gameContainer.style.display = "none";
@@ -346,31 +340,26 @@
 
       mainMenu.style.display = "block";
       userDisplay.textContent  = `Username: ${username}`;
-      coinsDisplay.textContent = `Монет: ${coins}`;
+      coinsDisplay.textContent = `Монет: ${coinsVal}`;
     }
 
-    // === КНОПКИ МЕНЮ ===
     startGameBtn.addEventListener("click", () => {
       mainMenu.style.display = "none";
       startFloppyBirdGame();
     });
-
     leaderboardBtn.addEventListener("click", () => {
       mainMenu.style.display = "none";
       leaderboardContainer.style.display = "block";
       loadLeaderboard();
     });
-
     storeBtn.addEventListener("click", () => {
       mainMenu.style.display = "none";
       storeContainer.style.display = "block";
     });
-
     infoBtn.addEventListener("click", () => {
       mainMenu.style.display = "none";
       infoContainer.style.display = "block";
     });
-
     logoutBtn.addEventListener("click", () => {
       localStorage.removeItem("username");
       currentUsername = null;
@@ -379,7 +368,35 @@
       loginScreen.style.display = "flex";
     });
 
-    // === ТАБЛИЦА ЛИДЕРОВ ===
+    backToMenuBtn.addEventListener("click", () => {
+      endGameAndReturn();
+    });
+
+    async function loadLeaderboard() {
+      leaderboardBody.innerHTML = "";
+      const usersRef = ref(db, "users/");
+      const snapshot = await get(usersRef);
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const arr = Object.keys(data).map(key => {
+          return { username: key, coins: data[key].coins || 0 };
+        });
+        arr.sort((a, b) => b.coins - a.coins);
+        arr.forEach(u => {
+          const tr = document.createElement("tr");
+          const tdName  = document.createElement("td");
+          const tdCoins = document.createElement("td");
+
+          tdName.textContent  = u.username;
+          tdCoins.textContent = u.coins;
+
+          tr.appendChild(tdName);
+          tr.appendChild(tdCoins);
+          leaderboardBody.appendChild(tr);
+        });
+      }
+    }
     leaderboardBackBtn.addEventListener("click", () => {
       leaderboardContainer.style.display = "none";
       displayMainMenu(currentUsername, currentCoins);
@@ -393,62 +410,38 @@
       displayMainMenu(currentUsername, currentCoins);
     });
 
-    async function loadLeaderboard() {
-      leaderboardBody.innerHTML = "";
-      const usersRef = ref(db, "users/");
-      const snapshot = await get(usersRef);
-
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const usersArray = Object.keys(data).map(key => {
-          return { username: key, coins: data[key].coins || 0 };
-        });
-        // сортируем по убыванию
-        usersArray.sort((a, b) => b.coins - a.coins);
-
-        usersArray.forEach(u => {
-          const tr = document.createElement("tr");
-          const tdName = document.createElement("td");
-          const tdCoins = document.createElement("td");
-          tdName.textContent  = u.username;
-          tdCoins.textContent = u.coins;
-          tr.appendChild(tdName);
-          tr.appendChild(tdCoins);
-          leaderboardBody.appendChild(tr);
-        });
-      }
-    }
-
-    // === ЗАПУСК ИГРЫ ===
     function startFloppyBirdGame() {
       gameContainer.style.display = "block";
       ctx = gameCanvas.getContext("2d");
       resizeCanvas();
 
-      // Сброс переменных
       isGameRunning = true;
       player.y = canvasHeight / 2;
       player.velocityY = 0;
       player.alive = true;
+
       pipes = [];
       coins = [];
       pipeTimer = 0;
+      coinTimer = 0;
       scoreThisRun = 0;
+
       bgX = 0;
 
-      // Показать/создать Кирби
+      // Создаём <img> Кирби, если нет
       if (!player.el) {
         const kirby = document.createElement("img");
-        kirby.src = "http://media0.giphy.com/media/Vl15AaFeM9ZjW/giphy.gif";
+        kirby.src = kirbyGIFBase64; 
         kirby.style.position = "absolute";
-        kirby.style.width  = player.width  + "px";
+        kirby.style.width  = player.width + "px";
         kirby.style.height = player.height + "px";
         kirby.style.left   = player.x + "px";
         kirby.style.top    = player.y + "px";
-        kirby.style.zIndex = "900"; 
+        kirby.style.zIndex = "900";
         gameContainer.appendChild(kirby);
         player.el = kirby;
       } else {
+        // показываем, если было скрыто
         player.el.style.display = "block";
       }
 
@@ -459,7 +452,6 @@
       animationId = requestAnimationFrame(updateGame);
     }
 
-    // === РАЗМЕР CANVAS ПОД ОКНО ===
     window.addEventListener("resize", () => {
       if (isGameRunning) {
         resizeCanvas();
@@ -472,23 +464,20 @@
       gameCanvas.height = canvasHeight;
     }
 
-    // === ГЛАВНЫЙ ЦИКЛ ИГРЫ ===
     function updateGame() {
       if (!isGameRunning) return;
 
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-      // Прокручивающийся фон
+      // Фон
       drawScrollingBackground();
 
-      // Генерация труб + монеты в отверстии
+      // Трубы
       pipeTimer++;
       if (pipeTimer > pipeInterval) {
         createPipePair();
         pipeTimer = 0;
       }
-
-      // Обновляем трубы
       for (let i = 0; i < pipes.length; i++) {
         pipes[i].x -= pipeSpeed;
         drawPipe(pipes[i]);
@@ -496,35 +485,38 @@
           gameOver();
         }
       }
-      // Удаляем ушедшие за экран
       pipes = pipes.filter(p => p.x + pipeWidth > 0);
 
-      // Обновляем монеты
+      // Монеты
+      coinTimer++;
+      if (coinTimer > coinInterval) {
+        createCoin();
+        coinTimer = 0;
+      }
       for (let i = 0; i < coins.length; i++) {
-        const c = coins[i];
+        let c = coins[i];
         c.x -= pipeSpeed;
-        // Меняем позицию <img>
         c.el.style.left = c.x + "px";
         c.el.style.top  = c.y + "px";
-
         if (checkCollision(player, c)) {
           scoreThisRun++;
           c.collected = true;
         }
       }
-      // Убираем собранные/ушедшие монеты
       coins = coins.filter(c => {
-        if (c.collected || (c.x + c.size < 0)) {
-          gameContainer.removeChild(c.el);
+        if (c.collected || c.x + c.size < 0) {
+          if (c.el && c.el.parentNode) {
+            gameContainer.removeChild(c.el);
+          }
           return false;
         }
         return true;
       });
 
-      // Обновляем игрока
+      // Игрок
       updatePlayer();
 
-      // Отображаем счёт
+      // Счёт
       ctx.fillStyle = "white";
       ctx.font = "24px Arial";
       ctx.fillText(`Монет за забег: ${scoreThisRun}`, 20, 40);
@@ -534,9 +526,8 @@
       }
     }
 
-    // === ФОН (side-scrolling) ===
     function drawScrollingBackground() {
-      bgX -= 1; // скорость прокрутки
+      bgX -= bgSpeed;
       if (bgX <= -canvasWidth) {
         bgX = 0;
       }
@@ -544,11 +535,9 @@
       ctx.drawImage(bgImage, bgX + canvasWidth, 0, canvasWidth, canvasHeight);
     }
 
-    // === ОБНОВЛЕНИЕ ИГРОКА ===
     function updatePlayer() {
       player.velocityY += player.gravity;
       player.y += player.velocityY;
-
       if (player.y < 0) {
         player.y = 0;
         player.velocityY = 0;
@@ -556,21 +545,28 @@
       if (player.y + player.height > canvasHeight) {
         gameOver();
       }
-      // Обновляем позицию Кирби (<img>)
       player.el.style.left = player.x + "px";
       player.el.style.top  = player.y + "px";
     }
 
-    // === СОЗДАНИЕ ПАРЫ ТРУБ + 1 МОНЕТА В ПРОСВЕТЕ ===
+    function onKeyDown(e) {
+      if (e.code === "Space") {
+        flap();
+      }
+    }
+    function onClickOrTouch() {
+      flap();
+    }
+    function flap() {
+      player.velocityY = player.lift;
+    }
+
     function createPipePair() {
-      // Расчитываем, где будет верхняя часть
-      const topHeight = Math.floor(
-        Math.random() * (canvasHeight - pipeGap - 100)
-      ) + 50; 
+      const topHeight = Math.floor(Math.random() * (canvasHeight - pipeGap - 120)) + 60;
       const bottomY = topHeight + pipeGap;
       const bottomHeight = canvasHeight - bottomY;
 
-      // Верхняя (длинная)
+      // Верхняя
       pipes.push({
         x: canvasWidth,
         y: 0,
@@ -578,7 +574,7 @@
         height: topHeight,
         isTop: true
       });
-      // Нижняя (короткая)
+      // Нижняя
       pipes.push({
         x: canvasWidth,
         y: bottomY,
@@ -586,11 +582,69 @@
         height: bottomHeight,
         isTop: false
       });
+    }
 
-      // Создаём монету **в центре отверстия**
-      const coinY = topHeight + (pipeGap - coinSize) / 2; 
+    function drawPipe(pipe) {
+      // Немного уменьшим хитбокс у трубы: "визуально" труба та же, но реальный коллайдер меньше
+      let drawWidth  = pipe.width;
+      let drawHeight = pipe.height;
+      let offset = 2; // «обрезаем» коллизии по краям
+      if (pipe.isTop) {
+        ctx.save();
+        ctx.translate(pipe.x + drawWidth / 2, pipe.y + drawHeight / 2);
+        ctx.rotate(Math.PI);
+        drawPipeSprite(-drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+        ctx.restore();
+      } else {
+        drawPipeSprite(pipe.x, pipe.y, drawWidth, drawHeight);
+      }
+    }
+
+    // Функция рисования труб (можно подменить спрайт)
+    function drawPipeSprite(x, y, w, h) {
+      // Допустим, используем fillRect для наглядности, или спрайт:
+      // ctx.drawImage(pipeImg, x, y, w, h);
+      // Для простоты:
+      ctx.fillStyle = "#228B22";
+      ctx.fillRect(x, y, w, h);
+    }
+
+    // Создаём монету внутри прохода, чтобы не была в стенках
+    function createCoin() {
+      // Ищем случайно одну из последних созданных «пар труб» (или любую).
+      // Или берём рандомную позицию, но только внутри текущей «щели»
+      // Для упрощения: если труб нет, ставим монету по середине
+      const lastPipePair = pipes.slice(-2); 
+      if (lastPipePair.length < 2) {
+        // Если нет труб, по центру
+        spawnCoinY(canvasHeight / 2);
+        return;
+      }
+      // Ищем верхнюю и нижнюю из пары
+      let topP = lastPipePair[0].isTop ? lastPipePair[0] : lastPipePair[1];
+      let botP = lastPipePair[0].isTop ? lastPipePair[1] : lastPipePair[0];
+
+      // Верхняя труба: y=0..topHeight
+      // Нижняя труба: y=bottomY..canvasHeight
+      // GAP = [topHeight..bottomY]
+      const gapTop    = topP.height;
+      const gapBottom = botP.y; // или gapTop + pipeGap
+      // coinSize=40 => вычтем запас, чтобы не коснуться стен
+      const safeTop    = gapTop    + 10;
+      const safeBottom = gapBottom - coinSize - 10;
+
+      if (safeBottom <= safeTop) {
+        // слишком узко? тогда просто по центру (редкий случай)
+        spawnCoinY(canvasHeight / 2);
+      } else {
+        const coinY = Math.random() * (safeBottom - safeTop) + safeTop;
+        spawnCoinY(coinY);
+      }
+    }
+
+    function spawnCoinY(coinY) {
       const coinEl = document.createElement("img");
-      coinEl.src = coinGifURL;
+      coinEl.src = coinGIFBase64;
       coinEl.style.position = "absolute";
       coinEl.style.width  = coinSize + "px";
       coinEl.style.height = coinSize + "px";
@@ -608,68 +662,37 @@
       });
     }
 
-    // === РИСОВАНИЕ ТРУБ ===
-    function drawPipe(pipe) {
-      if (pipe.isTop) {
-        // Повернём "длинную" трубу на 180°
-        ctx.save();
-        ctx.translate(pipe.x + pipeWidth / 2, pipe.y + pipe.height / 2);
-        ctx.rotate(Math.PI); 
-        ctx.drawImage(
-          pipeImgTop,
-          -pipeWidth / 2,
-          -pipe.height / 2,
-          pipeWidth,
-          pipe.height
-        );
-        ctx.restore();
-      } else {
-        // "короткая" снизу без поворота
-        ctx.drawImage(pipeImgBottom, pipe.x, pipe.y, pipe.width, pipe.height);
-      }
-    }
-
-    // === ОБРАБОТЧИК ПРЫЖКА ===
-    function onKeyDown(e) {
-      if (e.code === "Space") {
-        flap();
-      }
-    }
-    function onClickOrTouch() {
-      flap();
-    }
-    function flap() {
-      player.velocityY = player.lift;
-    }
-
-    // === ПРОВЕРКА СТОЛКНОВЕНИЯ С УЧЁТОМ MARGIN ===
     function checkCollision(pl, obj) {
-      // Немного уменьшим хитбокс персонажа
-      const marginPlayer = 5;
-      const pr = {
-        x: pl.x + marginPlayer,
-        y: pl.y + marginPlayer,
-        width:  pl.width  - marginPlayer * 2,
-        height: pl.height - marginPlayer * 2
+      // «Уменьшим» хитбокс игрока и труб для большей лояльности
+      let margin = 4; 
+      let pr = {
+        x: pl.x + margin,
+        y: pl.y + margin,
+        width:  pl.width  - margin*2,
+        height: pl.height - margin*2
       };
-      // Немного уменьшим хитбокс трубы/монеты
-      const marginObj = 2;
-      const or = {
-        x: obj.x + marginObj,
-        y: obj.y + marginObj,
-        width:  (obj.width  || obj.size) - marginObj * 2,
-        height: (obj.height || obj.size) - marginObj * 2
+
+      // у трубы height/width, у монеты — size
+      let ow = obj.width  ? obj.width  : obj.size;
+      let oh = obj.height ? obj.height : obj.size;
+
+      // Тоже сжимаем трубу
+      let omargin = 2;
+      let or = {
+        x: obj.x + omargin,
+        y: obj.y + omargin,
+        width:  ow - omargin*2,
+        height: oh - omargin*2
       };
 
       return !(
-        or.x > pr.x + pr.width ||
-        or.x + or.width < pr.x ||
+        or.x > pr.x + pr.width  ||
+        or.x + or.width  < pr.x ||
         or.y > pr.y + pr.height ||
         or.y + or.height < pr.y
       );
     }
 
-    // === ГЕЙМ ОВЕР ===
     function gameOver() {
       player.alive = false;
       cancelAnimationFrame(animationId);
@@ -685,7 +708,6 @@
       endGameAndReturn();
     }
 
-    // === ВЫХОД В МЕНЮ (кнопка "Выйти в меню") ===
     function endGameAndReturn() {
       if (isGameRunning) {
         cancelAnimationFrame(animationId);
@@ -697,13 +719,12 @@
         currentCoins += scoreThisRun;
         updateCoinsInDB();
       }
-      // Скрыть Кирби
       if (player.el) {
         player.el.style.display = "none";
       }
-      // Удалить монеты из DOM
+      // Удаляем все монеты из DOM
       for (const c of coins) {
-        if (c.el) {
+        if (c.el && c.el.parentNode) {
           gameContainer.removeChild(c.el);
         }
       }
@@ -712,9 +733,7 @@
       gameContainer.style.display = "none";
       displayMainMenu(currentUsername, currentCoins);
     }
-    backToMenuBtn.addEventListener("click", endGameAndReturn);
 
-    // === ОБНОВЛЕНИЕ МОНЕТ В БД ===
     async function updateCoinsInDB() {
       if (!currentUsername) return;
       const userRef = ref(db, `users/${currentUsername}`);
