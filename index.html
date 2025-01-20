@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Floppy Bird с Кирби (универсальные настройки)</title>
+  <title>Floppy Bird, но вместо труб — враги</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <style>
     html, body {
@@ -110,7 +110,7 @@
 
   <!-- Главное меню -->
   <div id="mainMenu">
-    <h2>Добро пожаловать в Floppy Bird с Кирби</h2>
+    <h2>Добро пожаловать! Враги вместо труб</h2>
     <p id="userDisplay"></p>
     <p id="coinsDisplay"></p>
     <button id="startGameBtn">Начать игру</button>
@@ -158,10 +158,9 @@
   <div id="infoContainer">
     <h2>Информация об игре</h2>
     <p>
-      «Floppy Bird с Кирби» — универсальные настройки для одинакового геймплея 
-      на телефоне и на ПК: единая скорость труб, гравитация и сила взлёта.
-      Также сделан запас при столкновении, чтобы Кирби не умирал, 
-      если фактически ещё не касается трубы.
+      Кирби летит слева направо по бесконечному фону, 
+      собирая монеты и уклоняясь от врагов (вместо труб).
+      Если Кирби коснётся врага — игра окончена.
     </p>
     <button id="infoBackBtn">Назад</button>
   </div>
@@ -226,7 +225,7 @@
     let currentUsername = null;
     let currentCoins = 0;
 
-    // === ИГРОВЫЕ ПАРАМЕТРЫ (ЕДИНЫЕ ДЛЯ ПК И МОБИЛЬНЫХ) ===
+    // === ИГРОВЫЕ НАСТРОЙКИ ===
     let ctx;
     let animationId;
     let isGameRunning = false;
@@ -234,36 +233,39 @@
     let canvasWidth  = 0;
     let canvasHeight = 0;
 
-    // Персонаж (Кирби)
+    // Кирби (персонаж)
     const player = {
       x: 100,
       y: 150,
       width: 45,
       height: 45,
       velocityY: 0,
-      gravity: 0.4,    // единое значение для всех
-      lift: -7,        // сила взлёта
+      gravity: 0.2,
+      lift: -7,
       alive: true,
-      maxFallSpeed: 10, // ограничим скорость падения
+      maxFallSpeed: 10,
       el: null
     };
 
-    // Скорость движения труб и фона
-    const pipeSpeed = 1.8; // универсально и для ПК, и для телефона
+    // Скорость «скролла» фона и движения врагов/монет
+    const scrollSpeed = 1.8;
 
-    // Трубы
-    let pipes = [];
-    const pipeImg = new Image();
-    pipeImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/590181ae997ac0a.png";
-    const pipeWidth = 60;
-    const pipeGap = 200; // отверстие
-    const pipeInterval = 150;
-    let pipeTimer = 0;
+    // Враги (массив). Вместо труб — летающий .gif
+    let enemies = [];
+    const enemyGif = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
+    const enemyWidth  = 80;
+    const enemyHeight = 80;
+    // Интервал появления врагов (в кадрах)
+    const enemyInterval = 150; 
+    let enemyTimer = 0;
 
     // Монеты
     let coins = [];
     const coinSize = 40;
     const coinGifURL = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
+    // Интервал появления монет
+    const coinInterval = 80;
+    let coinTimer = 0;
 
     // Счёт за забег
     let scoreThisRun = 0;
@@ -273,10 +275,10 @@
     bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
     let bgX = 0;
 
-    // Запас при столкновении
+    // «запас» при столкновении (чтобы не умирать «за миллиметр»)
     const collisionMargin = 10;
 
-    // === ИНИЦИАЛИЗАЦИЯ ===
+    // === ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ===
     window.addEventListener("load", () => {
       const savedUsername = localStorage.getItem("username");
       if (savedUsername) {
@@ -285,6 +287,7 @@
         loginScreen.style.display = "flex";
       }
     });
+
     async function autoLogin(username) {
       const userRef = ref(db, `users/${username}`);
       const snapshot = await get(userRef);
@@ -295,7 +298,7 @@
       displayMainMenu(username, coinsVal);
     }
 
-    // === ЛОГИН ===
+    // === КНОПКА "ВОЙТИ" ===
     loginButton.addEventListener("click", async () => {
       const username = usernameInput.value.trim();
       if (!username.startsWith("@")) {
@@ -304,6 +307,7 @@
       }
       await loginUser(username);
     });
+
     async function loginUser(username) {
       const userRef = ref(db, `users/${username}`);
       const snapshot = await get(userRef);
@@ -334,9 +338,10 @@
       coinsDisplay.textContent = `Монет: ${coinsVal}`;
     }
 
+    // === КНОПКИ МЕНЮ ===
     startGameBtn.addEventListener("click", () => {
       mainMenu.style.display = "none";
-      startFloppyBirdGame();
+      startGame();
     });
     leaderboardBtn.addEventListener("click", () => {
       mainMenu.style.display = "none";
@@ -364,7 +369,7 @@
       endGameAndReturn();
     });
 
-    // === ТАБЛИЦА ЛИДЕРОВ ===
+    // === ЛИДЕРБОРД ===
     async function loadLeaderboard() {
       leaderboardBody.innerHTML = "";
       const usersRef = ref(db, "users/");
@@ -401,24 +406,26 @@
     });
 
     // === СТАРТ ИГРЫ ===
-    function startFloppyBirdGame() {
+    function startGame() {
       gameContainer.style.display = "block";
       ctx = gameCanvas.getContext("2d");
       resizeCanvas();
 
-      // Сброс
+      // Сброс игровых переменных
       isGameRunning = true;
       player.y = canvasHeight / 2;
       player.velocityY = 0;
       player.alive = true;
 
-      pipes = [];
+      enemies = [];
+      enemyTimer = 0;
       coins = [];
-      pipeTimer = 0;
+      coinTimer = 0;
+
       scoreThisRun = 0;
       bgX = 0;
 
-      // Создаём/показываем Кирби (img), если нет
+      // Создаём (или показываем) Кирби
       if (!player.el) {
         const kirby = document.createElement("img");
         kirby.src = "http://media0.giphy.com/media/Vl15AaFeM9ZjW/giphy.gif"; 
@@ -441,7 +448,7 @@
       animationId = requestAnimationFrame(updateGame);
     }
 
-    // === РАЗМЕР CANVAS ===
+    // === АДАПТАЦИЯ CANVAS ===
     window.addEventListener("resize", () => {
       if (isGameRunning) {
         resizeCanvas();
@@ -462,29 +469,47 @@
       // Фон
       drawScrollingBackground();
 
-      // Генерация труб
-      pipeTimer++;
-      if (pipeTimer > pipeInterval) {
-        createPipePair();
-        pipeTimer = 0;
+      // Генерация врагов
+      enemyTimer++;
+      if (enemyTimer > enemyInterval) {
+        createEnemy();
+        enemyTimer = 0;
       }
-
-      // Трубы
-      for (let i = 0; i < pipes.length; i++) {
-        pipes[i].x -= pipeSpeed;
-        drawPipe(pipes[i]);
-        if (checkCollision(player, pipes[i])) {
+      // Обновляем врагов
+      for (let i = 0; i < enemies.length; i++) {
+        const e = enemies[i];
+        e.x -= scrollSpeed;
+        // Двигаем <img> врага
+        e.el.style.left = e.x + "px";
+        e.el.style.top  = e.y + "px";
+        // Проверка столкновения
+        if (checkCollision(player, e)) {
           gameOver();
         }
       }
-      pipes = pipes.filter(p => p.x + pipeWidth > 0);
+      // Убираем ушедших за экран
+      enemies = enemies.filter(e => {
+        if (e.x + e.width < 0) {
+          // Удаляем DOM-элемент
+          gameContainer.removeChild(e.el);
+          return false;
+        }
+        return true;
+      });
 
-      // Монеты
+      // Генерация монет
+      coinTimer++;
+      if (coinTimer > coinInterval) {
+        createCoin();
+        coinTimer = 0;
+      }
+      // Обновляем монеты
       for (let i = 0; i < coins.length; i++) {
         const c = coins[i];
-        c.x -= pipeSpeed;
-        c.el.style.left = c.x + "px"; 
+        c.x -= scrollSpeed;
+        c.el.style.left = c.x + "px";
         c.el.style.top  = c.y + "px";
+        // Проверка сбора
         if (checkCollision(player, c)) {
           scoreThisRun++;
           c.collected = true;
@@ -498,10 +523,10 @@
         return true;
       });
 
-      // Обновляем игрока
+      // Обновляем Кирби
       updatePlayer();
 
-      // Счёт
+      // Отображаем счёт
       ctx.fillStyle = "white";
       ctx.font = "24px Arial";
       ctx.fillText(`Монет за забег: ${scoreThisRun}`, 20, 40);
@@ -511,7 +536,7 @@
       }
     }
 
-    // === ФОН (СКРОЛЛ) ===
+    // === ФУНКЦИЯ СКРОЛЛА ФОНА ===
     function drawScrollingBackground() {
       bgX -= 1; 
       if (bgX <= -canvasWidth) {
@@ -521,94 +546,72 @@
       ctx.drawImage(bgImage, bgX + canvasWidth, 0, canvasWidth, canvasHeight);
     }
 
-    // === СОЗДАНИЕ ТРУБ И ОДНОЙ МОНЕТЫ В ПРОЛЁТЕ ===
-    function createPipePair() {
-      const topHeight = Math.floor(
-        Math.random() * (canvasHeight - pipeGap - 100)
-      ) + 50;
-      const bottomY = topHeight + pipeGap;
-      const bottomHeight = canvasHeight - bottomY;
+    // === СОЗДАНИЕ ВРАГА ===
+    function createEnemy() {
+      // Враг появляется справа на случайной высоте
+      const randY = Math.random() * (canvasHeight - enemyHeight - 20) + 10;
+      const enemyEl = document.createElement("img");
+      enemyEl.src = enemyGif;
+      enemyEl.style.position = "absolute";
+      enemyEl.style.width  = enemyWidth  + "px";
+      enemyEl.style.height = enemyHeight + "px";
+      enemyEl.style.left   = canvasWidth + "px";
+      enemyEl.style.top    = randY + "px";
+      enemyEl.style.zIndex = "850";
+      gameContainer.appendChild(enemyEl);
 
-      // Верхняя
-      pipes.push({
+      enemies.push({
         x: canvasWidth,
-        y: 0,
-        width: pipeWidth,
-        height: topHeight,
-        isTop: true
+        y: randY,
+        width: enemyWidth,
+        height: enemyHeight,
+        el: enemyEl
       });
-      // Нижняя
-      pipes.push({
-        x: canvasWidth,
-        y: bottomY,
-        width: pipeWidth,
-        height: bottomHeight,
-        isTop: false
-      });
-
-      // Монета в пролёте
-      const gapMin = topHeight + 10;
-      const gapMax = bottomY - coinSize - 10;
-      if (gapMax > gapMin) {
-        const coinY = Math.random() * (gapMax - gapMin) + gapMin;
-        const coinEl = document.createElement("img");
-        coinEl.src = coinGifURL;
-        coinEl.style.position = "absolute";
-        coinEl.style.width  = coinSize + "px";
-        coinEl.style.height = coinSize + "px";
-        coinEl.style.left   = canvasWidth + "px";
-        coinEl.style.top    = coinY + "px";
-        coinEl.style.zIndex = "800";
-        gameContainer.appendChild(coinEl);
-
-        coins.push({
-          x: canvasWidth,
-          y: coinY,
-          size: coinSize,
-          collected: false,
-          el: coinEl
-        });
-      }
     }
 
-    // === ОТРИСОВКА ТРУБ ===
-    function drawPipe(pipe) {
-      if (pipe.isTop) {
-        ctx.save();
-        ctx.translate(pipe.x + pipeWidth / 2, pipe.y + pipe.height / 2);
-        ctx.rotate(Math.PI);
-        ctx.drawImage(pipeImg, -pipeWidth / 2, -pipe.height / 2, pipeWidth, pipe.height);
-        ctx.restore();
-      } else {
-        ctx.drawImage(pipeImg, pipe.x, pipe.y, pipe.width, pipe.height);
-      }
+    // === СОЗДАНИЕ МОНЕТЫ ===
+    function createCoin() {
+      const randY = Math.random() * (canvasHeight - coinSize - 20) + 10;
+      const coinEl = document.createElement("img");
+      coinEl.src = coinGifURL;
+      coinEl.style.position = "absolute";
+      coinEl.style.width  = coinSize + "px";
+      coinEl.style.height = coinSize + "px";
+      coinEl.style.left   = canvasWidth + "px";
+      coinEl.style.top    = randY + "px";
+      coinEl.style.zIndex = "800";
+      gameContainer.appendChild(coinEl);
+
+      coins.push({
+        x: canvasWidth,
+        y: randY,
+        size: coinSize,
+        collected: false,
+        el: coinEl
+      });
     }
 
-    // === ОБНОВЛЕНИЕ ИГРОКА ===
+    // === ОБНОВЛЕНИЕ ПОЛЁТА КИРБИ ===
     function updatePlayer() {
-      // Добавляем гравитацию
       player.velocityY += player.gravity;
-      // Ограничиваем скорость падения
       if (player.velocityY > player.maxFallSpeed) {
         player.velocityY = player.maxFallSpeed;
       }
       player.y += player.velocityY;
 
-      // Не даём уйти выше «потолка»
       if (player.y < 0) {
         player.y = 0;
         player.velocityY = 0;
       }
-      // Проверка низа
       if (player.y + player.height > canvasHeight) {
         gameOver();
       }
-      // Позиция <img> Кирби
+      // Обновляем DOM
       player.el.style.left = player.x + "px";
       player.el.style.top  = player.y + "px";
     }
 
-    // === ПРЫЖОК ===
+    // === УПРАВЛЕНИЕ (ПРЫЖОК) ===
     function onKeyDown(e) {
       if (e.code === "Space") {
         flap();
@@ -618,7 +621,6 @@
       flap();
     }
     function flap() {
-      // Поднимаем игрока
       player.velocityY = player.lift;
     }
 
@@ -630,12 +632,17 @@
         width: pl.width - collisionMargin * 2,
         height: pl.height - collisionMargin * 2
       };
+      // У врага нет size, у монеты нет width/height, проверяем оба случая
+      const ow = (obj.width  || obj.size) - collisionMargin * 2;
+      const oh = (obj.height || obj.size) - collisionMargin * 2;
+
       const or = {
-        x: (obj.x + collisionMargin),
-        y: (obj.y + collisionMargin),
-        width: (obj.width || obj.size) - collisionMargin * 2,
-        height: (obj.height || obj.size) - collisionMargin * 2
+        x: obj.x + collisionMargin,
+        y: obj.y + collisionMargin,
+        width:  ow > 0 ? ow : 0,
+        height: oh > 0 ? oh : 0
       };
+
       return !(
         or.x > pr.x + pr.width ||
         or.x + or.width < pr.x ||
@@ -657,7 +664,6 @@
       updateCoinsInDB();
 
       alert(`Игра окончена! Собрано: ${scoreThisRun} монет.`);
-
       endGameAndReturn();
     }
 
@@ -677,11 +683,14 @@
       if (player.el) {
         player.el.style.display = "none";
       }
+      // Удалить оставшихся врагов из DOM
+      for (const e of enemies) {
+        if (e.el) gameContainer.removeChild(e.el);
+      }
+      enemies = [];
       // Удалить оставшиеся монеты из DOM
       for (const c of coins) {
-        if (c.el) {
-          gameContainer.removeChild(c.el);
-        }
+        if (c.el) gameContainer.removeChild(c.el);
       }
       coins = [];
 
