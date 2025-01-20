@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Floppy Bird с Кирби (улучшенная версия)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+ <style>
+   /* === ОБЩИЕ СТИЛИ ДЛЯ ВСЕЙ СТРАНИЦЫ === */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden; /* Запрещаем прокрутку, т.к. игра во весь экран */
+    font-family: "Comic Sans MS", sans-serif; /* «Мультяшный» шрифт */
+    background: #FFD8EC; /* Нежно-розовый фон */
+    color: #444;         /* Тёмно-серый текст */
+  }
+  
+  /* Центрирование (например, для экрана логина) */
+  .centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* === СТИЛИ КНОПОК (общие) === */
+  button {
+    background: #FF8FB1;  /* Ярко-розовый в «стиле Кирби» */
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: transform 0.1s;
+  }
+  button:hover {
+    transform: scale(1.03);
+    background: #FF6E9C; /* при наведении чуть ярче */
+  }
+  button:active {
+    transform: scale(0.97);
+  }
+  
+  /* === СТИЛИ ПОЛЕЙ ВВОДА (например, для логина) === */
+  input[type="text"], input[type="password"] {
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #FFB6C1; /* светло-розовая рамка */
+    border-radius: 15px;
+    outline: none;
+    width: 200px;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    background: #FFF0F5; /* очень светлый розовый */
+  }
+  input[type="text"]:focus, input[type="password"]:focus {
+    border-color: #FF6E9C;
+  }
+  
+  /* === ЭКРАН ЛОГИНА === */
+  #loginScreen {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    flex-direction: column;
+    background: rgba(255, 216, 236, 0.9); /* полупрозрачный розовый фон */
+    display: none;
+  }
+  
+  /* Центрируем блок формы внутри loginScreen */
+  #loginScreen > div {
+    background: #FFE3F2;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    padding: 30px 40px;
+    text-align: center;
+  }
+  
+  /* === ГЛАВНОЕ МЕНЮ === */
+  #mainMenu {
+    display: none;
+    padding: 20px;
+    text-align: center;
+  }
+  #mainMenu h2 {
+    margin-top: 0;
+    color: #D70071; /* потемнее розовый для заголовка */
+  }
+  #mainMenu p {
+    margin: 10px 0;
+  }
+  
+  /* Пользователь и монеты в меню */
+  #userDisplay, #coinsDisplay {
+    font-size: 18px;
+    margin: 5px 0;
+  }
+  
+  /* === ИГРОВОЕ ОКНО (канвас + кнопка "Назад") === */
+  #gameContainer {
+    display: none;
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+  #gameCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #FFD8EC; /* fallback, если фон не загрузится */
+  }
+  
+  /* Кнопка выхода на игровом экране */
+  #backToMenuBtn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 999;
+  }
+  
+  /* === ТАБЛИЦА ЛИДЕРОВ === */
+  #leaderboardContainer {
+    display: none;
+    padding: 20px;
+    text-align: center;
+  }
+  #leaderboardContainer h2 {
+    color: #D70071;
+    margin-top: 0;
+  }
+  #leaderboardContainer table {
+    border-collapse: collapse;
+    margin: 0 auto; /* центрируем */
+    width: 100%;
+    max-width: 600px;
+    background: #FFE3F2;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  #leaderboardContainer th, #leaderboardContainer td {
+    border: 1px solid #FFB6C1;
+    padding: 12px;
+    text-align: left;
+  }
+  #leaderboardContainer th {
+    background: #FFB6C1;
+    color: #fff;
+  }
+  
+  /* Кнопка назад в таблице лидеров */
+  #leaderboardBackBtn {
+    margin-top: 20px;
+  }
+  
+  /* === МАГАЗИН === */
+  #storeContainer {
+    display: none;
+    padding: 20px;
+    text-align: center;
+  }
+  #storeContainer h2 {
+    color: #D70071;
+  }
+  #storeContainer ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  #storeContainer li {
+    margin: 8px 0;
+  }
+  
+  /* Кнопка назад в магазине */
+  #storeBackBtn {
+    margin-top: 20px;
+  }
+  
+  /* === ИНФОРМАЦИЯ === */
+  #infoContainer {
+    display: none;
+    padding: 20px;
+    text-align: center;
+  }
+  #infoContainer h2 {
+    color: #D70071;
+  }
+  #infoContainer p {
+    margin: 15px 0;
+  }
+  
+  /* Кнопка назад на странице информации */
+  #infoBackBtn {
+    margin-top: 20px;
+  }
+  
+  /* === АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ === */
+  @media (max-width: 600px) {
+    button {
+      font-size: 14px;
+      padding: 10px 18px;
+    }
+    #mainMenu {
+      padding: 10px;
+    }
+    #leaderboardContainer, #storeContainer, #infoContainer {
+      padding: 10px;
+    }
+    #loginScreen > div {
+      width: 80%;
+      max-width: 300px;
+      padding: 20px;
+    }
+    #leaderboardContainer table {
+      width: 95%;
+    }
+  }
+  
+  </style>
+</head>
+<body>
+  <!-- Экран логина -->
+  <div id="loginScreen" class="centered">
+    <div>
+      <h2>Вход через Telegram</h2>
+      <input type="text" id="username" placeholder="@username" />
+      <br />
+      <button id="loginButton">Войти</button>
+    </div>
+  </div>
+
+  <!-- Главное меню -->
+  <div id="mainMenu">
+    <h2>Добро пожаловать в Floppy Bird с Кирби (улучшенная)</h2>
+    <p id="userDisplay"></p>
+    <p id="coinsDisplay"></p>
+    <button id="startGameBtn">Начать игру</button>
+    <button id="leaderboardBtn">Таблица лидеров</button>
+    <button id="storeBtn">Магазин улучшений</button>
+    <button id="infoBtn">Информация</button>
+    <button id="logoutBtn">Выйти</button>
+  </div>
+
+  <!-- Игровой экран (Canvas + анимированные <img>) -->
+  <div id="gameContainer">
+    <button id="backToMenuBtn">Выйти в меню</button>
+    <canvas id="gameCanvas"></canvas>
+  </div>
+
+  <!-- Таблица лидеров -->
+  <div id="leaderboardContainer">
+    <h2>Таблица лидеров</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Пользователь</th>
+          <th>Монет</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboardBody"></tbody>
+    </table>
+    <br />
+    <button id="leaderboardBackBtn">Назад</button>
+  </div>
+
+  <!-- Магазин -->
+  <div id="storeContainer">
+    <h2>Магазин улучшений</h2>
+    <p>Тут можно купить разные апгрейды (пример).</p>
+    <button id="storeBackBtn">Назад</button>
+  </div>
+
+  <!-- Информация -->
+  <div id="infoContainer">
+    <h2>Информация об игре</h2>
+    <p>
+      «Floppy Bird с Кирби» — это бесконечная игра, где Кирби (анимированный .gif) летит через трубы с увеличенным отверстием (gap).
+      Монеты (тоже gif) гарантированно появляются в зазоре, чтобы их можно было собрать. 
+      <br/>
+      Добавлен «запас» по коллизии, чтобы персонаж не умирал «на миллиметре».
+    </p>
+    <button id="infoBackBtn">Назад</button>
+  </div>
+
+  <!-- Логика приложения и Firebase -->
+  <script type="module">
+    // === ИМПОРТ FIREBASE ===
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+
+    // === НАСТРОЙКИ FIREBASE ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyB90ev3fJR...свои_данные...",
+      authDomain: "test-with-likes.firebaseapp.com",
+      databaseURL: "https://test-with-likes-default-rtdb.firebaseio.com",
+      projectId: "test-with-likes",
+      storageBucket: "test-with-likes.appspot.com",
+      messagingSenderId: "764738820142",
+      appId: "1:764738820142:web:b22c6608a30e46cdcea7bf",
+      measurementId: "G-WJNF0HSN9P"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // === ЭЛЕМЕНТЫ DOM ===
+    const loginScreen         = document.getElementById("loginScreen");
+    const mainMenu            = document.getElementById("mainMenu");
+    const usernameInput       = document.getElementById("username");
+    const loginButton         = document.getElementById("loginButton");
+    const userDisplay         = document.getElementById("userDisplay");
+    const coinsDisplay        = document.getElementById("coinsDisplay");
+
+    const startGameBtn        = document.getElementById("startGameBtn");
+    const leaderboardBtn      = document.getElementById("leaderboardBtn");
+    const storeBtn            = document.getElementById("storeBtn");
+    const infoBtn             = document.getElementById("infoBtn");
+    const logoutBtn           = document.getElementById("logoutBtn");
+
+    const gameContainer       = document.getElementById("gameContainer");
+    const backToMenuBtn       = document.getElementById("backToMenuBtn");
+    const gameCanvas          = document.getElementById("gameCanvas");
+
+    const leaderboardContainer = document.getElementById("leaderboardContainer");
+    const leaderboardBody      = document.getElementById("leaderboardBody");
+    const leaderboardBackBtn   = document.getElementById("leaderboardBackBtn");
+
+    const storeContainer      = document.getElementById("storeContainer");
+    const storeBackBtn        = document.getElementById("storeBackBtn");
+
+    const infoContainer       = document.getElementById("infoContainer");
+    const infoBackBtn         = document.getElementById("infoBackBtn");
+
+    // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ПОЛЬЗОВАТЕЛЯ ===
+    let currentUsername = null;
+    let currentCoins = 0;
+
+    // === ПЕРЕМЕННЫЕ ИГРЫ (Flappy Bird) ===
+    let ctx;
+    let animationId;
+    let isGameRunning = false;
+
+    let canvasWidth  = 0;
+    let canvasHeight = 0;
+
+    // КИРБИ (через <img>, чтобы gif анимировался):
+    const player = {
+      x: 100,
+      y: 150,
+      width: 60,
+      height: 60,
+      velocityY: 0,
+      gravity: 0.5,
+      lift: -8,
+      alive: true,
+      // DOM-элемент (img)
+      el: null 
+    };
+
+    // ТРУБЫ
+    let pipes = [];
+    const pipeImg = new Image();
+    pipeImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/590181ae997ac0a.png";
+    const pipeWidth = 60;
+    const pipeGap   = 200; // Увеличенное отверстие
+    const pipeSpeed = 2;
+    let pipeTimer = 0;
+    const pipeInterval = 150;
+
+    // МОНЕТЫ (gif тоже через <img>)
+    let coins = [];
+    const coinSize = 40;
+    const coinGifURL = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
+
+    // Сайдскроллинг-фон
+    const bgImage = new Image();
+    bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
+    let bgX = 0;
+
+    // Счёт за забег
+    let scoreThisRun = 0;
+
+    // === ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ===
+    window.addEventListener("load", () => {
+      const savedUsername = localStorage.getItem("username");
+      if (savedUsername) {
+        autoLogin(savedUsername);
+      } else {
+        loginScreen.style.display = "flex";
+      }
+    });
+
+    async function autoLogin(username) {
+      const userRef = ref(db, `users/${username}`);
+      const snapshot = await get(userRef);
+
+      let coins = 0;
+      if (snapshot.exists()) {
+        coins = snapshot.val().coins || 0;
+      }
+      displayMainMenu(username, coins);
+    }
+
+    // === ЛОГИН ===
+    loginButton.addEventListener("click", async () => {
+      const username = usernameInput.value.trim();
+      if (!username.startsWith("@")) {
+        alert("Telegram-логин должен начинаться с '@'.");
+        return;
+      }
+      await loginUser(username);
+    });
+    async function loginUser(username) {
+      const userRef = ref(db, `users/${username}`);
+      const snapshot = await get(userRef);
+
+      let coins = 0;
+      if (!snapshot.exists()) {
+        await set(userRef, { coins: 0 });
+      } else {
+        coins = snapshot.val().coins || 0;
+      }
+      localStorage.setItem("username", username); 
+      displayMainMenu(username, coins);
+    }
+
+    // === МЕНЮ ===
+    function displayMainMenu(username, coins) {
+      currentUsername = username;
+      currentCoins = coins;
+
+      loginScreen.style.display = "none";
+      gameContainer.style.display = "none";
+      leaderboardContainer.style.display = "none";
+      storeContainer.style.display = "none";
+      infoContainer.style.display = "none";
+
+      mainMenu.style.display = "block";
+      userDisplay.textContent  = `Username: ${username}`;
+      coinsDisplay.textContent = `Монет: ${coins}`;
+    }
+
+    startGameBtn.addEventListener("click", () => {
+      mainMenu.style.display = "none";
+      startFloppyBirdGame();
+    });
+    leaderboardBtn.addEventListener("click", () => {
+      mainMenu.style.display = "none";
+      leaderboardContainer.style.display = "block";
+      loadLeaderboard();
+    });
+    storeBtn.addEventListener("click", () => {
+      mainMenu.style.display = "none";
+      storeContainer.style.display = "block";
+    });
+    infoBtn.addEventListener("click", () => {
+      mainMenu.style.display = "none";
+      infoContainer.style.display = "block";
+    });
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("username");
+      currentUsername = null;
+      currentCoins = 0;
+      mainMenu.style.display = "none";
+      loginScreen.style.display = "flex";
+    });
+
+    backToMenuBtn.addEventListener("click", () => {
+      endGameAndReturn();
+    });
+
+    // === ТАБЛИЦА ЛИДЕРОВ ===
+    async function loadLeaderboard() {
+      leaderboardBody.innerHTML = "";
+      const usersRef = ref(db, "users/");
+      const snapshot = await get(usersRef);
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const usersArray = Object.keys(data).map(key => ({
+          username: key,
+          coins: data[key].coins || 0
+        }));
+        usersArray.sort((a, b) => b.coins - a.coins);
+
+        usersArray.forEach(user => {
+          const tr = document.createElement("tr");
+          const tdName = document.createElement("td");
+          const tdCoins = document.createElement("td");
+          tdName.textContent = user.username;
+          tdCoins.textContent = user.coins;
+          tr.appendChild(tdName);
+          tr.appendChild(tdCoins);
+          leaderboardBody.appendChild(tr);
+        });
+      }
+    }
+    leaderboardBackBtn.addEventListener("click", () => {
+      leaderboardContainer.style.display = "none";
+      displayMainMenu(currentUsername, currentCoins);
+    });
+    storeBackBtn.addEventListener("click", () => {
+      storeContainer.style.display = "none";
+      displayMainMenu(currentUsername, currentCoins);
+    });
+    infoBackBtn.addEventListener("click", () => {
+      infoContainer.style.display = "none";
+      displayMainMenu(currentUsername, currentCoins);
+    });
+
+    // === ЗАПУСК ИГРЫ ===
+    function startFloppyBirdGame() {
+      gameContainer.style.display = "block";
+      ctx = gameCanvas.getContext("2d");
+
+      resizeCanvas();
+
+      // Сброс
+      isGameRunning = true;
+      player.y = canvasHeight / 2;
+      player.velocityY = 0;
+      player.alive = true;
+      pipes = [];
+      coins = [];
+      pipeTimer = 0;
+      scoreThisRun = 0;
+      bgX = 0;
+
+      // Создаём или показываем Кирби (gif)
+      if (!player.el) {
+        const kirby = document.createElement("img");
+        kirby.src = "http://media0.giphy.com/media/Vl15AaFeM9ZjW/giphy.gif";
+        kirby.style.position = "absolute";
+        kirby.style.width  = player.width + "px";
+        kirby.style.height = player.height + "px";
+        kirby.style.left   = player.x + "px";
+        kirby.style.top    = player.y + "px";
+        kirby.style.zIndex = "900";
+        gameContainer.appendChild(kirby);
+
+        player.el = kirby;
+      } else {
+        player.el.style.display = "block";
+      }
+
+      document.addEventListener("keydown", onKeyDown);
+      document.addEventListener("mousedown", onClickOrTouch);
+      document.addEventListener("touchstart", onClickOrTouch);
+
+      animationId = requestAnimationFrame(updateGame);
+    }
+
+    // === ADAPTIVE CANVAS ===
+    window.addEventListener("resize", () => {
+      if (isGameRunning) {
+        resizeCanvas();
+      }
+    });
+    function resizeCanvas() {
+      canvasWidth  = window.innerWidth;
+      canvasHeight = window.innerHeight;
+      gameCanvas.width  = canvasWidth;
+      gameCanvas.height = canvasHeight;
+    }
+
+    // === ГЛАВНЫЙ ЦИКЛ ===
+    function updateGame() {
+      if (!isGameRunning) return;
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+      // Сайдскроллинг-фон
+      drawScrollingBackground();
+
+      // Генерация труб (и сразу же монеты в зазоре)
+      pipeTimer++;
+      if (pipeTimer > pipeInterval) {
+        createPipePairAndCoin(); 
+        pipeTimer = 0;
+      }
+
+      // Обновляем трубы
+      for (let i = 0; i < pipes.length; i++) {
+        pipes[i].x -= pipeSpeed;
+        drawPipe(pipes[i]);
+        if (checkCollision(player, pipes[i], true)) {
+          gameOver();
+        }
+      }
+      pipes = pipes.filter(p => p.x + pipeWidth > 0);
+
+      // Обновляем монеты (x -= pipeSpeed), проверка сбора
+      for (let i = 0; i < coins.length; i++) {
+        const c = coins[i];
+        c.x -= pipeSpeed;
+        c.el.style.left = c.x + "px";
+        c.el.style.top  = c.y + "px";
+        
+        if (checkCollision(player, c, false)) {
+          scoreThisRun++;
+          c.collected = true;
+        }
+      }
+      coins = coins.filter(c => {
+        if (c.collected || c.x + c.size < 0) {
+          // убрать из DOM
+          gameContainer.removeChild(c.el);
+          return false;
+        }
+        return true;
+      });
+
+      // Обновляем игрока
+      updatePlayer();
+
+      // Отображаем счёт
+      ctx.fillStyle = "white";
+      ctx.font = "24px Arial";
+      ctx.fillText(`Монет: ${scoreThisRun}`, 20, 40);
+
+      if (player.alive) {
+        animationId = requestAnimationFrame(updateGame);
+      }
+    }
+
+    // === ФОН (плавный скролл) ===
+    function drawScrollingBackground() {
+      bgX -= 1;
+      if (bgX <= -canvasWidth) {
+        bgX = 0;
+      }
+      ctx.drawImage(bgImage, bgX, 0, canvasWidth, canvasHeight);
+      ctx.drawImage(bgImage, bgX + canvasWidth, 0, canvasWidth, canvasHeight);
+    }
+
+    // === ОБНОВЛЕНИЕ ИГРОКА ===
+    function updatePlayer() {
+      player.velocityY += player.gravity;
+      player.y += player.velocityY;
+      if (player.y < 0) {
+        player.y = 0;
+        player.velocityY = 0;
+      }
+      if (player.y + player.height > canvasHeight) {
+        gameOver();
+      }
+      player.el.style.left = player.x + "px";
+      player.el.style.top  = player.y + "px";
+    }
+
+    // === СОЗДАНИЕ ПАРЫ ТРУБ + МОНЕТЫ В ЗАЗОРЕ ===
+    function createPipePairAndCoin() {
+      // Случайная высота верхней трубы
+      const topHeight = Math.floor(
+        Math.random() * (canvasHeight - pipeGap - 100)
+      ) + 50;
+      const bottomY = topHeight + pipeGap;
+      const bottomHeight = canvasHeight - bottomY;
+
+      // Верхняя труба
+      pipes.push({
+        x: canvasWidth,
+        y: 0,
+        width: pipeWidth,
+        height: topHeight,
+        isTop: true
+      });
+      // Нижняя труба
+      pipes.push({
+        x: canvasWidth,
+        y: bottomY,
+        width: pipeWidth,
+        height: bottomHeight,
+        isTop: false
+      });
+
+      // Создаём монету в зазоре (от topHeight до bottomY)
+      const coinY = topHeight + (Math.random() * (pipeGap - coinSize));
+      const coinEl = document.createElement("img");
+      coinEl.src = coinGifURL;
+      coinEl.style.position = "absolute";
+      coinEl.style.width  = coinSize + "px";
+      coinEl.style.height = coinSize + "px";
+      coinEl.style.left   = canvasWidth + "px";
+      coinEl.style.top    = coinY + "px";
+      coinEl.style.zIndex = "800";
+      gameContainer.appendChild(coinEl);
+
+      coins.push({
+        x: canvasWidth,
+        y: coinY,
+        size: coinSize,
+        collected: false,
+        el: coinEl
+      });
+    }
+
+    // === РИСОВАНИЕ ТРУБЫ ===
+    function drawPipe(pipe) {
+      if (pipe.isTop) {
+        ctx.save();
+        ctx.translate(pipe.x + pipeWidth/2, pipe.y + pipe.height/2);
+        ctx.rotate(Math.PI); // 180
+        ctx.drawImage(pipeImg, -pipeWidth/2, -pipe.height/2, pipeWidth, pipe.height);
+        ctx.restore();
+      } else {
+        ctx.drawImage(pipeImg, pipe.x, pipe.y, pipe.width, pipe.height);
+      }
+    }
+
+    // === КОЛЛИЗИИ (с запасом) ===
+    // useMargin = true, если это труба; false — если монета
+    function checkCollision(pl, obj, useMargin) {
+      // хитбокс Кирби (чуть меньше)
+      const marginPlayer = 8; // отступы, чтобы "миллиметр" не убивал
+      const pr = {
+        x: pl.x + marginPlayer,
+        y: pl.y + marginPlayer,
+        width:  pl.width  - marginPlayer*2,
+        height: pl.height - marginPlayer*2
+      };
+
+      // хитбокс объекта
+      // если это труба, тоже можем дать небольшой отступ, чтобы убрать "ложные" касания
+      let marginObj = useMargin ? 5 : 0; 
+      let ow = (obj.width  || obj.size) - marginObj*2;
+      let oh = (obj.height || obj.size) - marginObj*2;
+      const or = {
+        x: obj.x + marginObj,
+        y: obj.y + marginObj,
+        width:  ow,
+        height: oh
+      };
+
+      // прямоугольное пересечение
+      return !(
+        or.x > pr.x + pr.width  ||
+        or.x + or.width < pr.x  ||
+        or.y > pr.y + pr.height ||
+        or.y + or.height < pr.y
+      );
+    }
+
+    // === НАЖАТИЕ КЛАВИШ / КЛИК / ТАП ===
+    function onKeyDown(e) {
+      if (e.code === "Space") {
+        flap();
+      }
+    }
+    function onClickOrTouch() {
+      flap();
+    }
+    function flap() {
+      player.velocityY = player.lift;
+    }
+
+    // === GAME OVER ===
+    function gameOver() {
+      player.alive = false;
+      cancelAnimationFrame(animationId);
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onClickOrTouch);
+      document.removeEventListener("touchstart", onClickOrTouch);
+      isGameRunning = false;
+
+      currentCoins += scoreThisRun;
+      updateCoinsInDB();
+
+      alert(`Игра окончена! Собрано: ${scoreThisRun} монет.`);
+      endGameAndReturn();
+    }
+
+    // === ВЫХОД ИЗ ИГРЫ ===
+    function endGameAndReturn() {
+      if (isGameRunning) {
+        cancelAnimationFrame(animationId);
+        document.removeEventListener("keydown", onKeyDown);
+        document.removeEventListener("mousedown", onClickOrTouch);
+        document.removeEventListener("touchstart", onClickOrTouch);
+        isGameRunning = false;
+
+        currentCoins += scoreThisRun;
+        updateCoinsInDB();
+      }
+      // Скрыть Кирби
+      if (player.el) {
+        player.el.style.display = "none";
+      }
+      // Удалить монеты из DOM
+      for (const c of coins) {
+        if (c.el) gameContainer.removeChild(c.el);
+      }
+      coins = [];
+
+      gameContainer.style.display = "none";
+      displayMainMenu(currentUsername, currentCoins);
+    }
+
+    // === ОБНОВЛЕНИЕ МОНЕТ В БД ===
+    async function updateCoinsInDB() {
+      if (!currentUsername) return;
+      const userRef = ref(db, `users/${currentUsername}`);
+      await update(userRef, { coins: currentCoins });
+      coinsDisplay.textContent = `Монет: ${currentCoins}`;
+    }
+  </script>
+</body>
+</html>
