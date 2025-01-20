@@ -202,6 +202,9 @@ p {
 /*-----------------------------*/
 /*     ТАБЛИЦА ЛИДЕРОВ (#leaderboardContainer) */
 /*-----------------------------*/
+
+
+
 #leaderboardContainer {
   display: none;
   padding: 20px;
@@ -435,7 +438,7 @@ td {
       <tbody id="leaderboardBody"></tbody>
     </table>
     <br />
-   
+    
   </div>
 
   <!-- Магазин улучшений -->
@@ -714,20 +717,21 @@ td {
       bgX = 0;
 
       // Создаём (или показываем) Кирби
-      if (!player.el) {
-        const kirby = document.createElement("img");
-        kirby.src = "http://media0.giphy.com/media/Vl15AaFeM9ZjW/giphy.gif"; 
-        kirby.style.position = "absolute";
-        kirby.style.width  = player.width + "px";
-        kirby.style.height = player.height + "px";
-        kirby.style.left   = player.x + "px";
-        kirby.style.top    = player.y + "px";
-        kirby.style.zIndex = "900";
-        gameContainer.appendChild(kirby);
-        player.el = kirby;
-      } else {
-        player.el.style.display = "block";
-      }
+     if (!player.el) {
+  const kirby = document.createElement("img");
+  kirby.src = "kirby.gif"; 
+  kirby.style.position = "absolute";
+  kirby.style.width  = player.width + "px";
+  kirby.style.height = player.height + "px";
+  kirby.style.left   = player.x + "px";
+  kirby.style.top    = player.y + "px";
+  kirby.style.zIndex = "900";
+  gameContainer.appendChild(kirby);
+  player.el = kirby;
+} else {
+  player.el.style.display = "block";
+}
+
 
       document.addEventListener("keydown", onKeyDown);
       document.addEventListener("mousedown", onClickOrTouch);
