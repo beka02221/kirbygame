@@ -413,7 +413,7 @@ td {
     <button id="leaderboardBtn">Таблица лидеров</button>
     <button id="storeBtn">Магазин улучшений</button>
     <button id="infoBtn">Информация</button>
-    <button id="logoutBtn">Выйти</button>
+
   </div>
 
   <!-- Игровой экран -->
@@ -455,7 +455,7 @@ td {
     <h2>Информация об игре</h2>
     <p>
       Кирби летит слева направо по бесконечному фону, 
-      собирая монеты и уклоняясь от врагов (вместо труб).
+      собирая монеты и уклоняясь от врагов
       Если Кирби коснётся врага — игра окончена.
     </p>
     <button id="infoBackBtn">Назад</button>
@@ -536,10 +536,10 @@ td {
       width: 45,
       height: 45,
       velocityY: 0,
-      gravity: 0.2,
-      lift: -7,
+      gravity: 0.3,
+      lift: -5,
       alive: true,
-      maxFallSpeed: 10,
+      maxFallSpeed: 3,
       el: null
     };
 
@@ -652,18 +652,10 @@ td {
       mainMenu.style.display = "none";
       infoContainer.style.display = "block";
     });
-    logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem("username");
-      currentUsername = null;
-      currentCoins = 0;
-      mainMenu.style.display = "none";
-      loginScreen.style.display = "flex";
-    });
+   
 
     // === КНОПКА НАЗАД ИЗ ИГРЫ ===
-    backToMenuBtn.addEventListener("click", () => {
-      endGameAndReturn();
-    });
+  
 
     // === ЛИДЕРБОРД ===
     async function loadLeaderboard() {
@@ -724,7 +716,7 @@ td {
       // Создаём (или показываем) Кирби
       if (!player.el) {
         const kirby = document.createElement("img");
-        kirby.src = "https://66.media.tumblr.com/67b53dfbe91c2353865519b6e5957056/tumblr_miwtsjHAN31rfjowdo1_500.gif"; 
+        kirby.src = "http://media0.giphy.com/media/Vl15AaFeM9ZjW/giphy.gif"; 
         kirby.style.position = "absolute";
         kirby.style.width  = player.width + "px";
         kirby.style.height = player.height + "px";
@@ -1004,4 +996,3 @@ td {
   </script>
 </body>
 </html>
-
