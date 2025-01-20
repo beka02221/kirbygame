@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Floppy Bird с Кирби (оптимизировано)</title>
+  <title>Floppy Bird с Кирби (универсальные настройки)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <style>
     html, body {
@@ -158,9 +158,10 @@
   <div id="infoContainer">
     <h2>Информация об игре</h2>
     <p>
-      «Floppy Bird с Кирби» — бесконечная игра, где Кирби (уменьшенный и с отступами для коллизий) 
-      летит сквозь трубы с большим отверстием, собирая монеты (анимированные). Фон плавно двигается 
-      (side-scrolling). На телефоне скорость и гравитация снижены для более плавного геймплея.
+      «Floppy Bird с Кирби» — универсальные настройки для одинакового геймплея 
+      на телефоне и на ПК: единая скорость труб, гравитация и сила взлёта.
+      Также сделан запас при столкновении, чтобы Кирби не умирал, 
+      если фактически ещё не касается трубы.
     </p>
     <button id="infoBackBtn">Назад</button>
   </div>
@@ -225,7 +226,7 @@
     let currentUsername = null;
     let currentCoins = 0;
 
-    // === ИГРОВЫЕ ПЕРЕМЕННЫЕ ===
+    // === ИГРОВЫЕ ПАРАМЕТРЫ (ЕДИНЫЕ ДЛЯ ПК И МОБИЛЬНЫХ) ===
     let ctx;
     let animationId;
     let isGameRunning = false;
@@ -233,37 +234,35 @@
     let canvasWidth  = 0;
     let canvasHeight = 0;
 
-    // Определяем, мобильное ли устройство (просто по userAgent, упрощённо)
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    // Параметры персонажа (Кирби)
-    let player = {
+    // Персонаж (Кирби)
+    const player = {
       x: 100,
       y: 150,
-      width: 45,   // уменьшили
-      height: 45,  
+      width: 45,
+      height: 45,
       velocityY: 0,
-      gravity: isMobile ? 0.3 : 0.5, // на мобильном — меньше
-      lift: isMobile ? -6 : -8,      // на мобильном — чуть слабее взлёт
+      gravity: 0.4,    // единое значение для всех
+      lift: -7,        // сила взлёта
       alive: true,
-      el: null 
+      maxFallSpeed: 10, // ограничим скорость падения
+      el: null
     };
 
-    // Скорость труб и прочего
-    const pipeSpeed = isMobile ? 1.5 : 2;
+    // Скорость движения труб и фона
+    const pipeSpeed = 1.8; // универсально и для ПК, и для телефона
 
     // Трубы
     let pipes = [];
     const pipeImg = new Image();
     pipeImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/590181ae997ac0a.png";
     const pipeWidth = 60;
-    const pipeGap = 200; // большое отверстие
+    const pipeGap = 200; // отверстие
     const pipeInterval = 150;
     let pipeTimer = 0;
 
-    // Монеты — одна на каждую пару труб
+    // Монеты
     let coins = [];
-    const coinSize = 40; 
+    const coinSize = 40;
     const coinGifURL = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
 
     // Счёт за забег
@@ -274,8 +273,8 @@
     bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
     let bgX = 0;
 
-    // Доп. отступ для коллизий (убираем «жёсткие» касания)
-    const collisionMargin = 5;
+    // Запас при столкновении
+    const collisionMargin = 10;
 
     // === ИНИЦИАЛИЗАЦИЯ ===
     window.addEventListener("load", () => {
@@ -470,7 +469,7 @@
         pipeTimer = 0;
       }
 
-      // Отрисовка труб и проверка столкновения
+      // Трубы
       for (let i = 0; i < pipes.length; i++) {
         pipes[i].x -= pipeSpeed;
         drawPipe(pipes[i]);
@@ -480,19 +479,17 @@
       }
       pipes = pipes.filter(p => p.x + pipeWidth > 0);
 
-      // Обновляем монеты
+      // Монеты
       for (let i = 0; i < coins.length; i++) {
         const c = coins[i];
         c.x -= pipeSpeed;
-        c.el.style.left = c.x + "px"; // двигаем DOM-элемент
+        c.el.style.left = c.x + "px"; 
         c.el.style.top  = c.y + "px";
-        // проверка сбора
         if (checkCollision(player, c)) {
           scoreThisRun++;
           c.collected = true;
         }
       }
-      // Удаляем собранные/вышедшие за экран
       coins = coins.filter(c => {
         if (c.collected || (c.x + c.size < 0)) {
           gameContainer.removeChild(c.el);
@@ -501,7 +498,7 @@
         return true;
       });
 
-      // Игрок
+      // Обновляем игрока
       updatePlayer();
 
       // Счёт
@@ -514,7 +511,7 @@
       }
     }
 
-    // === СКРОЛЛ ФОНА ===
+    // === ФОН (СКРОЛЛ) ===
     function drawScrollingBackground() {
       bgX -= 1; 
       if (bgX <= -canvasWidth) {
@@ -524,16 +521,15 @@
       ctx.drawImage(bgImage, bgX + canvasWidth, 0, canvasWidth, canvasHeight);
     }
 
-    // === СОЗДАНИЕ ПАРЫ ТРУБ + МОНЕТЫ В ГЭПЕ ===
+    // === СОЗДАНИЕ ТРУБ И ОДНОЙ МОНЕТЫ В ПРОЛЁТЕ ===
     function createPipePair() {
-      // Рассчитываем высоту верхней трубы
       const topHeight = Math.floor(
         Math.random() * (canvasHeight - pipeGap - 100)
       ) + 50;
       const bottomY = topHeight + pipeGap;
       const bottomHeight = canvasHeight - bottomY;
 
-      // Верхняя труба
+      // Верхняя
       pipes.push({
         x: canvasWidth,
         y: 0,
@@ -541,7 +537,7 @@
         height: topHeight,
         isTop: true
       });
-      // Нижняя труба
+      // Нижняя
       pipes.push({
         x: canvasWidth,
         y: bottomY,
@@ -550,8 +546,8 @@
         isTop: false
       });
 
-      // Создадим монету ровно в пролёте
-      const gapMin = topHeight + 10; // небольшой отступ
+      // Монета в пролёте
+      const gapMin = topHeight + 10;
       const gapMax = bottomY - coinSize - 10;
       if (gapMax > gapMin) {
         const coinY = Math.random() * (gapMax - gapMin) + gapMin;
@@ -575,7 +571,7 @@
       }
     }
 
-    // === ОТРИСОВКА ТРУБЫ ===
+    // === ОТРИСОВКА ТРУБ ===
     function drawPipe(pipe) {
       if (pipe.isTop) {
         ctx.save();
@@ -590,52 +586,56 @@
 
     // === ОБНОВЛЕНИЕ ИГРОКА ===
     function updatePlayer() {
+      // Добавляем гравитацию
       player.velocityY += player.gravity;
+      // Ограничиваем скорость падения
+      if (player.velocityY > player.maxFallSpeed) {
+        player.velocityY = player.maxFallSpeed;
+      }
       player.y += player.velocityY;
 
+      // Не даём уйти выше «потолка»
       if (player.y < 0) {
         player.y = 0;
         player.velocityY = 0;
       }
+      // Проверка низа
       if (player.y + player.height > canvasHeight) {
         gameOver();
       }
-      // Обновляем позицию <img> Кирби
+      // Позиция <img> Кирби
       player.el.style.left = player.x + "px";
       player.el.style.top  = player.y + "px";
     }
 
-    // === НАЖАТИЕ КЛАВИШИ (ПРЫЖОК) ===
+    // === ПРЫЖОК ===
     function onKeyDown(e) {
       if (e.code === "Space") {
         flap();
       }
     }
-    // === КЛИК/ТАП — тоже «прыжок» ===
     function onClickOrTouch() {
       flap();
     }
     function flap() {
+      // Поднимаем игрока
       player.velocityY = player.lift;
     }
 
-    // === ПРОВЕРКА СТОЛКНОВЕНИЯ С УЧЁТОМ ОТСТУПА ===
+    // === ПРОВЕРКА СТОЛКНОВЕНИЯ (С ОТСТУПОМ) ===
     function checkCollision(pl, obj) {
-      // Игрок
-      let pr = {
+      const pr = {
         x: pl.x + collisionMargin,
         y: pl.y + collisionMargin,
         width: pl.width - collisionMargin * 2,
         height: pl.height - collisionMargin * 2
       };
-      // Объект (труба или монета)
-      let or = {
+      const or = {
         x: (obj.x + collisionMargin),
         y: (obj.y + collisionMargin),
         width: (obj.width || obj.size) - collisionMargin * 2,
         height: (obj.height || obj.size) - collisionMargin * 2
       };
-
       return !(
         or.x > pr.x + pr.width ||
         or.x + or.width < pr.x ||
@@ -679,7 +679,9 @@
       }
       // Удалить оставшиеся монеты из DOM
       for (const c of coins) {
-        if (c.el) gameContainer.removeChild(c.el);
+        if (c.el) {
+          gameContainer.removeChild(c.el);
+        }
       }
       coins = [];
 
