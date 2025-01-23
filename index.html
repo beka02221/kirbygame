@@ -6,393 +6,388 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <style>
     /*-----------------------------*/
-/*       ПЕРЕМЕННЫЕ ТЕМЫ       */
-/*-----------------------------*/
-:root {
-  --kirby-pink:    #FFC0CB;   /* Основной розовый */
-  --kirby-pink2:   #FFB4D9;   /* Дополнительный розовый */
-  --pastel-blue:   #A2D2FF;   /* Пастельный голубой */
-  --pastel-yellow: #FDFD96;   /* Пастельный жёлтый */
-  --purple:        #C8A2C8;   /* Фиолетовый/сиреневый */
-  --white:         #FFFFFF;
-  --font-main:     "Nunito", "Poppins", "Open Sans", sans-serif; /* Основной шрифт */
-  --font-title:    "Fredoka One", "Rubik Bubbles", cursive;       /* Заголовки */
-}
+    /*       ПЕРЕМЕННЫЕ ТЕМЫ       */
+    /*-----------------------------*/
+    :root {
+      --kirby-pink:    #FFC0CB;   /* Основной розовый */
+      --kirby-pink2:   #FFB4D9;   /* Дополнительный розовый */
+      --pastel-blue:   #A2D2FF;   /* Пастельный голубой */
+      --pastel-yellow: #FDFD96;   /* Пастельный жёлтый */
+      --purple:        #C8A2C8;   /* Фиолетовый/сиреневый */
+      --white:         #FFFFFF;
+      --font-main:     "Nunito", "Poppins", "Open Sans", sans-serif; /* Основной шрифт */
+      --font-title:    "Fredoka One", "Rubik Bubbles", cursive;       /* Заголовки */
+    }
 
-/*-----------------------------*/
-/*     ГЛОБАЛЬНЫЙ СТИЛЬ        */
-/*-----------------------------*/
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  font-family: var(--font-main);
-  background: var(--kirby-pink); /* Фон всей страницы */
-  color: #333;                   /* Базовый цвет текста */
-  overflow: hidden;             /* Как и было у вас в исходном коде */
-}
+    /*-----------------------------*/
+    /*     ГЛОБАЛЬНЫЙ СТИЛЬ        */
+    /*-----------------------------*/
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: var(--font-main);
+      background: var(--kirby-pink); /* Фон всей страницы */
+      color: #333;                   /* Базовый цвет текста */
+      overflow: hidden;             /* Как и было у вас в исходном коде */
+    }
 
-/* Для мелких заголовков */
-h2 {
-  font-family: var(--font-title);
-  color: #fff;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.25);
-  margin-bottom: 1rem;
-}
+    /* Для мелких заголовков */
+    h2 {
+      font-family: var(--font-title);
+      color: #fff;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.25);
+      margin-bottom: 1rem;
+    }
 
-/* Для параграфов */
-p {
-  font-size: 1rem;
-  line-height: 1.4;
-  margin: 0.5rem 0;
-}
+    /* Для параграфов */
+    p {
+      font-size: 1rem;
+      line-height: 1.4;
+      margin: 0.5rem 0;
+    }
 
-/*-----------------------------*/
-/*  КЛАСС ЦЕНТРИРОВАНИЯ .centered  */
-/*-----------------------------*/
-.centered {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+    /*-----------------------------*/
+    /*  КЛАСС ЦЕНТРИРОВАНИЯ .centered  */
+    /*-----------------------------*/
+    .centered {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-/*-----------------------------*/
-/*     ЭКРАН ЛОГИНА (#loginScreen) */
-/*-----------------------------*/
-#loginScreen {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  display: none;
-  flex-direction: column;
-  background: linear-gradient(
-    135deg,
-    var(--kirby-pink2) 0%,
-    var(--pastel-blue) 100%
-  );
-}
+    /*-----------------------------*/
+    /*     ЭКРАН ЛОГИНА (#loginScreen) */
+    /*-----------------------------*/
+    #loginScreen {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: none;
+      flex-direction: column;
+      background: linear-gradient(
+        135deg,
+        var(--kirby-pink2) 0%,
+        var(--pastel-blue) 100%
+      );
+    }
 
-/* Текстовое поле */
-#loginScreen input {
-  padding: 10px 12px;
-  font-size: 16px;
-  margin-bottom: 12px;
-  border: 2px solid var(--white);
-  border-radius: 8px;
-  outline: none;
-}
+    /* Текстовое поле */
+    #loginScreen input {
+      padding: 10px 12px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      border: 2px solid var(--white);
+      border-radius: 8px;
+      outline: none;
+    }
 
-/* Кнопка входа */
-#loginScreen button {
-  background: var(--pastel-yellow);
-  border: none;
-  border-radius: 30px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-family: var(--font-main);
-  cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  box-shadow: 0 3px 0 var(--purple);
-}
-#loginScreen button:hover {
-  transform: scale(1.05);
-  background-color: var(--kirby-pink2);
-}
-#loginScreen button:active {
-  transform: scale(0.95);
-  box-shadow: 0 1px 0 var(--purple);
-}
+    /* Кнопка входа */
+    #loginScreen button {
+      background: var(--pastel-yellow);
+      border: none;
+      border-radius: 30px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-family: var(--font-main);
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+      box-shadow: 0 3px 0 var(--purple);
+    }
+    #loginScreen button:hover {
+      transform: scale(1.05);
+      background-color: var(--kirby-pink2);
+    }
+    #loginScreen button:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 0 var(--purple);
+    }
 
-/*-----------------------------*/
-/*        ГЛАВНОЕ МЕНЮ (#mainMenu) */
-/*-----------------------------*/
-#mainMenu {
-  display: none;
-  padding: 20px;
-  /* Фон с лёгким градиентом + паттерны/облака при желании */
-  background: linear-gradient(
-    90deg,
-    var(--kirby-pink) 0%,
-    var(--pastel-blue) 100%
-  );
-  height: 100vh;
-  overflow-y: auto; /* чтобы прокручивалось, если содержимого много */
-}
+    /*-----------------------------*/
+    /*        ГЛАВНОЕ МЕНЮ (#mainMenu) */
+    /*-----------------------------*/
+    #mainMenu {
+      display: none;
+      padding: 20px;
+      /* Фон с лёгким градиентом + паттерны/облака при желании */
+      background: linear-gradient(
+        90deg,
+        var(--kirby-pink) 0%,
+        var(--pastel-blue) 100%
+      );
+      height: 100vh;
+      overflow-y: auto; /* чтобы прокручивалось, если содержимого много */
+    }
 
-#mainMenu h2 {
-  font-size: 2rem;
-  margin-top: 0;
-  color: #fff;
-  text-align: center;
-}
+    #mainMenu h2 {
+      font-size: 2rem;
+      margin-top: 0;
+      color: #fff;
+      text-align: center;
+    }
 
-#mainMenu p {
-  text-align: center;
-  font-size: 1.1rem;
-  color: #fff;
-}
+    #mainMenu p {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #fff;
+    }
 
-/* Кнопки в главном меню */
-#mainMenu button {
-  display: inline-block;
-  margin: 10px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-family: var(--font-main);
-  cursor: pointer;
-  background: var(--pastel-yellow);
-  border: none;
-  border-radius: 30px;
-  box-shadow: 0 3px 0 var(--purple);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-#mainMenu button:hover {
-  transform: scale(1.05);
-  background-color: var(--kirby-pink2);
-}
-#mainMenu button:active {
-  transform: scale(0.95);
-  box-shadow: 0 1px 0 var(--purple);
-}
+    /* Кнопки в главном меню */
+    #mainMenu button {
+      display: inline-block;
+      margin: 10px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-family: var(--font-main);
+      cursor: pointer;
+      background: var(--pastel-yellow);
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 3px 0 var(--purple);
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    #mainMenu button:hover {
+      transform: scale(1.05);
+      background-color: var(--kirby-pink2);
+    }
+    #mainMenu button:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 0 var(--purple);
+    }
 
-/*-----------------------------*/
-/*        ИГРОВОЙ ЭКРАН (#gameContainer) */
-/*-----------------------------*/
-#gameContainer {
-  display: none;
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  background: var(--white);
-}
+    /*-----------------------------*/
+    /*        ИГРОВОЙ ЭКРАН (#gameContainer) */
+    /*-----------------------------*/
+    #gameContainer {
+      display: none;
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--white);
+    }
 
-/* Кнопка "Выйти в меню" */
-#backToMenuBtn {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 999;
-  padding: 10px 20px;
-  font-family: var(--font-main);
-  background: var(--pastel-yellow);
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  box-shadow: 0 3px 0 var(--purple);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-#backToMenuBtn:hover {
-  transform: scale(1.05);
-  background-color: var(--kirby-pink2);
-}
-#backToMenuBtn:active {
-  transform: scale(0.95);
-  box-shadow: 0 1px 0 var(--purple);
-}
+    /* Кнопка "Выйти в меню" */
+    #backToMenuBtn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 999;
+      padding: 10px 20px;
+      font-family: var(--font-main);
+      background: var(--pastel-yellow);
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--purple);
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    #backToMenuBtn:hover {
+      transform: scale(1.05);
+      background-color: var(--kirby-pink2);
+    }
+    #backToMenuBtn:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 0 var(--purple);
+    }
 
-/* Canvas с небом */
-#gameCanvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  background-color: #A2D2FF; /* или можно оставить #87CEEB */
-}
+    /* Canvas с небом */
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background-color: #A2D2FF; /* или можно оставить #87CEEB */
+    }
 
-/*-----------------------------*/
-/*     ТАБЛИЦА ЛИДЕРОВ (#leaderboardContainer) */
-/*-----------------------------*/
+    /*-----------------------------*/
+    /*     ТАБЛИЦА ЛИДЕРОВ (#leaderboardContainer) */
+    /*-----------------------------*/
+    #leaderboardContainer {
+      display: none;
+      padding: 20px;
+      background: linear-gradient(
+        180deg,
+        var(--pastel-blue) 0%,
+        var(--kirby-pink) 100%
+      );
+      height: 100vh;
+      overflow-y: auto;
+    }
 
+    #leaderboardContainer h2 {
+      text-align: center;
+      color: #fff;
+      margin-top: 0;
+    }
 
+    /* Общий стиль таблицы */
+    table {
+      border-collapse: collapse;
+      margin: 20px auto;
+      width: 90%;
+      max-width: 600px;
+      background: var(--white);
+      border-radius: 12px;
+      overflow: hidden; /* для скруглённых углов */
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
 
-#leaderboardContainer {
-  display: none;
-  padding: 20px;
-  background: linear-gradient(
-    180deg,
-    var(--pastel-blue) 0%,
-    var(--kirby-pink) 100%
-  );
-  height: 100vh;
-  overflow-y: auto;
-}
+    /* Заголовки столбцов */
+    th {
+      background: var(--purple);
+      color: var(--white);
+      padding: 12px;
+      font-family: var(--font-main);
+      text-align: left;
+      font-weight: normal;
+    }
 
-#leaderboardContainer h2 {
-  text-align: center;
-  color: #fff;
-  margin-top: 0;
-}
+    /* Ячейки таблицы */
+    td {
+      border-bottom: 1px solid #ccc;
+      padding: 12px;
+      font-family: var(--font-main);
+    }
 
-/* Общий стиль таблицы */
-table {
-  border-collapse: collapse;
-  margin: 20px auto;
-  width: 90%;
-  max-width: 600px;
-  background: var(--white);
-  border-radius: 12px;
-  overflow: hidden; /* для скруглённых углов */
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
+    /* Кнопка "Назад" */
+    #leaderboardBackBtn {
+      display: block;
+      padding: 10px 20px;
+      font-family: var(--font-main);
+      background: var(--pastel-yellow);
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--purple);
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    #leaderboardBackBtn:hover {
+      transform: scale(1.05);
+      background-color: var(--kirby-pink2);
+    }
+    #leaderboardBackBtn:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 0 var(--purple);
+    }
 
-/* Заголовки столбцов */
-th {
-  background: var(--purple);
-  color: var(--white);
-  padding: 12px;
-  font-family: var(--font-main);
-  text-align: left;
-  font-weight: normal;
-}
+    /*-----------------------------*/
+    /*        МАГАЗИН (#storeContainer) */
+    /*-----------------------------*/
+    #storeContainer {
+      display: none;
+      padding: 20px;
+      background: linear-gradient(
+        90deg,
+        var(--pastel-blue) 0%,
+        var(--pastel-yellow) 100%
+      );
+      height: 100vh;
+      overflow-y: auto;
+    }
 
-/* Ячейки таблицы */
-td {
-  border-bottom: 1px solid #ccc;
-  padding: 12px;
-  font-family: var(--font-main);
-}
+    #storeContainer h2 {
+      text-align: center;
+      margin-top: 0;
+      color: #333;
+    }
 
-/* Кнопка "Назад" */
-#leaderboardBackBtn {
+    /* Можно стилизовать список улучшений */
+    #storeContainer ul {
+      list-style: none;
+      padding-left: 1rem;
+    }
+    #storeContainer li {
+      background: var(--white);
+      margin: 8px 0;
+      padding: 8px;
+      border-radius: 8px;
+    }
 
-  display: block;
-  padding: 10px 20px;
-  font-family: var(--font-main);
-  background: var(--pastel-yellow);
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  box-shadow: 0 3px 0 var(--purple);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-#leaderboardBackBtn:hover {
-  transform: scale(1.05);
-  background-color: var(--kirby-pink2);
-}
-#leaderboardBackBtn:active {
-  transform: scale(0.95);
-  box-shadow: 0 1px 0 var(--purple);
-}
+    /* Кнопка "Назад" в магазине */
+    #storeBackBtn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-family: var(--font-main);
+      background: var(--pastel-yellow);
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--purple);
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    #storeBackBtn:hover {
+      transform: scale(1.05);
+      background-color: var(--kirby-pink2);
+    }
+    #storeBackBtn:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 0 var(--purple);
+    }
 
-/*-----------------------------*/
-/*        МАГАЗИН (#storeContainer) */
-/*-----------------------------*/
-#storeContainer {
-  display: none;
-  padding: 20px;
-  background: linear-gradient(
-    90deg,
-    var(--pastel-blue) 0%,
-    var(--pastel-yellow) 100%
-  );
-  height: 100vh;
-  overflow-y: auto;
-}
+    /*-----------------------------*/
+    /*     ИНФО-БЛОК (#infoContainer) */
+    /*-----------------------------*/
+    #infoContainer {
+      display: none;
+      padding: 20px;
+      background: linear-gradient(
+        135deg,
+        var(--kirby-pink2) 0%,
+        var(--pastel-yellow) 100%
+      );
+      height: 100vh;
+      overflow-y: auto;
+    }
 
-#storeContainer h2 {
-  text-align: center;
-  margin-top: 0;
-  color: #333;
-}
+    #infoContainer h2 {
+      text-align: center;
+      margin-top: 0;
+      color: #fff;
+    }
 
-/* Можно стилизовать список улучшений */
-#storeContainer ul {
-  list-style: none;
-  padding-left: 1rem;
-}
-#storeContainer li {
-  background: var(--white);
-  margin: 8px 0;
-  padding: 8px;
-  border-radius: 8px;
-}
+    /* Кнопка "Назад" в инфо-блоке */
+    #infoBackBtn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-family: var(--font-main);
+      background: var(--pastel-yellow);
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--purple);
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    #infoBackBtn:hover {
+      transform: scale(1.05);
+      background-color: var(--kirby-pink2);
+    }
+    #infoBackBtn:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 0 var(--purple);
+    }
 
-/* Кнопка "Назад" в магазине */
-#storeBackBtn {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 10px 20px;
-  font-family: var(--font-main);
-  background: var(--pastel-yellow);
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  box-shadow: 0 3px 0 var(--purple);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-#storeBackBtn:hover {
-  transform: scale(1.05);
-  background-color: var(--kirby-pink2);
-}
-#storeBackBtn:active {
-  transform: scale(0.95);
-  box-shadow: 0 1px 0 var(--purple);
-}
+    /*-----------------------------*/
+    /*     АДАПТИВНОСТЬ (медиа-запросы) */
+    /*-----------------------------*/
+    @media (max-width: 768px) {
+      /* Увеличиваем кнопки на мобильных */
+      #loginScreen button,
+      #mainMenu button,
+      #backToMenuBtn,
+      #leaderboardBackBtn,
+      #storeBackBtn,
+      #infoBackBtn {
+        font-size: 14px;
+        padding: 10px 18px;
+      }
 
-/*-----------------------------*/
-/*     ИНФО-БЛОК (#infoContainer) */
-/*-----------------------------*/
-#infoContainer {
-  display: none;
-  padding: 20px;
-  background: linear-gradient(
-    135deg,
-    var(--kirby-pink2) 0%,
-    var(--pastel-yellow) 100%
-  );
-  height: 100vh;
-  overflow-y: auto;
-}
-
-#infoContainer h2 {
-  text-align: center;
-  margin-top: 0;
-  color: #fff;
-}
-
-/* Кнопка "Назад" в инфо-блоке */
-#infoBackBtn {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 10px 20px;
-  font-family: var(--font-main);
-  background: var(--pastel-yellow);
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  box-shadow: 0 3px 0 var(--purple);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-#infoBackBtn:hover {
-  transform: scale(1.05);
-  background-color: var(--kirby-pink2);
-}
-#infoBackBtn:active {
-  transform: scale(0.95);
-  box-shadow: 0 1px 0 var(--purple);
-}
-
-/*-----------------------------*/
-/*     АДАПТИВНОСТЬ (медиа-запросы) */
-/*-----------------------------*/
-@media (max-width: 768px) {
-  /* Увеличиваем кнопки на мобильных */
-  #loginScreen button,
-  #mainMenu button,
-  #backToMenuBtn,
-  #leaderboardBackBtn,
-  #storeBackBtn,
-  #infoBackBtn {
-    font-size: 14px;
-    padding: 10px 18px;
-  }
-
-  /* Делаем заголовки чуть меньше */
-  h2 {
-    font-size: 1.5rem;
-  }
-}
-
+      /* Делаем заголовки чуть меньше */
+      h2 {
+        font-size: 1.5rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -415,12 +410,10 @@ td {
     <button id="leaderboardBtn">Таблица лидеров</button>
     <button id="storeBtn">Магазин улучшений</button>
     <button id="infoBtn">Информация</button>
-
   </div>
 
   <!-- Игровой экран -->
   <div id="gameContainer">
-    
     <canvas id="gameCanvas"></canvas>
   </div>
 
@@ -438,7 +431,6 @@ td {
       <tbody id="leaderboardBody"></tbody>
     </table>
     <br />
-    
   </div>
 
   <!-- Магазин улучшений -->
@@ -458,7 +450,7 @@ td {
     <h2>Информация об игре</h2>
     <p>
       Кирби летит слева направо по бесконечному фону, 
-      собирая монеты и уклоняясь от врагов
+      собирая монеты и уклоняясь от врагов.
       Если Кирби коснётся врага — игра окончена.
     </p>
     <button id="infoBackBtn">Назад</button>
@@ -504,7 +496,6 @@ td {
     const leaderboardBtn      = document.getElementById("leaderboardBtn");
     const storeBtn            = document.getElementById("storeBtn");
     const infoBtn             = document.getElementById("infoBtn");
-    const logoutBtn           = document.getElementById("logoutBtn");
 
     const gameContainer       = document.getElementById("gameContainer");
     const backToMenuBtn       = document.getElementById("backToMenuBtn");
@@ -600,8 +591,9 @@ td {
     // === КНОПКА "ВОЙТИ" ===
     loginButton.addEventListener("click", async () => {
       const username = usernameInput.value.trim();
+      // Убрали alert, просто пропустим проверку или заменим на консоль/ничего
       if (!username.startsWith("@")) {
-        alert("Telegram-логин должен начинаться с '@'.");
+        // Раньше здесь был alert, теперь просто возвращаем
         return;
       }
       await loginUser(username);
@@ -655,10 +647,6 @@ td {
       mainMenu.style.display = "none";
       infoContainer.style.display = "block";
     });
-   
-
-    // === КНОПКА НАЗАД ИЗ ИГРЫ ===
-  
 
     // === ЛИДЕРБОРД ===
     async function loadLeaderboard() {
@@ -717,21 +705,20 @@ td {
       bgX = 0;
 
       // Создаём (или показываем) Кирби
-     if (!player.el) {
-  const kirby = document.createElement("img");
-  kirby.src = "kirby.gif"; 
-  kirby.style.position = "absolute";
-  kirby.style.width  = player.width + "px";
-  kirby.style.height = player.height + "px";
-  kirby.style.left   = player.x + "px";
-  kirby.style.top    = player.y + "px";
-  kirby.style.zIndex = "900";
-  gameContainer.appendChild(kirby);
-  player.el = kirby;
-} else {
-  player.el.style.display = "block";
-}
-
+      if (!player.el) {
+        const kirby = document.createElement("img");
+        kirby.src = "kirby.gif"; 
+        kirby.style.position = "absolute";
+        kirby.style.width  = player.width + "px";
+        kirby.style.height = player.height + "px";
+        kirby.style.left   = player.x + "px";
+        kirby.style.top    = player.y + "px";
+        kirby.style.zIndex = "900";
+        gameContainer.appendChild(kirby);
+        player.el = kirby;
+      } else {
+        player.el.style.display = "block";
+      }
 
       document.addEventListener("keydown", onKeyDown);
       document.addEventListener("mousedown", onClickOrTouch);
@@ -895,6 +882,7 @@ td {
         player.y = 0;
         player.velocityY = 0;
       }
+      // Если игрок ушёл за нижний край — конец игры
       if (player.y + player.height > canvasHeight) {
         gameOver();
       }
@@ -955,7 +943,7 @@ td {
       currentCoins += scoreThisRun;
       updateCoinsInDB();
 
-      alert(`Игра окончена! Собрано: ${scoreThisRun} монет.`);
+      // Раньше здесь был alert о конце игры — убран
       endGameAndReturn();
     }
 
