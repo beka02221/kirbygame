@@ -14,110 +14,84 @@
       overflow: hidden;
       user-select: none;
     }
-    /* Главный layout */
-    #mainMenu, #gameContainer, #leaderboardContainer, #infoContainer, #gameOverPopup {
+    #mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup {
       width: 100vw; height: 100vh;
       display: none; position: fixed; top:0; left:0;
+      flex-direction: column;
+      padding-top: 50px !important; /* Свободно сверху */
+      box-sizing: border-box;
     }
-    #mainMenu {
-      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    #mainMenu, #leaderboardContainer, #infoContainer {
       background: linear-gradient(120deg, #A2D2FF 0%, #FFC0CB 100%);
-      min-height: 100vh;
-      padding-top: 50px; /* Пустое пространство сверху */
-      padding-bottom: 24px;
-      gap: 0;
-      transition: background 0.5s;
     }
+    #mainMenu { align-items: center; justify-content: flex-start; }
     .tooltip {
-      margin-bottom: 22px;
-      background: #fff6;
-      color: #8a67a8;
-      font-size: 1.1em;
-      padding: 7px 18px;
-      border-radius: 18px;
+      margin-bottom: 20px; background: #fff7; color: #8a67a8;
+      font-size: 1.13em; padding: 10px 22px; border-radius: 18px;
       box-shadow: 0 4px 14px #b8d8fa36;
     }
     .user-header {
-      display: flex; flex-direction: column; align-items: center; margin-bottom: 22px; gap: 6px;
+      display: flex; flex-direction: column; align-items: center; margin-bottom: 18px; gap: 6px;
     }
     .user-header img {
-      width: 72px; height: 72px; border-radius: 50%; border:3.5px solid #fff;
-      box-shadow: 0 6px 24px 0 #a2d2ff66;
-      background: #fff;
+      width: 68px; height: 68px; border-radius: 50%; border:3.5px solid #fff;
+      box-shadow: 0 6px 22px 0 #a2d2ff66; background: #fff;
     }
     .user-header span {
-      font-size: 1.20em; color: #47366b; font-weight: bold;
+      font-size: 1.19em; color: #47366b; font-weight: bold;
       text-shadow: 0 1px 2px #eee;
-      max-width: 180px;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
+      max-width: 180px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
     }
-    .user-meta { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; align-items: center; }
+    .user-meta { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; align-items: center; }
     .user-meta div {
-      font-size: 1.02em; color: #44335b; background: #fff6; border-radius: 10px;
-      padding: 4px 16px; margin: 2px 0;
-      box-shadow: 0 2px 6px 0 #a2d2ff1a;
-      min-width: 150px; text-align: center;
+      font-size: 1.01em; color: #44335b; background: #fff6; border-radius: 10px;
+      padding: 4px 16px; margin: 2px 0; box-shadow: 0 2px 6px 0 #a2d2ff1a;
+      min-width: 140px; text-align: center;
     }
     #coinsDisplay {
       color: #fff; background: linear-gradient(90deg,#b07cff 0,#ffb5d1 100%);
-      font-size: 1.15em; font-weight: 700;
+      font-size: 1.14em; font-weight: 700;
       margin-bottom: 13px; padding: 7px 20px;
-      border-radius: 30px;
-      box-shadow: 0 2px 18px #c2a4ff22;
-      text-shadow: 0 2px 2px #fff7;
-      border: 2px solid #fff;
+      border-radius: 30px; box-shadow: 0 2px 18px #c2a4ff22; text-shadow: 0 2px 2px #fff7; border: 2px solid #fff;
     }
     #mainMenu button {
-      margin: 12px; padding: 14px 32px;
-      font-size: 1.15em;
+      margin: 12px; padding: 14px 32px; font-size: 1.14em;
       background: linear-gradient(90deg, #f7c8e0 0%, #b6eaff 100%);
-      border: none; border-radius: 28px;
-      box-shadow: 0 3px 14px #a2d2ff4d;
-      cursor: pointer; font-weight: 700; color: #44335b;
-      transition: 0.16s;
+      border: none; border-radius: 28px; box-shadow: 0 3px 14px #a2d2ff4d;
+      cursor: pointer; font-weight: 700; color: #44335b; transition: 0.16s;
     }
     #mainMenu button:hover { background: linear-gradient(90deg, #ffc0cb 20%, #A2D2FF 100%); transform: scale(1.04);}
     #mainMenu button:active { transform: scale(0.97);}
-    #gameContainer { background: #fff; z-index: 20; }
+    #gameContainer { background: #fff; z-index: 20; width:100vw;height:100vh;position:fixed;top:0;left:0;}
     #leaderboardContainer, #infoContainer {
-      background: linear-gradient(150deg, #A2D2FF 0%, #FFC0CB 100%);
-      z-index: 50; padding: 50px 0 0 0; /* 50px сверху */
-      overflow-y: auto;
-      animation: fadeIn 0.3s;
+      z-index: 50; overflow-y: auto; animation: fadeIn 0.3s;
     }
     @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-    #backToMenuBtn, #leaderboardBackBtn, #infoBackBtn {
-      position: absolute; top: 18px; left: 18px;
-      padding: 10px 24px;
-      background: linear-gradient(90deg, #ffdaea 0%, #cceaff 100%);
-      border: none; border-radius: 22px;
-      font-size: 1.01em; font-weight: 700; color: #574488;
-      cursor: pointer;
-      box-shadow: 0 3px 0 #C8A2C8, 0 2px 8px #ffdbf933;
-      z-index: 99;
+    #leaderboardBackBtn, #infoBackBtn {
+      position: absolute; top: 60px; left: 18px;
+      padding: 10px 24px; background: linear-gradient(90deg, #ffdaea 0%, #cceaff 100%);
+      border: none; border-radius: 22px; font-size: 1.01em; font-weight: 700; color: #574488;
+      cursor: pointer; box-shadow: 0 3px 0 #C8A2C8, 0 2px 8px #ffdbf933; z-index: 99;
     }
-    #backToMenuBtn:hover, #leaderboardBackBtn:hover, #infoBackBtn:hover {
-      background: linear-gradient(90deg, #b07cff 0, #ffb5d1 100%);
-      color: #fff;
+    #leaderboardBackBtn:hover, #infoBackBtn:hover {
+      background: linear-gradient(90deg, #b07cff 0, #ffb5d1 100%); color: #fff;
     }
-    table { width: 96%; margin: 20px auto 0 auto; background: #fff; border-radius: 18px; box-shadow: 0 4px 18px 0 #c2a4ff29;}
+    table { width: 95%; margin: 26px auto 0 auto; background: #fff; border-radius: 18px; box-shadow: 0 4px 18px 0 #c2a4ff29;}
     th, td { padding: 14px 10px; text-align: left; font-size: 1.09em;}
     th { background: #C8A2C8; color: #fff; border-radius: 10px 10px 0 0;}
     tr:nth-child(odd) { background: #f9f5ff; }
+    .medal { font-size:1.23em; font-weight:900;}
     #infoContainer p { font-size: 1.09em; color: #493A64; background: #fff7; border-radius: 12px; padding: 10px 14px;}
     #gameOverPopup {
       z-index: 999; display: flex; align-items: center; justify-content: center;
       background: rgba(60,30,80,0.42);
-      animation: fadeIn 0.25s;
+      animation: fadeIn 0.25s; flex-direction:column; padding-top:50px;
     }
     .popup-box {
       background: linear-gradient(120deg, #fff 60%, #ffe3fa 100%);
       border-radius: 30px; padding: 32px 30px; min-width: 240px;
       box-shadow: 0 6px 30px #e3caff70;
-      display: flex; flex-direction: column; align-items: center;
-      gap: 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
     }
     .popup-box h2 { margin:0 0 8px 0; color: #9857d3; font-size: 1.17em;}
     .popup-box p { color: #47366b; font-size: 1.03em; margin: 0; }
@@ -125,13 +99,11 @@
       margin-top: 8px; padding: 12px 30px;
       background: linear-gradient(90deg,#f7c8e0 0,#b6eaff 100%);
       border-radius: 20px; border: none;
-      color: #44335b; font-weight: 700; font-size: 1.07em; box-shadow: 0 2px 12px #a2d2ff3b;
-      cursor: pointer;
+      color: #44335b; font-weight: 700; font-size: 1.07em; box-shadow: 0 2px 12px #a2d2ff3b; cursor: pointer;
     }
     .popup-box button:hover { background: linear-gradient(90deg, #ffc0cb 20%, #A2D2FF 100%);}
-    /* Адаптив */
     @media (max-width: 600px) {
-      #mainMenu button, #backToMenuBtn, #leaderboardBackBtn, #infoBackBtn, .popup-box button { font-size: 0.97em; padding:10px 12px;}
+      #mainMenu button, #leaderboardBackBtn, #infoBackBtn, .popup-box button { font-size: 0.97em; padding:10px 12px;}
       .user-header img { width: 58px; height: 58px;}
     }
     @media (max-width: 390px) {
@@ -159,8 +131,7 @@
   </div>
 
   <!-- Game Screen -->
-  <div id="gameContainer">
-    <!-- NO button in game! -->
+  <div id="gameContainer" style="display:none;">
     <canvas id="gameCanvas"></canvas>
     <!-- countdown overlay -->
     <div id="countdownOverlay" style="display:none;position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:222;align-items:center;justify-content:center;background:rgba(248,245,255,0.78);font-size:3em;color:#9857d3;font-weight:900;font-family:'Nunito',sans-serif;"></div>
@@ -172,7 +143,7 @@
     <h2 style="color:#7c46a3;text-align:center;margin:10px 0 0 0">Leaderboard</h2>
     <table>
       <thead>
-        <tr><th>User</th><th>Best</th></tr>
+        <tr><th></th><th>User</th><th>Best</th></tr>
       </thead>
       <tbody id="leaderboardBody"></tbody>
     </table>
@@ -186,6 +157,7 @@
       <b>Kirby</b> flies endlessly, collecting coins and dodging enemies.<br>
       If Kirby hits an enemy or falls — the game is over.<br>
       <b>Controls:</b> Tap / Click or Space.<br>
+      Bonus coins give extra points!<br>
       The goal is to collect as many coins as possible in one run!<br>
       <br>
       Your record is saved and displayed in the leaderboard. Good luck!
@@ -203,28 +175,18 @@
   </div>
 
   <script type="module">
-    // Telegram WebApp
+    // --- setup, firebase, user ---
     const tg = window.Telegram.WebApp;
     if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
     else tg.expand();
 
-    // Firebase 9+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
     import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
-    const firebaseConfig = {
-      apiKey: "AIzaSyB90ev3fJRDKmn64hLTJaWjVjpHQtMjhLg",
-      authDomain: "test-with-likes.firebaseapp.com",
-      databaseURL: "https://test-with-likes-default-rtdb.firebaseio.com",
-      projectId: "test-with-likes",
-      storageBucket: "test-with-likes.appspot.com",
-      messagingSenderId: "764738820142",
-      appId: "1:764738820142:web:b22c6608a30e46cdcea7bf",
-      measurementId: "G-WJNF0HSN9P"
-    };
+    const firebaseConfig = {apiKey:"AIzaSyB90ev3fJRDKmn64hLTJaWjVjpHQtMjhLg",authDomain:"test-with-likes.firebaseapp.com",databaseURL:"https://test-with-likes-default-rtdb.firebaseio.com",projectId:"test-with-likes",storageBucket:"test-with-likes.appspot.com",messagingSenderId:"764738820142",appId:"1:764738820142:web:b22c6608a30e46cdcea7bf",measurementId:"G-WJNF0HSN9P"};
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // DOM Elements
+    // DOM
     const mainMenu = document.getElementById("mainMenu");
     const userPhoto = document.getElementById("userPhoto");
     const userName = document.getElementById("userName");
@@ -250,30 +212,19 @@
 
     // User
     let tgUser = tg.initDataUnsafe?.user;
-    if (!tgUser) {
-      mainMenu.innerHTML = "<h2>Please open in Telegram!</h2>";
-      throw new Error("Not Telegram WebApp");
-    }
+    if (!tgUser) {mainMenu.innerHTML = "<h2>Please open in Telegram!</h2>"; throw new Error("Not Telegram WebApp");}
     const userId = tgUser.id.toString();
     let highScore = 0;
 
-    // Main UI Load
     async function loadUser() {
       userPhoto.src = tgUser.photo_url || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
       userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
-      // Получить прогресс (по userId)
       const userRef = ref(db, `users/${userId}`);
       let snapshot = await get(userRef);
       if (!snapshot.exists()) {
-        await set(userRef, {
-          highScore: 0,
-          username: tgUser.username || "",
-          photo: tgUser.photo_url || ""
-        });
+        await set(userRef, {highScore: 0, username: tgUser.username || "", photo: tgUser.photo_url || ""});
         highScore = 0;
-      } else {
-        highScore = snapshot.val().highScore || 0;
-      }
+      } else { highScore = snapshot.val().highScore || 0; }
       coinsDisplay.textContent = `Best: ${highScore}`;
       yourHighScore.textContent = `Best: ${highScore}`;
       await updatePlace();
@@ -281,16 +232,13 @@
     }
     window.onload = loadUser;
 
-    // Обновление места в таблице лидеров
     async function updatePlace() {
       yourPlace.textContent = "Rank: ...";
       const usersRef = ref(db, "users/");
       const snapshot = await get(usersRef);
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const usersArray = Object.entries(data).map(([id, u]) => ({
-          id, highScore: u.highScore || 0
-        }));
+        const usersArray = Object.entries(data).map(([id, u]) => ({id, highScore: u.highScore || 0}));
         usersArray.sort((a, b) => b.highScore - a.highScore);
         const place = usersArray.findIndex(x => x.id === userId) + 1;
         if (place > 0) yourPlace.textContent = `Rank: ${place} of ${usersArray.length}`;
@@ -298,14 +246,13 @@
       }
     }
 
-    // Меню
-    startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGameWithCountdown(); };
-    leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "block"; loadLeaderboard(); };
-    infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "block"; };
-    leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
-    infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
+    startGameBtn.onclick = () => {mainMenu.style.display = "none"; startGameWithCountdown();};
+    leaderboardBtn.onclick = () => {mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; loadLeaderboard();};
+    infoBtn.onclick = () => {mainMenu.style.display = "none"; infoContainer.style.display = "flex";};
+    leaderboardBackBtn.onclick = () => {leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex";};
+    infoBackBtn.onclick = () => {infoContainer.style.display = "none"; mainMenu.style.display = "flex";};
 
-    // Лидеры (только по Best/HighScore)
+    // Лидеры + медали топ-3
     async function loadLeaderboard() {
       leaderboardBody.innerHTML = "";
       const usersRef = ref(db, "users/");
@@ -317,25 +264,36 @@
           highScore: u.highScore || 0,
         }));
         usersArray.sort((a, b) => b.highScore - a.highScore);
-        usersArray.forEach(user => {
+        usersArray.forEach((user, idx) => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${user.username}</td><td>${user.highScore}</td>`;
+          let medal = "";
+          if (idx === 0) medal = "<span class='medal' style='color:#ffe46b'>🥇</span>";
+          if (idx === 1) medal = "<span class='medal' style='color:#b6b2b2'>🥈</span>";
+          if (idx === 2) medal = "<span class='medal' style='color:#d99360'>🥉</span>";
+          tr.innerHTML = `<td>${medal}</td><td>${user.username}</td><td>${user.highScore}</td>`;
+          if (idx === 0) tr.style.background="#f7efba";
+          if (idx === 1) tr.style.background="#e7e4ed";
+          if (idx === 2) tr.style.background="#fde2c7";
           leaderboardBody.appendChild(tr);
         });
       }
     }
 
-    // Game Logic
+    // --- Game Logic ---
     let ctx, animationId, isGameRunning = false;
     let canvasWidth = 0, canvasHeight = 0;
-    const player = { x: 100, y: 150, width: 45, height: 45, velocityY: 0, gravity: 0.3, lift: -5, alive: true, maxFallSpeed: 3, el: null };
+    let enemySlowTimer = 0; // эффект замедления врагов
+
+    const player = { x: 100, y: 150, width: 45, height: 45, velocityY: 0, gravity: 0.3, lift: -5, alive: true, maxFallSpeed: 3, el: null, angle: 0 };
     const scrollSpeed = 1.8;
     let enemies = [], enemyTimer = 0, enemyInterval = 150;
     const enemyGif = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
     const enemyWidth = 80, enemyHeight = 80;
     let coins = [], coinTimer = 0, coinInterval = 80;
     const coinSize = 40, coinGifURL = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
-    let scoreThisRun = 0, bgX = 0;
+    let scoreThisRun = 0, bgX = 0, bonusStreak = 0;
+    let bonusCoins = []; // бонус-монеты
+    const bonusCoinImg = "https://static.vecteezy.com/system/resources/previews/009/663/044/original/golden-coin-3d-isolated-png.png";
     const bgImage = new window.Image();
     bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
     const collisionMargin = 10;
@@ -346,13 +304,9 @@
       gameOverPopup.style.display = "none";
       ctx = gameCanvas.getContext("2d");
       resizeCanvas();
-      scoreThisRun = 0;
-      player.y = canvasHeight / 2;
-      player.velocityY = 0;
-      player.alive = true;
-      enemies = []; enemyTimer = 0;
-      coins = []; coinTimer = 0;
-      bgX = 0;
+      scoreThisRun = 0; bonusStreak = 0;
+      player.y = canvasHeight / 2; player.velocityY = 0; player.angle = 0; player.alive = true;
+      enemies = []; enemyTimer = 0; coins = []; coinTimer = 0; bonusCoins = []; bgX = 0; enemySlowTimer = 0;
       if (!player.el) {
         const kirby = document.createElement("img");
         kirby.src = "kirby.gif";
@@ -361,39 +315,33 @@
         kirby.style.height = player.height + "px";
         kirby.style.left = player.x + "px";
         kirby.style.top = player.y + "px";
-        kirby.style.zIndex = "900";
-        kirby.draggable = false;
+        kirby.style.zIndex = "900"; kirby.draggable = false;
         gameContainer.appendChild(kirby);
         player.el = kirby;
       } else { player.el.style.display = "block"; }
-      // Анимация моргания (улучшение №1)
-      player.el.style.filter = "none";
-      // Отсчет перед стартом
+      player.el.style.transform = "rotate(0deg)";
       let countdown = 3;
       countdownOverlay.style.display = "flex";
       countdownOverlay.textContent = countdown;
       let cdInt = setInterval(() => {
         countdown--;
-        if (countdown === 0) {
-          countdownOverlay.textContent = "GO!";
-        } else if (countdown < 0) {
+        if (countdown === 0) countdownOverlay.textContent = "GO!";
+        else if (countdown < 0) {
           countdownOverlay.style.display = "none";
           clearInterval(cdInt);
           startGameCore();
-        } else {
-          countdownOverlay.textContent = countdown;
-        }
+        } else countdownOverlay.textContent = countdown;
       }, 900);
     }
 
     function startGameCore() {
       isGameRunning = true;
+      ticksAfterStart = 0; slowStart = true;
       document.addEventListener("keydown", onKeyDown);
       document.addEventListener("mousedown", onClickOrTouch);
       document.addEventListener("touchstart", onClickOrTouch);
       animationId = requestAnimationFrame(updateGame);
     }
-    // ...
 
     function resizeCanvas() {
       canvasWidth = window.innerWidth;
@@ -403,36 +351,65 @@
     }
     window.addEventListener("resize", () => { if (isGameRunning) resizeCanvas(); });
 
-    // Таймер врагов - 2 секунды не появляются
+    // Таймер врагов - 2 сек не появляются + медленный старт падения
     let ticksAfterStart = 0;
+    let slowStart = true;
     function updateGame() {
       if (!isGameRunning) return;
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       drawScrollingBackground();
       ticksAfterStart++;
-      if (ticksAfterStart > 120) { // ~2 сек (60 fps)
-        enemyTimer++; if (enemyTimer > enemyInterval) { createEnemy(); enemyTimer = 0; }
+      // Slow start: первые 1.5 секунды игрок почти не падает
+      let nowGravity = player.gravity;
+      if (ticksAfterStart < 90) { nowGravity = 0.09; } // очень медленно первые ~1.5 сек
+      if (ticksAfterStart > 120) { // враги только после 2 сек
+        let interval = enemyInterval;
+        if (enemySlowTimer > 0) interval = enemyInterval * 2;
+        enemyTimer++; if (enemyTimer > interval) { createEnemy(); enemyTimer = 0; }
       }
       coinTimer++; if (coinTimer > coinInterval) { createCoin(); coinTimer = 0; }
+      // Бонус монета шанс 1 к 90 за тик, только 1 на экране
+      if (Math.random() < 1/90 && bonusCoins.length === 0) createBonusCoin();
+
       for (let i = 0; i < enemies.length; i++) {
         const e = enemies[i];
-        e.x -= scrollSpeed;
+        let moveSpeed = scrollSpeed;
+        if (enemySlowTimer > 0) moveSpeed *= 0.45;
+        e.x -= moveSpeed;
         e.el.style.left = e.x + "px"; e.el.style.top = e.y + "px";
-        if (checkCollision(player, e)) { gameOver(); }
+        if (checkCollision(player, e) && player.alive) { player.alive = false; animateDeath(); return; }
       }
       enemies = enemies.filter(e => { if (e.x + e.width < 0) { gameContainer.removeChild(e.el); return false; } return true; });
       for (let i = 0; i < coins.length; i++) {
         const c = coins[i];
         c.x -= scrollSpeed;
         c.el.style.left = c.x + "px"; c.el.style.top = c.y + "px";
-        if (checkCollision(player, c)) { scoreThisRun++; c.collected = true; }
+        if (checkCollision(player, c) && player.alive) {
+          scoreThisRun++; c.collected = true; bonusStreak++; animateCoinCollect(c);
+          if (bonusStreak % 10 === 0) {enemySlowTimer = 120;} // замедление врагов
+        }
       }
       coins = coins.filter(c => { if (c.collected || (c.x + c.size < 0)) { gameContainer.removeChild(c.el); return false; } return true; });
-      updatePlayer();
+
+      // Бонус монеты
+      for (let i = 0; i < bonusCoins.length; i++) {
+        const bc = bonusCoins[i];
+        bc.x -= scrollSpeed * 0.9;
+        bc.el.style.left = bc.x + "px"; bc.el.style.top = bc.y + "px";
+        if (checkCollision(player, bc) && player.alive) {
+          scoreThisRun += 3; bc.collected = true; bonusStreak++; animateBonusCoin(bc);
+        }
+      }
+      bonusCoins = bonusCoins.filter(bc => { if (bc.collected || (bc.x + bc.size < 0)) { gameContainer.removeChild(bc.el); return false; } return true; });
+
+      if (enemySlowTimer > 0) enemySlowTimer--;
+
+      updatePlayer(nowGravity);
       ctx.fillStyle = "white"; ctx.font = "24px Nunito, Arial";
       ctx.fillText(`Coins this run: ${scoreThisRun}`, 20, 40);
       if (player.alive) { animationId = requestAnimationFrame(updateGame); }
     }
+
     function drawScrollingBackground() {
       bgX -= 1; if (bgX <= -canvasWidth) { bgX = 0; }
       ctx.drawImage(bgImage, bgX, 0, canvasWidth, canvasHeight);
@@ -456,37 +433,72 @@
       coinEl.style.zIndex = "800"; coinEl.draggable = false; gameContainer.appendChild(coinEl);
       coins.push({ x: canvasWidth, y: randY, size: coinSize, collected: false, el: coinEl });
     }
-    function updatePlayer() {
-      player.velocityY += player.gravity;
+    function createBonusCoin() {
+      const randY = Math.random() * (canvasHeight - coinSize - 30) + 10;
+      const bonusEl = document.createElement("img");
+      bonusEl.src = bonusCoinImg; bonusEl.style.position = "absolute";
+      bonusEl.style.width = (coinSize*1.5) + "px"; bonusEl.style.height = (coinSize*1.5) + "px";
+      bonusEl.style.left = canvasWidth + "px"; bonusEl.style.top = randY + "px";
+      bonusEl.style.zIndex = "820"; bonusEl.draggable = false; bonusEl.style.filter = "drop-shadow(0 0 20px #ffd700cc)";
+      gameContainer.appendChild(bonusEl);
+      bonusCoins.push({ x: canvasWidth, y: randY, size: coinSize*1.5, collected: false, el: bonusEl });
+    }
+
+    // --- Анимация взятия обычной монеты
+    function animateCoinCollect(c) {
+      c.el.style.transition = "all 0.33s cubic-bezier(.7,.6,.6,1.7)";
+      c.el.style.transform = "scale(1.55) rotate(27deg)";
+      setTimeout(()=>{ if (c.el) c.el.style.display="none"; },300);
+    }
+    // --- Анимация взятия бонус-монеты
+    function animateBonusCoin(c) {
+      c.el.style.transition = "all 0.44s cubic-bezier(.6,1.4,.8,1.3)";
+      c.el.style.transform = "scale(1.7) rotate(-17deg)";
+      setTimeout(()=>{ if (c.el) c.el.style.display="none"; },330);
+    }
+
+    function updatePlayer(gOverride) {
+      player.velocityY += typeof gOverride === "number" ? gOverride : player.gravity;
       if (player.velocityY > player.maxFallSpeed) player.velocityY = player.maxFallSpeed;
       player.y += player.velocityY;
       if (player.y < 0) { player.y = 0; player.velocityY = 0; }
-      if (player.y + player.height > canvasHeight) { gameOver(); }
-      player.el.style.left = player.x + "px"; player.el.style.top = player.y + "px";
+      if (player.y + player.height > canvasHeight && player.alive) { player.alive = false; animateDeath(); return; }
+      if (player.el) {
+        player.el.style.left = player.x + "px";
+        player.el.style.top = player.y + "px";
+        player.el.style.transform = `rotate(${player.angle || 0}deg)`;
+      }
     }
     function onKeyDown(e) { if (e.code === "Space") flap(); }
     function onClickOrTouch() { flap(); }
     function flap() {
+      if (!player.alive) return;
       player.velocityY = player.lift;
-      // Моргание — краткая подсветка игрока
+      player.angle = -18 + Math.random()*10;
       player.el.style.filter = "drop-shadow(0 0 14px #ffcbf9)";
-      setTimeout(() => player.el.style.filter = "none", 120);
+      setTimeout(() => { player.el.style.filter = "none"; player.angle = 0; }, 100);
     }
     function checkCollision(pl, obj) {
       const pr = { x: pl.x + collisionMargin, y: pl.y + collisionMargin, width: pl.width - collisionMargin * 2, height: pl.height - collisionMargin * 2 };
       const ow = (obj.width  || obj.size) - collisionMargin * 2;
       const oh = (obj.height || obj.size) - collisionMargin * 2;
       const or = { x: obj.x + collisionMargin, y: obj.y + collisionMargin, width:  ow > 0 ? ow : 0, height: oh > 0 ? oh : 0 };
-      return !(
-        or.x > pr.x + pr.width ||
-        or.x + or.width < pr.x ||
-        or.y > pr.y + pr.height ||
-        or.y + or.height < pr.y
-      );
+      return !(or.x > pr.x + pr.width || or.x + or.width < pr.x || or.y > pr.y + pr.height || or.y + or.height < pr.y);
+    }
+
+    // --- Анимация проигрыша ---
+    function animateDeath() {
+      // Кирби разворачивается вниз и падает за экран
+      let fallInterval = setInterval(()=>{
+        player.angle += 8; player.y += 12; player.el.style.transform = `rotate(${player.angle}deg)`;
+        if (player.y > canvasHeight + 80) {
+          clearInterval(fallInterval);
+          setTimeout(()=>gameOver(), 350);
+        }
+      },18);
     }
 
     function gameOver() {
-      player.alive = false;
       cancelAnimationFrame(animationId);
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("mousedown", onClickOrTouch);
@@ -494,26 +506,20 @@
       isGameRunning = false;
       // Сохраняем новый рекорд, если он побит
       let newHigh = false;
-      if (scoreThisRun > highScore) {
-        highScore = scoreThisRun;
-        newHigh = true;
-      }
+      if (scoreThisRun > highScore) { highScore = scoreThisRun; newHigh = true; }
       updateScoreInDB(newHigh, scoreThisRun);
       // Popup
       let popupText = `You collected <b>${scoreThisRun}</b> coins this run.<br>`;
       if (newHigh) popupText += "<span style='color:#b13df3'>NEW RECORD!</span><br>";
       popupText += `Your best: <b>${highScore}</b>`;
-      setTimeout(() => showGameOverPopup(popupText), 400);
+      setTimeout(() => showGameOverPopup(popupText), 200);
     }
     function showGameOverPopup(html) {
       gameOverText.innerHTML = html;
       gameOverPopup.style.display = "flex";
     }
     gameOverCloseBtn.onclick = endGameAndReturn;
-    playAgainBtn.onclick = () => {
-      gameOverPopup.style.display = "none";
-      startGameWithCountdown(); // Улучшение №2: быстрый респаун
-    }
+    playAgainBtn.onclick = () => {gameOverPopup.style.display = "none"; startGameWithCountdown();};
 
     function endGameAndReturn() {
       if (isGameRunning) {
@@ -528,6 +534,8 @@
       enemies = [];
       for (const c of coins) if (c.el) gameContainer.removeChild(c.el);
       coins = [];
+      for (const bc of bonusCoins) if (bc.el) gameContainer.removeChild(bc.el);
+      bonusCoins = [];
       gameContainer.style.display = "none";
       gameOverPopup.style.display = "none";
       coinsDisplay.textContent = `Best: ${highScore}`;
