@@ -14,10 +14,7 @@
       overflow: hidden;
       user-select: none;
     }
-    /* Глобальные отступы сверху */
-    .top-gap {
-      margin-top: 80px !important;
-    }
+    .top-gap { margin-top: 80px !important; }
     #mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup {
       width: 100vw; height: 100vh;
       display: none; position: fixed; top:0; left:0;
@@ -117,7 +114,6 @@
     }
     .main-btn:hover { background: linear-gradient(90deg, #ffc0cb 10%, #a2d2ff 100%); transform: scale(1.06);}
     .main-btn:active { transform: scale(0.96);}
-    /* Leaderboard table */
     #leaderboardContainer h2 { margin-bottom: 10px; }
     table { width: 94%; margin: 12px auto 0 auto; background: #fff; border-radius: 18px; box-shadow: 0 4px 18px 0 #c2a4ff29;}
     th, td { padding: 15px 10px; text-align: left; font-size: 1.08em;}
@@ -125,7 +121,7 @@
     tr:nth-child(odd) { background: #f9f5ff; }
     tr:nth-child(even) { background: #f4ecfb; }
     #leaderboardBackBtn, #infoBackBtn {
-      position: absolute; top: 100px; left: 24px;
+      position: absolute; top: 40px; left: 24px;
       padding: 11px 30px;
       background: linear-gradient(90deg, #f8daea 0%, #d1eaff 100%);
       border: none; border-radius: 22px;
@@ -140,7 +136,6 @@
       color: #fff;
     }
     #infoContainer p { font-size: 1.10em; color: #493A64; background: #fff7; border-radius: 12px; padding: 10px 14px; margin-top: 0;}
-    /* Game Over Popup */
     #gameOverPopup {
       z-index: 999; display: none; align-items: center; justify-content: center;
       background: rgba(60,30,80,0.42);
@@ -175,16 +170,36 @@
       letter-spacing:.08em;
       text-shadow:0 2px 12px #fff;
     }
-    /* Responsive */
+    /* COINS TEXT IN GAME */
+    #coinsTextInGame {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 50px;
+      z-index: 300;
+      background: linear-gradient(90deg,#b07cff44 0,#ffb5d133 100%);
+      border-radius: 19px;
+      padding: 9px 28px;
+      color: #483977;
+      font-weight: 800;
+      font-size: 1.32em;
+      text-shadow: 0 2px 9px #fff9;
+      letter-spacing: .08em;
+      box-shadow: 0 2px 9px #b07cff13;
+      user-select: none;
+      pointer-events: none;
+    }
     @media (max-width: 600px) {
       .main-btn, #leaderboardBackBtn, #infoBackBtn, .popup-box button { font-size: 0.97em; padding:11px 12px;}
       .user-header img { width: 60px; height: 60px;}
       .popup-box {padding:22px 10vw;}
+      #coinsTextInGame { font-size: 1em; padding:7px 14px;}
     }
     @media (max-width: 390px) {
       #coinsDisplay { font-size: 0.94em; padding: 7px 10px;}
       .user-meta div { font-size: 0.92em;}
       .user-header {padding:10px 7vw;}
+      #coinsTextInGame { font-size: 0.9em;}
     }
   </style>
 </head>
@@ -211,6 +226,7 @@
   <div id="gameContainer">
     <canvas id="gameCanvas"></canvas>
     <div id="countdownOverlay"></div>
+    <div id="coinsTextInGame">Coins: 0</div>
   </div>
   <!-- Leaderboard -->
   <div id="leaderboardContainer">
@@ -251,11 +267,9 @@
     </div>
   </div>
   <script type="module">
-    // Telegram WebApp
     const tg = window.Telegram.WebApp;
     if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
     else tg.expand();
-    // Firebase 9+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
     import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
     const firebaseConfig = {
@@ -270,7 +284,7 @@
     };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    // DOM Elements
+    // DOM
     const mainMenu = document.getElementById("mainMenu");
     const userPhoto = document.getElementById("userPhoto");
     const userName = document.getElementById("userName");
@@ -280,6 +294,7 @@
     const infoBtn = document.getElementById("infoBtn");
     const gameContainer = document.getElementById("gameContainer");
     const gameCanvas = document.getElementById("gameCanvas");
+    const coinsTextInGame = document.getElementById("coinsTextInGame");
     const leaderboardContainer = document.getElementById("leaderboardContainer");
     const leaderboardBackBtn = document.getElementById("leaderboardBackBtn");
     const leaderboardBody = document.getElementById("leaderboardBody");
@@ -299,7 +314,6 @@
     }
     const userId = tgUser.id.toString();
     let highScore = 0;
-    // Main UI Load
     async function loadUser() {
       userPhoto.src = tgUser.photo_url || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
       userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
@@ -321,7 +335,6 @@
       mainMenu.style.display = "flex";
     }
     window.onload = loadUser;
-    // Обновление места в таблице лидеров
     async function updatePlace() {
       yourPlace.textContent = "Rank: ...";
       const usersRef = ref(db, "users/");
@@ -343,7 +356,6 @@
     infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "flex"; };
     leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
     infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
-    // Лидеры (только по Best/HighScore)
     async function loadLeaderboard() {
       leaderboardBody.innerHTML = "";
       const usersRef = ref(db, "users/");
@@ -379,8 +391,7 @@
     const bgImage = new window.Image();
     bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
     const collisionMargin = 10;
-    let slowStart = true, showPlayer = false, deathFall = false;
-    // -- Новый старт с отсчетом
+    let slowStart = true, showPlayer = false, deathFall = false, firstFlap = false;
     function startGameWithCountdown() {
       gameContainer.style.display = "block";
       gameOverPopup.style.display = "none";
@@ -397,6 +408,9 @@
       bgX = 0;
       deathFall = false;
       showPlayer = false;
+      firstFlap = false;
+      coinsTextInGame.textContent = "Coins: 0";
+      coinsTextInGame.style.display = "block";
       if (!player.el) {
         const kirby = document.createElement("img");
         kirby.src = "kirby.gif";
@@ -410,7 +424,6 @@
         gameContainer.appendChild(kirby);
         player.el = kirby;
       } else { player.el.style.display = "none"; }
-      // Countdown: персонаж скрыт!
       let countdown = 3;
       countdownOverlay.style.display = "flex";
       countdownOverlay.textContent = countdown;
@@ -421,7 +434,7 @@
         } else if (countdown < 0) {
           countdownOverlay.style.display = "none";
           clearInterval(cdInt);
-          showPlayer = true; // только теперь показываем персонажа!
+          showPlayer = true;
           player.el.style.display = "block";
           startGameCore();
         } else {
@@ -434,6 +447,7 @@
       isGameRunning = true;
       slowStart = true;
       slowStartFrame = 0;
+      firstFlap = false;
       document.addEventListener("keydown", onKeyDown);
       document.addEventListener("mousedown", onClickOrTouch);
       document.addEventListener("touchstart", onClickOrTouch);
@@ -454,8 +468,10 @@
       drawScrollingBackground();
       if (showPlayer && player.el) player.el.style.display = "block";
       else if (player.el) player.el.style.display = "none";
+      coinsTextInGame.textContent = "Coins: " + scoreThisRun;
       if (isGameRunning) {
         ticksAfterStart++;
+        // Только игрок медленный, фон обычный!
         if (ticksAfterStart > 120) {
           enemyTimer++; if (enemyTimer > enemyInterval) { createEnemy(); enemyTimer = 0; }
         }
@@ -475,14 +491,9 @@
         }
         coins = coins.filter(c => { if (c.collected || (c.x + c.size < 0)) { gameContainer.removeChild(c.el); return false; } return true; });
         updatePlayer();
-        ctx.fillStyle = "#fff"; ctx.font = "24px Nunito, Arial";
-        ctx.fillText(`Coins this run: ${scoreThisRun}`, 20, 40);
         if (player.alive) { animationId = requestAnimationFrame(updateGame); }
       }
-      // Если идёт анимация падения (после смерти)
-      if (deathFall) {
-        updateDeathFall();
-      }
+      if (deathFall) { updateDeathFall(); }
     }
     function drawScrollingBackground() {
       bgX -= 1; if (bgX <= -canvasWidth) { bgX = 0; }
@@ -527,6 +538,13 @@
     function onClickOrTouch() { flap(); }
     function flap() {
       if (!player.alive) return;
+      // First tap after GO disables slow fall and does normal jump
+      if (slowStart) {
+        slowStart = false;
+        player.velocityY = player.lift; // не сильнее обычного!
+        firstFlap = true;
+        return;
+      }
       player.velocityY = player.lift;
       player.el.style.filter = "drop-shadow(0 0 14px #ffcbf9)";
       setTimeout(() => player.el.style.filter = "none", 120);
@@ -543,7 +561,6 @@
         or.y + or.height < pr.y
       );
     }
-    // Death animation
     function handleDeathAnimation() {
       if (!player.alive) return;
       player.alive = false;
@@ -553,8 +570,8 @@
       document.removeEventListener("mousedown", onClickOrTouch);
       document.removeEventListener("touchstart", onClickOrTouch);
       player.rotating = true;
-      player.rotAngle = 90; // Смотрит вниз!
-      player.velocityY = 3; // Падает быстрее
+      player.rotAngle = 90;
+      player.velocityY = 3;
       animationId = requestAnimationFrame(updateGame);
     }
     function updateDeathFall() {
@@ -564,7 +581,6 @@
         player.el.style.top = player.y + "px";
         player.el.style.transform = `rotate(90deg)`;
       }
-      // После ухода за экран — показываем popup!
       if (player.y > canvasHeight + player.height) {
         deathFall = false;
         showGameOverSequence();
@@ -579,9 +595,10 @@
         newHigh = true;
       }
       updateScoreInDB(newHigh, scoreThisRun);
-      let popupText = `You collected <b>${scoreThisRun}</b> coins this run.<br>`;
+      let popupText = `You collected <b>${scoreThisRun}</b> coins.<br>`;
       if (newHigh) popupText += "<span style='color:#b13df3'>NEW RECORD!</span><br>";
       popupText += `Your best: <b>${highScore}</b>`;
+      coinsTextInGame.style.display = "none";
       setTimeout(() => showGameOverPopup(popupText), 500);
     }
     function showGameOverPopup(html) {
