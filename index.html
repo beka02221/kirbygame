@@ -14,17 +14,29 @@
       overflow: hidden;
       user-select: none;
     }
-    /* Top 80px gap for all UI except game */
+    /* Глобальные отступы сверху */
+    .top-gap {
+      margin-top: 80px !important;
+    }
     #mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup {
       width: 100vw; height: 100vh;
       display: none; position: fixed; top:0; left:0;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      padding-top: 80px !important;
-      box-sizing: border-box;
       background: linear-gradient(120deg, #a2d2ff 0%, #ffe7f3 100%);
       overflow-y: auto;
+      padding: 0 !important;
+    }
+    #mainMenu .menu-inner,
+    #leaderboardContainer .menu-inner,
+    #infoContainer .menu-inner,
+    #gameOverPopup .menu-inner {
+      margin-top: 80px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     #gameContainer {
       width: 100vw; height: 100vh;
@@ -93,42 +105,18 @@
       letter-spacing: .04em;
       display: inline-block;
     }
-    #mainMenu button,
-    #leaderboardBackBtn, #infoBackBtn {
+    .main-btn {
       margin: 14px 0; padding: 15px 36px;
       font-size: 1.15em;
       background: linear-gradient(90deg, #f7c8e0 0%, #b6eaff 100%);
       border: none; border-radius: 29px;
       box-shadow: 0 3px 16px #a2d2ff4d, 0 1px 1px #fff;
       cursor: pointer; font-weight: 700; color: #493a66;
-      transition: 0.16s, transform 0.21s cubic-bezier(.16,1.3,.43,1.11);
-      position: relative;
-      overflow: hidden;
-    }
-    #mainMenu button:after,
-    #leaderboardBackBtn:after, #infoBackBtn:after {
-      content: "";
+      transition: 0.16s;
       display: block;
-      position: absolute;
-      left: 50%; top: 50%;
-      width: 0; height: 0;
-      background: rgba(185,96,255,0.12);
-      border-radius: 50%;
-      transform: translate(-50%,-50%);
-      transition: width 0.3s, height 0.3s;
-      z-index: 0;
     }
-    #mainMenu button:active:after,
-    #leaderboardBackBtn:active:after, #infoBackBtn:active:after {
-      width: 220px; height: 220px;
-      transition: width 0.17s, height 0.17s;
-    }
-    #mainMenu button:hover,
-    #leaderboardBackBtn:hover, #infoBackBtn:hover {
-      background: linear-gradient(90deg, #ffc0cb 10%, #a2d2ff 100%); transform: scale(1.06);
-    }
-    #mainMenu button:active,
-    #leaderboardBackBtn:active, #infoBackBtn:active { transform: scale(0.98);}
+    .main-btn:hover { background: linear-gradient(90deg, #ffc0cb 10%, #a2d2ff 100%); transform: scale(1.06);}
+    .main-btn:active { transform: scale(0.96);}
     /* Leaderboard table */
     #leaderboardContainer h2 { margin-bottom: 10px; }
     table { width: 94%; margin: 12px auto 0 auto; background: #fff; border-radius: 18px; box-shadow: 0 4px 18px 0 #c2a4ff29;}
@@ -137,9 +125,19 @@
     tr:nth-child(odd) { background: #f9f5ff; }
     tr:nth-child(even) { background: #f4ecfb; }
     #leaderboardBackBtn, #infoBackBtn {
-      position: absolute; top: 102px; left: 24px;
+      position: absolute; top: 100px; left: 24px;
       padding: 11px 30px;
+      background: linear-gradient(90deg, #f8daea 0%, #d1eaff 100%);
+      border: none; border-radius: 22px;
+      font-size: 1.04em; font-weight: 700; color: #4e3888;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #c8a2c8, 0 2px 8px #ffdbf933;
       z-index: 99;
+      transition: background 0.22s;
+    }
+    #leaderboardBackBtn:hover, #infoBackBtn:hover {
+      background: linear-gradient(90deg, #c186fd 0, #ffb5d1 100%);
+      color: #fff;
     }
     #infoContainer p { font-size: 1.10em; color: #493A64; background: #fff7; border-radius: 12px; padding: 10px 14px; margin-top: 0;}
     /* Game Over Popup */
@@ -153,6 +151,7 @@
       border-radius: 32px; padding: 34px 36px 28px 36px; min-width: 240px;
       box-shadow: 0 8px 30px #e3caff88;
       display: flex; flex-direction: column; align-items: center; gap: 18px;
+      margin-top: 80px;
     }
     .popup-box h2 { margin:0 0 8px 0; color: #9857d3; font-size: 1.23em;}
     .popup-box p { color: #47366b; font-size: 1.07em; margin: 0; }
@@ -163,50 +162,50 @@
       color: #44335b; font-weight: 700; font-size: 1.09em; box-shadow: 0 2px 12px #a2d2ff3b;
       cursor: pointer;
       transition: background 0.14s;
+      display: none;
     }
-    .popup-box button:hover { background: linear-gradient(90deg, #ffc0cb 16%, #a2d2ff 100%);}
+    .popup-box button#gameOverCloseBtn { display: block; }
     /* Countdown Overlay */
     #countdownOverlay {
       display:none;position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:222;
       align-items:center;justify-content:center;
-      background:rgba(248,245,255,0.85);
+      background:rgba(248,245,255,0.78);
       font-size:3em;color:#9857d3;font-weight:900;
       font-family:'Nunito',sans-serif;
       letter-spacing:.08em;
       text-shadow:0 2px 12px #fff;
-      transition: opacity 0.23s;
     }
     /* Responsive */
     @media (max-width: 600px) {
-      #mainMenu button, #leaderboardBackBtn, #infoBackBtn, .popup-box button { font-size: 0.97em; padding:11px 12px;}
+      .main-btn, #leaderboardBackBtn, #infoBackBtn, .popup-box button { font-size: 0.97em; padding:11px 12px;}
       .user-header img { width: 60px; height: 60px;}
       .popup-box {padding:22px 10vw;}
-      #leaderboardBackBtn, #infoBackBtn { top: 92px;}
     }
     @media (max-width: 390px) {
       #coinsDisplay { font-size: 0.94em; padding: 7px 10px;}
       .user-meta div { font-size: 0.92em;}
       .user-header {padding:10px 7vw;}
-      #leaderboardBackBtn, #infoBackBtn { top: 86px;}
     }
   </style>
 </head>
 <body>
   <!-- Main Menu -->
   <div id="mainMenu">
-    <div class="tooltip">Collect coins and dodge enemies! 🪙</div>
-    <div class="user-header">
-      <img id="userPhoto" src="" alt="Avatar" />
-      <span id="userName">@User</span>
+    <div class="menu-inner">
+      <div class="tooltip">Collect coins and dodge enemies! 🪙</div>
+      <div class="user-header">
+        <img id="userPhoto" src="" alt="Avatar" />
+        <span id="userName">@User</span>
+      </div>
+      <div class="user-meta">
+        <div id="yourPlace">Rank: ...</div>
+        <div id="yourHighScore">Best: ...</div>
+      </div>
+      <div id="coinsDisplay"></div>
+      <button id="startGameBtn" class="main-btn">Start Game</button>
+      <button id="leaderboardBtn" class="main-btn">Leaderboard</button>
+      <button id="infoBtn" class="main-btn">How to Play?</button>
     </div>
-    <div class="user-meta">
-      <div id="yourPlace">Rank: ...</div>
-      <div id="yourHighScore">Best: ...</div>
-    </div>
-    <div id="coinsDisplay"></div>
-    <button id="startGameBtn">Start Game</button>
-    <button id="leaderboardBtn">Leaderboard</button>
-    <button id="infoBtn">How to Play?</button>
   </div>
   <!-- Game Screen (NO GAP ON TOP, FULLSCREEN) -->
   <div id="gameContainer">
@@ -215,34 +214,40 @@
   </div>
   <!-- Leaderboard -->
   <div id="leaderboardContainer">
-    <button id="leaderboardBackBtn">Back</button>
-    <h2 style="color:#7c46a3;text-align:center;margin:8px 0 0 0">Leaderboard</h2>
-    <table>
-      <thead>
-        <tr><th>User</th><th>Best</th></tr>
-      </thead>
-      <tbody id="leaderboardBody"></tbody>
-    </table>
+    <div class="menu-inner">
+      <button id="leaderboardBackBtn" class="main-btn" style="position:absolute;">Back</button>
+      <h2 style="color:#7c46a3;text-align:center;margin:8px 0 0 0">Leaderboard</h2>
+      <table>
+        <thead>
+          <tr><th>User</th><th>Best</th></tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
   </div>
   <!-- Info -->
   <div id="infoContainer">
-    <button id="infoBackBtn">Back</button>
-    <h2 style="color:#7c46a3;text-align:center;margin:5px 0 10px 0;">How to Play?</h2>
-    <p>
-      <b>Kirby</b> flies endlessly, collecting coins and dodging enemies.<br>
-      If Kirby hits an enemy or falls — the game is over.<br>
-      <b>Controls:</b> Tap / Click or Space.<br>
-      The goal is to collect as many coins as possible in one run!<br>
-      <br>
-      Your record is saved and displayed in the leaderboard. Good luck!
-    </p>
+    <div class="menu-inner">
+      <button id="infoBackBtn" class="main-btn" style="position:absolute;">Back</button>
+      <h2 style="color:#7c46a3;text-align:center;margin:5px 0 10px 0;">How to Play?</h2>
+      <p>
+        <b>Kirby</b> flies endlessly, collecting coins and dodging enemies.<br>
+        If Kirby hits an enemy or falls — the game is over.<br>
+        <b>Controls:</b> Tap / Click or Space.<br>
+        The goal is to collect as many coins as possible in one run!<br>
+        <br>
+        Your record is saved and displayed in the leaderboard. Good luck!
+      </p>
+    </div>
   </div>
   <!-- Game Over Popup -->
   <div id="gameOverPopup">
-    <div class="popup-box">
-      <h2>Game Over!</h2>
-      <p id="gameOverText"></p>
-      <button id="gameOverCloseBtn">Back to Menu</button>
+    <div class="menu-inner">
+      <div class="popup-box">
+        <h2>Game Over!</h2>
+        <p id="gameOverText"></p>
+        <button id="gameOverCloseBtn" class="main-btn">Back to Menu</button>
+      </div>
     </div>
   </div>
   <script type="module">
@@ -294,10 +299,10 @@
     }
     const userId = tgUser.id.toString();
     let highScore = 0;
+    // Main UI Load
     async function loadUser() {
       userPhoto.src = tgUser.photo_url || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
       userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
-      // Получить прогресс (по userId)
       const userRef = ref(db, `users/${userId}`);
       let snapshot = await get(userRef);
       if (!snapshot.exists()) {
@@ -316,6 +321,7 @@
       mainMenu.style.display = "flex";
     }
     window.onload = loadUser;
+    // Обновление места в таблице лидеров
     async function updatePlace() {
       yourPlace.textContent = "Rank: ...";
       const usersRef = ref(db, "users/");
@@ -331,11 +337,13 @@
         else yourPlace.textContent = `Rank: —`;
       }
     }
+    // Меню
     startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGameWithCountdown(); };
     leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; loadLeaderboard(); };
     infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "flex"; };
     leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
     infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
+    // Лидеры (только по Best/HighScore)
     async function loadLeaderboard() {
       leaderboardBody.innerHTML = "";
       const usersRef = ref(db, "users/");
@@ -357,36 +365,22 @@
     // Game Logic
     let ctx, animationId, isGameRunning = false;
     let canvasWidth = 0, canvasHeight = 0;
-    const kirbyGifs = [
-      "kirby.gif",
-      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzA5bzdzMW1pZTUyNzIwdXJ6a2R2c3A2c2twamZqM2FxaTZnYXpmMCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/8JW82ndaYfmNoZRtdH/giphy.gif",
-      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGhuNnp1MGdiNHVsb3Jmdndicm0zN2VpM3E2cWF1eTIyOHVrb2VsaCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/6T6f5vDCZivHG/giphy.gif"
-    ];
-    const enemyGifs = [
-      "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif",
-      "https://media.giphy.com/media/3oKIPoVSEPHgQOzfU8/giphy.gif",
-      "https://media.giphy.com/media/JltcUZZ7p3bI/giphy.gif"
-    ];
-    let currentKirbyGif = kirbyGifs[0];
-    const enemyWidth = 80, enemyHeight = 80;
+    const player = {
+      x: 100, y: 150, width: 45, height: 45, velocityY: 0,
+      gravity: 0.3, lift: -5, alive: true, maxFallSpeed: 3, el: null, rotating: false, rotAngle: 0
+    };
+    const scrollSpeed = 1.8;
     let enemies = [], enemyTimer = 0, enemyInterval = 150;
+    const enemyGif = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
+    const enemyWidth = 80, enemyHeight = 80;
     let coins = [], coinTimer = 0, coinInterval = 80;
     const coinSize = 40, coinGifURL = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
     let scoreThisRun = 0, bgX = 0;
     const bgImage = new window.Image();
     bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
     const collisionMargin = 10;
-    // Персонаж
-    const player = {
-      x: 100, y: 150, width: 45, height: 45,
-      velocityY: 0, gravity: 0.3, lift: -5, alive: true, maxFallSpeed: 3, el: null,
-      angle: 0
-    };
-    function resetPlayerGif() {
-      currentKirbyGif = kirbyGifs[Math.floor(Math.random() * kirbyGifs.length)];
-      if (player.el) player.el.src = currentKirbyGif;
-    }
-    // Таймер для отсчёта
+    let slowStart = true, showPlayer = false, deathFall = false;
+    // -- Новый старт с отсчетом
     function startGameWithCountdown() {
       gameContainer.style.display = "block";
       gameOverPopup.style.display = "none";
@@ -396,36 +390,16 @@
       player.y = canvasHeight / 2;
       player.velocityY = 0;
       player.alive = true;
-      player.angle = 0;
+      player.rotating = false;
+      player.rotAngle = 0;
       enemies = []; enemyTimer = 0;
       coins = []; coinTimer = 0;
       bgX = 0;
-      if (player.el) { player.el.remove(); player.el = null; }
-      resetPlayerGif();
-      // Пока таймер — перса нет!
-      if (player.el && player.el.parentNode === gameContainer) gameContainer.removeChild(player.el);
-      countdownOverlay.style.display = "flex";
-      countdownOverlay.textContent = "3";
-      let countdown = 3;
-      let cdInt = setInterval(() => {
-        countdown--;
-        if (countdown === 0) {
-          countdownOverlay.textContent = "GO!";
-        } else if (countdown < 0) {
-          countdownOverlay.style.display = "none";
-          clearInterval(cdInt);
-          // Только после таймера появляется персонаж
-          createPlayerEl();
-          startGameCore();
-        } else {
-          countdownOverlay.textContent = countdown;
-        }
-      }, 900);
-    }
-    function createPlayerEl() {
+      deathFall = false;
+      showPlayer = false;
       if (!player.el) {
         const kirby = document.createElement("img");
-        kirby.src = currentKirbyGif;
+        kirby.src = "kirby.gif";
         kirby.style.position = "absolute";
         kirby.style.width = player.width + "px";
         kirby.style.height = player.height + "px";
@@ -435,14 +409,31 @@
         kirby.draggable = false;
         gameContainer.appendChild(kirby);
         player.el = kirby;
-      } else { player.el.style.display = "block"; }
+      } else { player.el.style.display = "none"; }
+      // Countdown: персонаж скрыт!
+      let countdown = 3;
+      countdownOverlay.style.display = "flex";
+      countdownOverlay.textContent = countdown;
+      let cdInt = setInterval(() => {
+        countdown--;
+        if (countdown === 0) {
+          countdownOverlay.textContent = "GO!";
+        } else if (countdown < 0) {
+          countdownOverlay.style.display = "none";
+          clearInterval(cdInt);
+          showPlayer = true; // только теперь показываем персонажа!
+          player.el.style.display = "block";
+          startGameCore();
+        } else {
+          countdownOverlay.textContent = countdown;
+        }
+      }, 900);
     }
-    // Game Core
-    let slowStart = true, slowStartFrame = 0, isFalling = false;
-    let ticksAfterStart = 0;
+    let slowStartFrame = 0;
     function startGameCore() {
       isGameRunning = true;
-      slowStart = true; slowStartFrame = 0; isFalling = false;
+      slowStart = true;
+      slowStartFrame = 0;
       document.addEventListener("keydown", onKeyDown);
       document.addEventListener("mousedown", onClickOrTouch);
       document.addEventListener("touchstart", onClickOrTouch);
@@ -456,33 +447,42 @@
       gameCanvas.height = canvasHeight;
     }
     window.addEventListener("resize", () => { if (isGameRunning) resizeCanvas(); });
+    let ticksAfterStart = 0;
     function updateGame() {
-      if (!isGameRunning) return;
+      if (!isGameRunning && !deathFall) return;
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       drawScrollingBackground();
-      ticksAfterStart++;
-      if (ticksAfterStart > 120) {
-        enemyTimer++; if (enemyTimer > enemyInterval) { createEnemy(); enemyTimer = 0; }
+      if (showPlayer && player.el) player.el.style.display = "block";
+      else if (player.el) player.el.style.display = "none";
+      if (isGameRunning) {
+        ticksAfterStart++;
+        if (ticksAfterStart > 120) {
+          enemyTimer++; if (enemyTimer > enemyInterval) { createEnemy(); enemyTimer = 0; }
+        }
+        coinTimer++; if (coinTimer > coinInterval) { createCoin(); coinTimer = 0; }
+        for (let i = 0; i < enemies.length; i++) {
+          const e = enemies[i];
+          e.x -= scrollSpeed;
+          e.el.style.left = e.x + "px"; e.el.style.top = e.y + "px";
+          if (checkCollision(player, e)) { handleDeathAnimation(); return; }
+        }
+        enemies = enemies.filter(e => { if (e.x + e.width < 0) { gameContainer.removeChild(e.el); return false; } return true; });
+        for (let i = 0; i < coins.length; i++) {
+          const c = coins[i];
+          c.x -= scrollSpeed;
+          c.el.style.left = c.x + "px"; c.el.style.top = c.y + "px";
+          if (checkCollision(player, c)) { scoreThisRun++; c.collected = true; }
+        }
+        coins = coins.filter(c => { if (c.collected || (c.x + c.size < 0)) { gameContainer.removeChild(c.el); return false; } return true; });
+        updatePlayer();
+        ctx.fillStyle = "#fff"; ctx.font = "24px Nunito, Arial";
+        ctx.fillText(`Coins this run: ${scoreThisRun}`, 20, 40);
+        if (player.alive) { animationId = requestAnimationFrame(updateGame); }
       }
-      coinTimer++; if (coinTimer > coinInterval) { createCoin(); coinTimer = 0; }
-      for (let i = 0; i < enemies.length; i++) {
-        const e = enemies[i];
-        e.x -= e.speed;
-        e.el.style.left = e.x + "px"; e.el.style.top = e.y + "px";
-        if (!isFalling && checkCollision(player, e)) { doFallAnim(); return; }
+      // Если идёт анимация падения (после смерти)
+      if (deathFall) {
+        updateDeathFall();
       }
-      enemies = enemies.filter(e => { if (e.x + e.width < 0) { gameContainer.removeChild(e.el); return false; } return true; });
-      for (let i = 0; i < coins.length; i++) {
-        const c = coins[i];
-        c.x -= c.speed;
-        c.el.style.left = c.x + "px"; c.el.style.top = c.y + "px";
-        if (!isFalling && checkCollision(player, c)) { scoreThisRun += c.value; c.collected = true; }
-      }
-      coins = coins.filter(c => { if (c.collected || (c.x + c.size < 0)) { gameContainer.removeChild(c.el); return false; } return true; });
-      updatePlayer();
-      ctx.fillStyle = "#fff"; ctx.font = "24px Nunito, Arial";
-      ctx.fillText(`Coins this run: ${scoreThisRun}`, 20, 40);
-      if (player.alive) { animationId = requestAnimationFrame(updateGame); }
     }
     function drawScrollingBackground() {
       bgX -= 1; if (bgX <= -canvasWidth) { bgX = 0; }
@@ -492,72 +492,44 @@
     function createEnemy() {
       const randY = Math.random() * (canvasHeight - enemyHeight - 20) + 10;
       const enemyEl = document.createElement("img");
-      const enemyGif = enemyGifs[Math.floor(Math.random() * enemyGifs.length)];
-      enemyEl.src = enemyGif;
-      enemyEl.style.position = "absolute";
+      enemyEl.src = enemyGif; enemyEl.style.position = "absolute";
       enemyEl.style.width = enemyWidth + "px"; enemyEl.style.height = enemyHeight + "px";
       enemyEl.style.left = canvasWidth + "px"; enemyEl.style.top = randY + "px";
       enemyEl.style.zIndex = "850"; enemyEl.draggable = false; gameContainer.appendChild(enemyEl);
-      const speed = 1.7 + Math.random() * 0.7;
-      enemies.push({ x: canvasWidth, y: randY, width: enemyWidth, height: enemyHeight, el: enemyEl, speed });
+      enemies.push({ x: canvasWidth, y: randY, width: enemyWidth, height: enemyHeight, el: enemyEl });
     }
     function createCoin() {
       const randY = Math.random() * (canvasHeight - coinSize - 20) + 10;
       const coinEl = document.createElement("img");
-      let value = 1, size = coinSize, gif = coinGifURL;
-      // Иногда двойная монета!
-      if (Math.random() < 0.18) {
-        value = 2; size = 52;
-        gif = "https://static-00.iconduck.com/assets.00/coin-stack-emoji-512x512-zp1nndmu.png";
-      }
-      coinEl.src = gif; coinEl.style.position = "absolute";
-      coinEl.style.width = size + "px"; coinEl.style.height = size + "px";
+      coinEl.src = coinGifURL; coinEl.style.position = "absolute";
+      coinEl.style.width = coinSize + "px"; coinEl.style.height = coinSize + "px";
       coinEl.style.left = canvasWidth + "px"; coinEl.style.top = randY + "px";
       coinEl.style.zIndex = "800"; coinEl.draggable = false; gameContainer.appendChild(coinEl);
-      coins.push({ x: canvasWidth, y: randY, size, collected: false, el: coinEl, value, speed: 1.6 + Math.random() * 0.5 });
+      coins.push({ x: canvasWidth, y: randY, size: coinSize, collected: false, el: coinEl });
     }
     function updatePlayer() {
       let gravity = player.gravity;
-      // Первые 1.2 секунды — медленное падение
       if (slowStart) {
         slowStartFrame++;
         gravity = 0.07;
         if (slowStartFrame > 72) slowStart = false;
       }
-      // Анимация падения
-      if (isFalling) {
-        player.velocityY += 0.24;
-        player.y += player.velocityY;
-        player.angle += 0.17;
-        updatePlayerView();
-        if (player.y > canvasHeight + 40) { // ушёл вниз
-          setTimeout(gameOver, 450);
-          isFalling = false;
-        }
-        return;
-      }
       player.velocityY += gravity;
       if (player.velocityY > player.maxFallSpeed) player.velocityY = player.maxFallSpeed;
       player.y += player.velocityY;
       if (player.y < 0) { player.y = 0; player.velocityY = 0; }
-      if (player.y + player.height > canvasHeight) { doFallAnim(); return; }
-      updatePlayerView();
+      if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
+      player.el.style.left = player.x + "px";
+      player.el.style.top = player.y + "px";
+      player.el.style.transform = player.rotating ? `rotate(${player.rotAngle}deg)` : "none";
     }
-    function updatePlayerView() {
-      if (player.el) {
-        player.el.style.left = player.x + "px";
-        player.el.style.top = player.y + "px";
-        player.el.style.transform = `rotate(${player.angle}rad)`;
-      }
-    }
-    function onKeyDown(e) { if (!isFalling && e.code === "Space") flap(); }
-    function onClickOrTouch() { if (!isFalling) flap(); }
+    function onKeyDown(e) { if (e.code === "Space") flap(); }
+    function onClickOrTouch() { flap(); }
     function flap() {
+      if (!player.alive) return;
       player.velocityY = player.lift;
-      if (player.el) {
-        player.el.style.filter = "drop-shadow(0 0 16px #ffcbf9)";
-        setTimeout(() => player.el.style.filter = "none", 120);
-      }
+      player.el.style.filter = "drop-shadow(0 0 14px #ffcbf9)";
+      setTimeout(() => player.el.style.filter = "none", 120);
     }
     function checkCollision(pl, obj) {
       const pr = { x: pl.x + collisionMargin, y: pl.y + collisionMargin, width: pl.width - collisionMargin * 2, height: pl.height - collisionMargin * 2 };
@@ -571,23 +543,36 @@
         or.y + or.height < pr.y
       );
     }
-    function doFallAnim() {
-      if (!player.el) return;
-      isFalling = true;
+    // Death animation
+    function handleDeathAnimation() {
+      if (!player.alive) return;
       player.alive = false;
+      isGameRunning = false;
+      deathFall = true;
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("mousedown", onClickOrTouch);
       document.removeEventListener("touchstart", onClickOrTouch);
-      player.angle = Math.PI / 2; // вниз лицом
-      player.el.src = "https://media.giphy.com/media/JltcUZZ7p3bI/giphy.gif"; // вниз головой
-      setTimeout(() => {
-        player.el.style.filter = "brightness(0.95) blur(0.5px)";
-      }, 160);
+      player.rotating = true;
+      player.rotAngle = 90; // Смотрит вниз!
+      player.velocityY = 3; // Падает быстрее
+      animationId = requestAnimationFrame(updateGame);
     }
-    function gameOver() {
-      player.alive = false;
-      cancelAnimationFrame(animationId);
-      isGameRunning = false;
+    function updateDeathFall() {
+      player.y += player.velocityY;
+      player.velocityY += 0.35;
+      if (player.el) {
+        player.el.style.top = player.y + "px";
+        player.el.style.transform = `rotate(90deg)`;
+      }
+      // После ухода за экран — показываем popup!
+      if (player.y > canvasHeight + player.height) {
+        deathFall = false;
+        showGameOverSequence();
+      } else {
+        requestAnimationFrame(updateGame);
+      }
+    }
+    function showGameOverSequence() {
       let newHigh = false;
       if (scoreThisRun > highScore) {
         highScore = scoreThisRun;
@@ -597,20 +582,27 @@
       let popupText = `You collected <b>${scoreThisRun}</b> coins this run.<br>`;
       if (newHigh) popupText += "<span style='color:#b13df3'>NEW RECORD!</span><br>";
       popupText += `Your best: <b>${highScore}</b>`;
-      showGameOverPopup(popupText);
+      setTimeout(() => showGameOverPopup(popupText), 500);
     }
     function showGameOverPopup(html) {
-      if (player.el) player.el.style.display = "none";
-      for (const e of enemies) if (e.el) gameContainer.removeChild(e.el);
-      enemies = [];
-      for (const c of coins) if (c.el) gameContainer.removeChild(c.el);
-      coins = [];
       gameOverText.innerHTML = html;
       gameOverPopup.style.display = "flex";
     }
     gameOverCloseBtn.onclick = endGameAndReturn;
     function endGameAndReturn() {
+      if (isGameRunning || deathFall) {
+        cancelAnimationFrame(animationId);
+        document.removeEventListener("keydown", onKeyDown);
+        document.removeEventListener("mousedown", onClickOrTouch);
+        document.removeEventListener("touchstart", onClickOrTouch);
+        isGameRunning = false;
+        deathFall = false;
+      }
       if (player.el) player.el.style.display = "none";
+      for (const e of enemies) if (e.el) gameContainer.removeChild(e.el);
+      enemies = [];
+      for (const c of coins) if (c.el) gameContainer.removeChild(c.el);
+      coins = [];
       gameContainer.style.display = "none";
       gameOverPopup.style.display = "none";
       coinsDisplay.textContent = `Best: ${highScore}`;
