@@ -2,473 +2,107 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Floppy Bird, но вместо труб — враги</title>
+  <title>Floppy Bird — Telegram WebApp</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    /*-----------------------------*/
-    /*       ПЕРЕМЕННЫЕ ТЕМЫ       */
-    /*-----------------------------*/
-    :root {
-      --kirby-pink:    #FFC0CB;   /* Основной розовый */
-      --kirby-pink2:   #FFB4D9;   /* Дополнительный розовый */
-      --pastel-blue:   #A2D2FF;   /* Пастельный голубой */
-      --pastel-yellow: #FDFD96;   /* Пастельный жёлтый */
-      --purple:        #C8A2C8;   /* Фиолетовый/сиреневый */
-      --white:         #FFFFFF;
-      --font-main:     "Nunito", "Poppins", "Open Sans", sans-serif; /* Основной шрифт */
-      --font-title:    "Fredoka One", "Rubik Bubbles", cursive;       /* Заголовки */
-    }
-
-    /*-----------------------------*/
-    /*     ГЛОБАЛЬНЫЙ СТИЛЬ        */
-    /*-----------------------------*/
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      font-family: var(--font-main);
-      background: var(--kirby-pink); /* Фон всей страницы */
-      color: #333;                   /* Базовый цвет текста */
-      overflow: hidden;             /* Как и было у вас в исходном коде */
-    }
-
-    /* Для мелких заголовков */
-    h2 {
-      font-family: var(--font-title);
-      color: #fff;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.25);
-      margin-bottom: 1rem;
-    }
-
-    /* Для параграфов */
-    p {
-      font-size: 1rem;
-      line-height: 1.4;
-      margin: 0.5rem 0;
-    }
-
-    /*-----------------------------*/
-    /*  КЛАСС ЦЕНТРИРОВАНИЯ .centered  */
-    /*-----------------------------*/
-    .centered {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    /*-----------------------------*/
-    /*     ЭКРАН ЛОГИНА (#loginScreen) */
-    /*-----------------------------*/
-    #loginScreen {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      display: none;
-      flex-direction: column;
-      background: linear-gradient(
-        135deg,
-        var(--kirby-pink2) 0%,
-        var(--pastel-blue) 100%
-      );
-    }
-
-    /* Текстовое поле */
-    #loginScreen input {
-      padding: 10px 12px;
-      font-size: 16px;
-      margin-bottom: 12px;
-      border: 2px solid var(--white);
-      border-radius: 8px;
-      outline: none;
-    }
-
-    /* Кнопка входа */
-    #loginScreen button {
-      background: var(--pastel-yellow);
-      border: none;
-      border-radius: 30px;
-      padding: 12px 24px;
-      font-size: 16px;
-      font-family: var(--font-main);
-      cursor: pointer;
-      transition: transform 0.2s ease, background-color 0.2s ease;
-      box-shadow: 0 3px 0 var(--purple);
-    }
-    #loginScreen button:hover {
-      transform: scale(1.05);
-      background-color: var(--kirby-pink2);
-    }
-    #loginScreen button:active {
-      transform: scale(0.95);
-      box-shadow: 0 1px 0 var(--purple);
-    }
-
-    /*-----------------------------*/
-    /*        ГЛАВНОЕ МЕНЮ (#mainMenu) */
-    /*-----------------------------*/
-    #mainMenu {
-      display: none;
-      padding: 20px;
-      /* Фон с лёгким градиентом + паттерны/облака при желании */
-      background: linear-gradient(
-        90deg,
-        var(--kirby-pink) 0%,
-        var(--pastel-blue) 100%
-      );
-      height: 100vh;
-      overflow-y: auto; /* чтобы прокручивалось, если содержимого много */
-    }
-
-    #mainMenu h2 {
-      font-size: 2rem;
-      margin-top: 0;
-      color: #fff;
-      text-align: center;
-    }
-
-    #mainMenu p {
-      text-align: center;
-      font-size: 1.1rem;
-      color: #fff;
-    }
-
-    /* Кнопки в главном меню */
-    #mainMenu button {
-      display: inline-block;
-      margin: 10px;
-      padding: 12px 24px;
-      font-size: 16px;
-      font-family: var(--font-main);
-      cursor: pointer;
-      background: var(--pastel-yellow);
-      border: none;
-      border-radius: 30px;
-      box-shadow: 0 3px 0 var(--purple);
-      transition: transform 0.2s ease, background-color 0.2s ease;
-    }
-    #mainMenu button:hover {
-      transform: scale(1.05);
-      background-color: var(--kirby-pink2);
-    }
-    #mainMenu button:active {
-      transform: scale(0.95);
-      box-shadow: 0 1px 0 var(--purple);
-    }
-
-    /*-----------------------------*/
-    /*        ИГРОВОЙ ЭКРАН (#gameContainer) */
-    /*-----------------------------*/
-    #gameContainer {
-      display: none;
-      position: relative;
-      width: 100vw;
-      height: 100vh;
+      margin: 0; padding: 0;
+      width: 100vw; height: 100vh;
+      font-family: 'Nunito', 'Poppins', 'Open Sans', sans-serif;
+      background: #FFC0CB;
       overflow: hidden;
-      background: var(--white);
     }
-
-    /* Кнопка "Выйти в меню" */
-    #backToMenuBtn {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 999;
-      padding: 10px 20px;
-      font-family: var(--font-main);
-      background: var(--pastel-yellow);
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      box-shadow: 0 3px 0 var(--purple);
-      transition: transform 0.2s ease, background-color 0.2s ease;
+    #mainMenu, #gameContainer, #leaderboardContainer, #infoContainer {
+      width: 100vw; height: 100vh;
+      display: none; position: fixed; top:0; left:0;
+      overflow: hidden;
     }
-    #backToMenuBtn:hover {
-      transform: scale(1.05);
-      background-color: var(--kirby-pink2);
+    #mainMenu { display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(90deg, #FFC0CB 0%, #A2D2FF 100%);}
+    .user-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+    .user-header img { width: 70px; height: 70px; border-radius: 50%; margin-bottom: 10px; border:3px solid #fff; }
+    .user-header span { font-size: 1.2em; color:#fff; font-weight:bold; text-shadow: 0 1px 3px #888; }
+    #coinsDisplay { color:#fff; font-size:1.1em; margin-bottom:30px;}
+    #mainMenu button {
+      margin: 8px; padding: 13px 28px;
+      font-size: 1.2em;
+      background: #FDFD96; border: none; border-radius: 30px;
+      box-shadow: 0 3px 0 #C8A2C8;
+      cursor: pointer; font-weight: bold; transition: 0.2s;
     }
-    #backToMenuBtn:active {
-      transform: scale(0.95);
-      box-shadow: 0 1px 0 var(--purple);
-    }
-
-    /* Canvas с небом */
-    #gameCanvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      background-color: #A2D2FF; /* или можно оставить #87CEEB */
-    }
-
-    /*-----------------------------*/
-    /*     ТАБЛИЦА ЛИДЕРОВ (#leaderboardContainer) */
-    /*-----------------------------*/
-    #leaderboardContainer {
-      display: none;
-      padding: 20px;
-      background: linear-gradient(
-        180deg,
-        var(--pastel-blue) 0%,
-        var(--kirby-pink) 100%
-      );
-      height: 100vh;
+    #mainMenu button:hover { background: #FFB4D9; }
+    #mainMenu button:active { transform: scale(0.97); }
+    #gameContainer { background: #fff; z-index: 20;}
+    #leaderboardContainer, #infoContainer {
+      background: linear-gradient(180deg, #A2D2FF 0%, #FFC0CB 100%);
+      z-index: 50;
+      padding: 40px 10px 10px 10px;
       overflow-y: auto;
     }
-
-    #leaderboardContainer h2 {
-      text-align: center;
-      color: #fff;
-      margin-top: 0;
+    #backToMenuBtn, #leaderboardBackBtn, #infoBackBtn {
+      position: absolute; top: 18px; left: 18px;
+      padding: 8px 22px;
+      background: #FDFD96;
+      border: none; border-radius: 24px;
+      font-size: 1em; cursor:pointer;
+      box-shadow: 0 3px 0 #C8A2C8;
+      z-index: 99;
     }
-
-    /* Общий стиль таблицы */
-    table {
-      border-collapse: collapse;
-      margin: 20px auto;
-      width: 90%;
-      max-width: 600px;
-      background: var(--white);
-      border-radius: 12px;
-      overflow: hidden; /* для скруглённых углов */
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    /* Заголовки столбцов */
-    th {
-      background: var(--purple);
-      color: var(--white);
-      padding: 12px;
-      font-family: var(--font-main);
-      text-align: left;
-      font-weight: normal;
-    }
-
-    /* Ячейки таблицы */
-    td {
-      border-bottom: 1px solid #ccc;
-      padding: 12px;
-      font-family: var(--font-main);
-    }
-
-    /* Кнопка "Назад" */
-    #leaderboardBackBtn {
-      display: block;
-      padding: 10px 20px;
-      font-family: var(--font-main);
-      background: var(--pastel-yellow);
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      box-shadow: 0 3px 0 var(--purple);
-      transition: transform 0.2s ease, background-color 0.2s ease;
-    }
-    #leaderboardBackBtn:hover {
-      transform: scale(1.05);
-      background-color: var(--kirby-pink2);
-    }
-    #leaderboardBackBtn:active {
-      transform: scale(0.95);
-      box-shadow: 0 1px 0 var(--purple);
-    }
-
-    /*-----------------------------*/
-    /*        МАГАЗИН (#storeContainer) */
-    /*-----------------------------*/
-    #storeContainer {
-      display: none;
-      padding: 20px;
-      background: linear-gradient(
-        90deg,
-        var(--pastel-blue) 0%,
-        var(--pastel-yellow) 100%
-      );
-      height: 100vh;
-      overflow-y: auto;
-    }
-
-    #storeContainer h2 {
-      text-align: center;
-      margin-top: 0;
-      color: #333;
-    }
-
-    /* Можно стилизовать список улучшений */
-    #storeContainer ul {
-      list-style: none;
-      padding-left: 1rem;
-    }
-    #storeContainer li {
-      background: var(--white);
-      margin: 8px 0;
-      padding: 8px;
-      border-radius: 8px;
-    }
-
-    /* Кнопка "Назад" в магазине */
-    #storeBackBtn {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-family: var(--font-main);
-      background: var(--pastel-yellow);
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      box-shadow: 0 3px 0 var(--purple);
-      transition: transform 0.2s ease, background-color 0.2s ease;
-    }
-    #storeBackBtn:hover {
-      transform: scale(1.05);
-      background-color: var(--kirby-pink2);
-    }
-    #storeBackBtn:active {
-      transform: scale(0.95);
-      box-shadow: 0 1px 0 var(--purple);
-    }
-
-    /*-----------------------------*/
-    /*     ИНФО-БЛОК (#infoContainer) */
-    /*-----------------------------*/
-    #infoContainer {
-      display: none;
-      padding: 20px;
-      background: linear-gradient(
-        135deg,
-        var(--kirby-pink2) 0%,
-        var(--pastel-yellow) 100%
-      );
-      height: 100vh;
-      overflow-y: auto;
-    }
-
-    #infoContainer h2 {
-      text-align: center;
-      margin-top: 0;
-      color: #fff;
-    }
-
-    /* Кнопка "Назад" в инфо-блоке */
-    #infoBackBtn {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-family: var(--font-main);
-      background: var(--pastel-yellow);
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      box-shadow: 0 3px 0 var(--purple);
-      transition: transform 0.2s ease, background-color 0.2s ease;
-    }
-    #infoBackBtn:hover {
-      transform: scale(1.05);
-      background-color: var(--kirby-pink2);
-    }
-    #infoBackBtn:active {
-      transform: scale(0.95);
-      box-shadow: 0 1px 0 var(--purple);
-    }
-
-    /*-----------------------------*/
-    /*     АДАПТИВНОСТЬ (медиа-запросы) */
-    /*-----------------------------*/
-    @media (max-width: 768px) {
-      /* Увеличиваем кнопки на мобильных */
-      #loginScreen button,
-      #mainMenu button,
-      #backToMenuBtn,
-      #leaderboardBackBtn,
-      #storeBackBtn,
-      #infoBackBtn {
-        font-size: 14px;
-        padding: 10px 18px;
-      }
-
-      /* Делаем заголовки чуть меньше */
-      h2 {
-        font-size: 1.5rem;
-      }
+    table { width: 95%; margin:20px auto 0 auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.08);}
+    th, td { padding: 10px; text-align: left; font-size: 1.1em;}
+    th { background: #C8A2C8; color: #fff;}
+    @media (max-width:600px) {
+      #mainMenu button, #backToMenuBtn, #leaderboardBackBtn, #infoBackBtn { font-size: 1em; padding:10px 15px;}
     }
   </style>
 </head>
 <body>
-  <!-- Экран логина -->
-  <div id="loginScreen" class="centered">
-    <div>
-      <h2>Вход через Telegram</h2>
-      <input type="text" id="username" placeholder="@username" />
-      <br />
-      <button id="loginButton">Войти</button>
-    </div>
-  </div>
-
   <!-- Главное меню -->
   <div id="mainMenu">
-    <h2>Добро пожаловать! Враги вместо труб</h2>
-    <p id="userDisplay"></p>
-    <p id="coinsDisplay"></p>
+    <div class="user-header">
+      <img id="userPhoto" src="" alt="Avatar" />
+      <span id="userName">@User</span>
+    </div>
+    <div id="coinsDisplay"></div>
     <button id="startGameBtn">Начать игру</button>
     <button id="leaderboardBtn">Таблица лидеров</button>
-    <button id="storeBtn">Магазин улучшений</button>
     <button id="infoBtn">Информация</button>
   </div>
 
   <!-- Игровой экран -->
   <div id="gameContainer">
+    <button id="backToMenuBtn">В меню</button>
     <canvas id="gameCanvas"></canvas>
   </div>
 
   <!-- Таблица лидеров -->
   <div id="leaderboardContainer">
-    <h2>Таблица лидеров</h2>
     <button id="leaderboardBackBtn">Назад</button>
+    <h2>Таблица лидеров</h2>
     <table>
       <thead>
-        <tr>
-          <th>Пользователь</th>
-          <th>Монет</th>
-        </tr>
+        <tr><th>Пользователь</th><th>Монет</th></tr>
       </thead>
       <tbody id="leaderboardBody"></tbody>
     </table>
-    <br />
-  </div>
-
-  <!-- Магазин улучшений -->
-  <div id="storeContainer">
-    <h2>Магазин улучшений</h2>
-    <p>Здесь можно приобрести различные бонусы (пример).</p>
-    <ul>
-      <li>Увеличение высоты полёта</li>
-      <li>Увеличение скорости движения</li>
-      <li>Дополнительные жизни</li>
-    </ul>
-    <button id="storeBackBtn">Назад</button>
   </div>
 
   <!-- Информация -->
   <div id="infoContainer">
-    <h2>Информация об игре</h2>
-    <p>
-      Кирби летит слева направо по бесконечному фону, 
-      собирая монеты и уклоняясь от врагов.
-      Если Кирби коснётся врага — игра окончена.
-    </p>
     <button id="infoBackBtn">Назад</button>
+    <h2>Информация об игре</h2>
+    <p>Кирби летит слева направо по бесконечному фону, собирая монеты и уклоняясь от врагов.<br>Если Кирби коснётся врага — игра окончена.</p>
   </div>
 
-  <!-- Подключение Firebase и логика приложения -->
   <script type="module">
-    // === ИМПОРТ БИБЛИОТЕК FIREBASE ===
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
-    import { 
-      getDatabase, 
-      ref, 
-      get, 
-      set, 
-      update
-    } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+    // Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
+    else tg.expand();
 
-    // === КОНФИГУРАЦИЯ FIREBASE ===
+    // Firebase 9+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
     const firebaseConfig = {
       apiKey: "AIzaSyB90ev3fJRDKmn64hLTJaWjVjpHQtMjhLg",
       authDomain: "test-with-likes.firebaseapp.com",
@@ -479,450 +113,202 @@
       appId: "1:764738820142:web:b22c6608a30e46cdcea7bf",
       measurementId: "G-WJNF0HSN9P"
     };
-
-    // Инициализация Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // === ЭЛЕМЕНТЫ DOM ===
-    const loginScreen         = document.getElementById("loginScreen");
-    const mainMenu            = document.getElementById("mainMenu");
-    const usernameInput       = document.getElementById("username");
-    const loginButton         = document.getElementById("loginButton");
-    const userDisplay         = document.getElementById("userDisplay");
-    const coinsDisplay        = document.getElementById("coinsDisplay");
-
-    const startGameBtn        = document.getElementById("startGameBtn");
-    const leaderboardBtn      = document.getElementById("leaderboardBtn");
-    const storeBtn            = document.getElementById("storeBtn");
-    const infoBtn             = document.getElementById("infoBtn");
-
-    const gameContainer       = document.getElementById("gameContainer");
-    const backToMenuBtn       = document.getElementById("backToMenuBtn");
-    const gameCanvas          = document.getElementById("gameCanvas");
-
+    // DOM Elements
+    const mainMenu = document.getElementById("mainMenu");
+    const userPhoto = document.getElementById("userPhoto");
+    const userName = document.getElementById("userName");
+    const coinsDisplay = document.getElementById("coinsDisplay");
+    const startGameBtn = document.getElementById("startGameBtn");
+    const leaderboardBtn = document.getElementById("leaderboardBtn");
+    const infoBtn = document.getElementById("infoBtn");
+    const gameContainer = document.getElementById("gameContainer");
+    const backToMenuBtn = document.getElementById("backToMenuBtn");
+    const gameCanvas = document.getElementById("gameCanvas");
     const leaderboardContainer = document.getElementById("leaderboardContainer");
-    const leaderboardBody      = document.getElementById("leaderboardBody");
-    const leaderboardBackBtn   = document.getElementById("leaderboardBackBtn");
+    const leaderboardBackBtn = document.getElementById("leaderboardBackBtn");
+    const leaderboardBody = document.getElementById("leaderboardBody");
+    const infoContainer = document.getElementById("infoContainer");
+    const infoBackBtn = document.getElementById("infoBackBtn");
 
-    const storeContainer      = document.getElementById("storeContainer");
-    const storeBackBtn        = document.getElementById("storeBackBtn");
-
-    const infoContainer       = document.getElementById("infoContainer");
-    const infoBackBtn         = document.getElementById("infoBackBtn");
-
-    // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ПОЛЬЗОВАТЕЛЯ ===
-    let currentUsername = null;
+    // User
+    let tgUser = tg.initDataUnsafe?.user;
+    if (!tgUser) {
+      mainMenu.innerHTML = "<h2>Пожалуйста, откройте через Telegram!</h2>";
+      throw new Error("Not Telegram WebApp");
+    }
+    const userId = tgUser.id.toString();
     let currentCoins = 0;
 
-    // === ИГРОВЫЕ НАСТРОЙКИ ===
-    let ctx;
-    let animationId;
-    let isGameRunning = false;
-
-    let canvasWidth  = 0;
-    let canvasHeight = 0;
-
-    // Кирби (персонаж)
-    const player = {
-      x: 100,
-      y: 150,
-      width: 45,
-      height: 45,
-      velocityY: 0,
-      gravity: 0.3,
-      lift: -5,
-      alive: true,
-      maxFallSpeed: 3,
-      el: null
-    };
-
-    // Скорость «скролла» фона и движения врагов/монет
-    const scrollSpeed = 1.8;
-
-    // Враги (массив). Вместо труб — летающий .gif
-    let enemies = [];
-    const enemyGif = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
-    const enemyWidth  = 80;
-    const enemyHeight = 80;
-    // Интервал появления врагов (в кадрах)
-    const enemyInterval = 150; 
-    let enemyTimer = 0;
-
-    // Монеты
-    let coins = [];
-    const coinSize = 40;
-    const coinGifURL = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
-    // Интервал появления монет
-    const coinInterval = 80;
-    let coinTimer = 0;
-
-    // Счёт за забег
-    let scoreThisRun = 0;
-
-    // Фон (side-scrolling)
-    const bgImage = new Image();
-    bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
-    let bgX = 0;
-
-    // «запас» при столкновении (чтобы не умирать «за миллиметр»)
-    const collisionMargin = 10;
-
-    // === ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ===
-    window.addEventListener("load", () => {
-      const savedUsername = localStorage.getItem("username");
-      if (savedUsername) {
-        autoLogin(savedUsername);
-      } else {
-        loginScreen.style.display = "flex";
-      }
-    });
-
-    async function autoLogin(username) {
-      const userRef = ref(db, `users/${username}`);
-      const snapshot = await get(userRef);
-      let coinsVal = 0;
-      if (snapshot.exists()) {
-        coinsVal = snapshot.val().coins || 0;
-      }
-      displayMainMenu(username, coinsVal);
-    }
-
-    // === КНОПКА "ВОЙТИ" ===
-    loginButton.addEventListener("click", async () => {
-      const username = usernameInput.value.trim();
-      // Убрали alert, просто пропустим проверку или заменим на консоль/ничего
-      if (!username.startsWith("@")) {
-        // Раньше здесь был alert, теперь просто возвращаем
-        return;
-      }
-      await loginUser(username);
-    });
-
-    async function loginUser(username) {
-      const userRef = ref(db, `users/${username}`);
-      const snapshot = await get(userRef);
-      let coinsVal = 0;
+    // Main UI Load
+    async function loadUser() {
+      userPhoto.src = tgUser.photo_url || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
+      userName.textContent = tgUser.username ? "@" + tgUser.username : "Без username";
+      // Получить прогресс (по userId)
+      const userRef = ref(db, `users/${userId}`);
+      let snapshot = await get(userRef);
       if (!snapshot.exists()) {
-        // создаём
-        await set(userRef, { coins: 0 });
+        // Новый пользователь
+        await set(userRef, {
+          coins: 0,
+          username: tgUser.username || "",
+          photo: tgUser.photo_url || ""
+        });
+        currentCoins = 0;
       } else {
-        coinsVal = snapshot.val().coins || 0;
+        currentCoins = snapshot.val().coins || 0;
       }
-      localStorage.setItem("username", username);
-      displayMainMenu(username, coinsVal);
+      coinsDisplay.textContent = `Монет: ${currentCoins}`;
+      mainMenu.style.display = "flex";
     }
+    window.onload = loadUser;
 
-    // === МЕНЮ ===
-    function displayMainMenu(username, coinsVal) {
-      currentUsername = username;
-      currentCoins = coinsVal;
+    // Меню
+    startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGame(); };
+    leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "block"; loadLeaderboard(); };
+    infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "block"; };
 
-      loginScreen.style.display = "none";
-      gameContainer.style.display = "none";
-      leaderboardContainer.style.display = "none";
-      storeContainer.style.display = "none";
-      infoContainer.style.display = "none";
-
-      mainMenu.style.display = "block";
-      userDisplay.textContent  = `Username: ${username}`;
-      coinsDisplay.textContent = `Монет: ${coinsVal}`;
-    }
-
-    // === КНОПКИ МЕНЮ ===
-    startGameBtn.addEventListener("click", () => {
-      mainMenu.style.display = "none";
-      startGame();
-    });
-    leaderboardBtn.addEventListener("click", () => {
-      mainMenu.style.display = "none";
-      leaderboardContainer.style.display = "block";
-      loadLeaderboard();
-    });
-    storeBtn.addEventListener("click", () => {
-      mainMenu.style.display = "none";
-      storeContainer.style.display = "block";
-    });
-    infoBtn.addEventListener("click", () => {
-      mainMenu.style.display = "none";
-      infoContainer.style.display = "block";
-    });
-
-    // === ЛИДЕРБОРД ===
+    // Лидеры
     async function loadLeaderboard() {
       leaderboardBody.innerHTML = "";
       const usersRef = ref(db, "users/");
       const snapshot = await get(usersRef);
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const usersArray = Object.keys(data).map(key => {
-          return { username: key, coins: data[key].coins || 0 };
-        });
+        const usersArray = Object.entries(data).map(([id, u]) => ({
+          username: u.username ? `@${u.username}` : "User " + id,
+          coins: u.coins || 0
+        }));
         usersArray.sort((a, b) => b.coins - a.coins);
         usersArray.forEach(user => {
           const tr = document.createElement("tr");
-          const tdName = document.createElement("td");
-          const tdCoins = document.createElement("td");
-          tdName.textContent = user.username;
-          tdCoins.textContent = user.coins;
-          tr.appendChild(tdName);
-          tr.appendChild(tdCoins);
+          tr.innerHTML = `<td>${user.username}</td><td>${user.coins}</td>`;
           leaderboardBody.appendChild(tr);
         });
       }
     }
-    leaderboardBackBtn.addEventListener("click", () => {
-      leaderboardContainer.style.display = "none";
-      displayMainMenu(currentUsername, currentCoins);
-    });
-    storeBackBtn.addEventListener("click", () => {
-      storeContainer.style.display = "none";
-      displayMainMenu(currentUsername, currentCoins);
-    });
-    infoBackBtn.addEventListener("click", () => {
-      infoContainer.style.display = "none";
-      displayMainMenu(currentUsername, currentCoins);
-    });
+    leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
+    infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
 
-    // === СТАРТ ИГРЫ ===
+    // Game Logic
+    let ctx, animationId, isGameRunning = false;
+    let canvasWidth = 0, canvasHeight = 0;
+    const player = { x: 100, y: 150, width: 45, height: 45, velocityY: 0, gravity: 0.3, lift: -5, alive: true, maxFallSpeed: 3, el: null };
+    const scrollSpeed = 1.8;
+    let enemies = [], enemyTimer = 0, enemyInterval = 150;
+    const enemyGif = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
+    const enemyWidth = 80, enemyHeight = 80;
+    let coins = [], coinTimer = 0, coinInterval = 80;
+    const coinSize = 40, coinGifURL = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
+    let scoreThisRun = 0, bgX = 0;
+    const bgImage = new window.Image();
+    bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
+    const collisionMargin = 10;
+
     function startGame() {
       gameContainer.style.display = "block";
       ctx = gameCanvas.getContext("2d");
       resizeCanvas();
-
-      // Сброс игровых переменных
       isGameRunning = true;
       player.y = canvasHeight / 2;
       player.velocityY = 0;
       player.alive = true;
-
-      enemies = [];
-      enemyTimer = 0;
-      coins = [];
-      coinTimer = 0;
-
-      scoreThisRun = 0;
-      bgX = 0;
-
-      // Создаём (или показываем) Кирби
+      enemies = []; enemyTimer = 0;
+      coins = []; coinTimer = 0;
+      scoreThisRun = 0; bgX = 0;
       if (!player.el) {
         const kirby = document.createElement("img");
-        kirby.src = "kirby.gif"; 
+        kirby.src = "kirby.gif";
         kirby.style.position = "absolute";
-        kirby.style.width  = player.width + "px";
+        kirby.style.width = player.width + "px";
         kirby.style.height = player.height + "px";
-        kirby.style.left   = player.x + "px";
-        kirby.style.top    = player.y + "px";
+        kirby.style.left = player.x + "px";
+        kirby.style.top = player.y + "px";
         kirby.style.zIndex = "900";
         gameContainer.appendChild(kirby);
         player.el = kirby;
-      } else {
-        player.el.style.display = "block";
-      }
-
+      } else { player.el.style.display = "block"; }
       document.addEventListener("keydown", onKeyDown);
       document.addEventListener("mousedown", onClickOrTouch);
       document.addEventListener("touchstart", onClickOrTouch);
-
       animationId = requestAnimationFrame(updateGame);
     }
+    backToMenuBtn.onclick = endGameAndReturn;
 
-    // === АДАПТАЦИЯ CANVAS ===
-    window.addEventListener("resize", () => {
-      if (isGameRunning) {
-        resizeCanvas();
-      }
-    });
     function resizeCanvas() {
-      canvasWidth  = window.innerWidth;
+      canvasWidth = window.innerWidth;
       canvasHeight = window.innerHeight;
-      gameCanvas.width  = canvasWidth;
+      gameCanvas.width = canvasWidth;
       gameCanvas.height = canvasHeight;
     }
+    window.addEventListener("resize", () => { if (isGameRunning) resizeCanvas(); });
 
-    // === ГЛАВНЫЙ ЦИКЛ ИГРЫ ===
     function updateGame() {
       if (!isGameRunning) return;
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-      // Фон
       drawScrollingBackground();
-
-      // Генерация врагов
-      enemyTimer++;
-      if (enemyTimer > enemyInterval) {
-        createEnemy();
-        enemyTimer = 0;
-      }
-      // Обновляем врагов
+      enemyTimer++; if (enemyTimer > enemyInterval) { createEnemy(); enemyTimer = 0; }
       for (let i = 0; i < enemies.length; i++) {
         const e = enemies[i];
         e.x -= scrollSpeed;
-        // Двигаем <img> врага
-        e.el.style.left = e.x + "px";
-        e.el.style.top  = e.y + "px";
-        // Проверка столкновения
-        if (checkCollision(player, e)) {
-          gameOver();
-        }
+        e.el.style.left = e.x + "px"; e.el.style.top = e.y + "px";
+        if (checkCollision(player, e)) { gameOver(); }
       }
-      // Убираем ушедших за экран
-      enemies = enemies.filter(e => {
-        if (e.x + e.width < 0) {
-          // Удаляем DOM-элемент
-          gameContainer.removeChild(e.el);
-          return false;
-        }
-        return true;
-      });
-
-      // Генерация монет
-      coinTimer++;
-      if (coinTimer > coinInterval) {
-        createCoin();
-        coinTimer = 0;
-      }
-      // Обновляем монеты
+      enemies = enemies.filter(e => { if (e.x + e.width < 0) { gameContainer.removeChild(e.el); return false; } return true; });
+      coinTimer++; if (coinTimer > coinInterval) { createCoin(); coinTimer = 0; }
       for (let i = 0; i < coins.length; i++) {
         const c = coins[i];
         c.x -= scrollSpeed;
-        c.el.style.left = c.x + "px";
-        c.el.style.top  = c.y + "px";
-        // Проверка сбора
-        if (checkCollision(player, c)) {
-          scoreThisRun++;
-          c.collected = true;
-        }
+        c.el.style.left = c.x + "px"; c.el.style.top = c.y + "px";
+        if (checkCollision(player, c)) { scoreThisRun++; c.collected = true; }
       }
-      coins = coins.filter(c => {
-        if (c.collected || (c.x + c.size < 0)) {
-          gameContainer.removeChild(c.el);
-          return false;
-        }
-        return true;
-      });
-
-      // Обновляем Кирби
+      coins = coins.filter(c => { if (c.collected || (c.x + c.size < 0)) { gameContainer.removeChild(c.el); return false; } return true; });
       updatePlayer();
-
-      // Отображаем счёт
-      ctx.fillStyle = "white";
-      ctx.font = "24px Arial";
+      ctx.fillStyle = "white"; ctx.font = "24px Arial";
       ctx.fillText(`Монет за забег: ${scoreThisRun}`, 20, 40);
-
-      if (player.alive) {
-        animationId = requestAnimationFrame(updateGame);
-      }
+      if (player.alive) { animationId = requestAnimationFrame(updateGame); }
     }
-
-    // === ФУНКЦИЯ СКРОЛЛА ФОНА ===
     function drawScrollingBackground() {
-      bgX -= 1; 
-      if (bgX <= -canvasWidth) {
-        bgX = 0;
-      }
+      bgX -= 1; if (bgX <= -canvasWidth) { bgX = 0; }
       ctx.drawImage(bgImage, bgX, 0, canvasWidth, canvasHeight);
       ctx.drawImage(bgImage, bgX + canvasWidth, 0, canvasWidth, canvasHeight);
     }
-
-    // === СОЗДАНИЕ ВРАГА ===
     function createEnemy() {
-      // Враг появляется справа на случайной высоте
       const randY = Math.random() * (canvasHeight - enemyHeight - 20) + 10;
       const enemyEl = document.createElement("img");
-      enemyEl.src = enemyGif;
-      enemyEl.style.position = "absolute";
-      enemyEl.style.width  = enemyWidth  + "px";
-      enemyEl.style.height = enemyHeight + "px";
-      enemyEl.style.left   = canvasWidth + "px";
-      enemyEl.style.top    = randY + "px";
-      enemyEl.style.zIndex = "850";
-      gameContainer.appendChild(enemyEl);
-
-      enemies.push({
-        x: canvasWidth,
-        y: randY,
-        width: enemyWidth,
-        height: enemyHeight,
-        el: enemyEl
-      });
+      enemyEl.src = enemyGif; enemyEl.style.position = "absolute";
+      enemyEl.style.width = enemyWidth + "px"; enemyEl.style.height = enemyHeight + "px";
+      enemyEl.style.left = canvasWidth + "px"; enemyEl.style.top = randY + "px";
+      enemyEl.style.zIndex = "850"; gameContainer.appendChild(enemyEl);
+      enemies.push({ x: canvasWidth, y: randY, width: enemyWidth, height: enemyHeight, el: enemyEl });
     }
-
-    // === СОЗДАНИЕ МОНЕТЫ ===
     function createCoin() {
       const randY = Math.random() * (canvasHeight - coinSize - 20) + 10;
       const coinEl = document.createElement("img");
-      coinEl.src = coinGifURL;
-      coinEl.style.position = "absolute";
-      coinEl.style.width  = coinSize + "px";
-      coinEl.style.height = coinSize + "px";
-      coinEl.style.left   = canvasWidth + "px";
-      coinEl.style.top    = randY + "px";
-      coinEl.style.zIndex = "800";
-      gameContainer.appendChild(coinEl);
-
-      coins.push({
-        x: canvasWidth,
-        y: randY,
-        size: coinSize,
-        collected: false,
-        el: coinEl
-      });
+      coinEl.src = coinGifURL; coinEl.style.position = "absolute";
+      coinEl.style.width = coinSize + "px"; coinEl.style.height = coinSize + "px";
+      coinEl.style.left = canvasWidth + "px"; coinEl.style.top = randY + "px";
+      coinEl.style.zIndex = "800"; gameContainer.appendChild(coinEl);
+      coins.push({ x: canvasWidth, y: randY, size: coinSize, collected: false, el: coinEl });
     }
-
-    // === ОБНОВЛЕНИЕ ПОЛЁТА КИРБИ ===
     function updatePlayer() {
       player.velocityY += player.gravity;
-      if (player.velocityY > player.maxFallSpeed) {
-        player.velocityY = player.maxFallSpeed;
-      }
+      if (player.velocityY > player.maxFallSpeed) player.velocityY = player.maxFallSpeed;
       player.y += player.velocityY;
-
-      if (player.y < 0) {
-        player.y = 0;
-        player.velocityY = 0;
-      }
-      // Если игрок ушёл за нижний край — конец игры
-      if (player.y + player.height > canvasHeight) {
-        gameOver();
-      }
-      // Обновляем DOM
-      player.el.style.left = player.x + "px";
-      player.el.style.top  = player.y + "px";
+      if (player.y < 0) { player.y = 0; player.velocityY = 0; }
+      if (player.y + player.height > canvasHeight) { gameOver(); }
+      player.el.style.left = player.x + "px"; player.el.style.top = player.y + "px";
     }
-
-    // === УПРАВЛЕНИЕ (ПРЫЖОК) ===
-    function onKeyDown(e) {
-      if (e.code === "Space") {
-        flap();
-      }
-    }
-    function onClickOrTouch() {
-      flap();
-    }
-    function flap() {
-      player.velocityY = player.lift;
-    }
-
-    // === ПРОВЕРКА СТОЛКНОВЕНИЯ (С ОТСТУПОМ) ===
+    function onKeyDown(e) { if (e.code === "Space") flap(); }
+    function onClickOrTouch() { flap(); }
+    function flap() { player.velocityY = player.lift; }
     function checkCollision(pl, obj) {
-      const pr = {
-        x: pl.x + collisionMargin,
-        y: pl.y + collisionMargin,
-        width: pl.width - collisionMargin * 2,
-        height: pl.height - collisionMargin * 2
-      };
-      // У врага нет size, у монеты нет width/height, проверяем оба случая
+      const pr = { x: pl.x + collisionMargin, y: pl.y + collisionMargin, width: pl.width - collisionMargin * 2, height: pl.height - collisionMargin * 2 };
       const ow = (obj.width  || obj.size) - collisionMargin * 2;
       const oh = (obj.height || obj.size) - collisionMargin * 2;
-
-      const or = {
-        x: obj.x + collisionMargin,
-        y: obj.y + collisionMargin,
-        width:  ow > 0 ? ow : 0,
-        height: oh > 0 ? oh : 0
-      };
-
+      const or = { x: obj.x + collisionMargin, y: obj.y + collisionMargin, width:  ow > 0 ? ow : 0, height: oh > 0 ? oh : 0 };
       return !(
         or.x > pr.x + pr.width ||
         or.x + or.width < pr.x ||
@@ -930,8 +316,6 @@
         or.y + or.height < pr.y
       );
     }
-
-    // === GAME OVER ===
     function gameOver() {
       player.alive = false;
       cancelAnimationFrame(animationId);
@@ -939,15 +323,10 @@
       document.removeEventListener("mousedown", onClickOrTouch);
       document.removeEventListener("touchstart", onClickOrTouch);
       isGameRunning = false;
-
       currentCoins += scoreThisRun;
       updateCoinsInDB();
-
-      // Раньше здесь был alert о конце игры — убран
-      endGameAndReturn();
+      setTimeout(endGameAndReturn, 500);
     }
-
-    // === ВЫХОД ИЗ ИГРЫ ===
     function endGameAndReturn() {
       if (isGameRunning) {
         cancelAnimationFrame(animationId);
@@ -955,36 +334,24 @@
         document.removeEventListener("mousedown", onClickOrTouch);
         document.removeEventListener("touchstart", onClickOrTouch);
         isGameRunning = false;
-
         currentCoins += scoreThisRun;
         updateCoinsInDB();
       }
-      // Скрыть Кирби
-      if (player.el) {
-        player.el.style.display = "none";
-      }
-      // Удалить оставшихся врагов из DOM
-      for (const e of enemies) {
-        if (e.el) gameContainer.removeChild(e.el);
-      }
+      if (player.el) player.el.style.display = "none";
+      for (const e of enemies) if (e.el) gameContainer.removeChild(e.el);
       enemies = [];
-      // Удалить оставшиеся монеты из DOM
-      for (const c of coins) {
-        if (c.el) gameContainer.removeChild(c.el);
-      }
+      for (const c of coins) if (c.el) gameContainer.removeChild(c.el);
       coins = [];
-
       gameContainer.style.display = "none";
-      displayMainMenu(currentUsername, currentCoins);
+      coinsDisplay.textContent = `Монет: ${currentCoins}`;
+      mainMenu.style.display = "flex";
     }
-
-    // === СОХРАНЯЕМ МОНЕТЫ В FIREBASE ===
     async function updateCoinsInDB() {
-      if (!currentUsername) return;
-      const userRef = ref(db, `users/${currentUsername}`);
+      const userRef = ref(db, `users/${userId}`);
       await update(userRef, { coins: currentCoins });
       coinsDisplay.textContent = `Монет: ${currentCoins}`;
     }
   </script>
 </body>
 </html>
+
