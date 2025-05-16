@@ -5,54 +5,137 @@
   <title>Floppy Bird — Telegram WebApp</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Nunito:800,700,600,400|Poppins:600,400&display=swap" rel="stylesheet">
   <style>
     html, body {
-      margin: 0; padding: 0;
-      width: 100vw; height: 100vh;
+      margin: 0; padding: 0; width: 100vw; height: 100vh;
       font-family: 'Nunito', 'Poppins', 'Open Sans', sans-serif;
-      background: #FFC0CB;
+      background: #f7f4ff;
       overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    #mainMenu, #gameContainer, #leaderboardContainer, #infoContainer {
+    #mainMenu, #gameContainer, #leaderboardContainer, #infoContainer, #gameOverPopup {
       width: 100vw; height: 100vh;
       display: none; position: fixed; top:0; left:0;
+    }
+    #mainMenu {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: linear-gradient(120deg, #A2D2FF 0%, #FFC0CB 100%);
+      transition: background 0.5s;
+      min-height: 100vh;
+      padding-bottom: 30px;
+    }
+    .user-header {
+      display: flex; flex-direction: column; align-items: center; margin-bottom: 24px;
+      gap: 6px;
+    }
+    .user-header img {
+      width: 80px; height: 80px; border-radius: 50%; border:4px solid #fff;
+      box-shadow: 0 6px 24px 0 #a2d2ff66;
+      background: #fff;
+      margin-bottom: 8px;
+    }
+    .user-header span {
+      font-size: 1.25em; color: #47366b; font-weight: bold;
+      text-shadow: 0 1px 2px #eee;
+      max-width: 180px;
+      text-overflow: ellipsis;
       overflow: hidden;
+      white-space: nowrap;
     }
-    #mainMenu { display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(90deg, #FFC0CB 0%, #A2D2FF 100%);}
-    .user-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
-    .user-header img { width: 70px; height: 70px; border-radius: 50%; margin-bottom: 10px; border:3px solid #fff; }
-    .user-header span { font-size: 1.2em; color:#fff; font-weight:bold; text-shadow: 0 1px 3px #888; }
-    #coinsDisplay { color:#fff; font-size:1.1em; margin-bottom:30px;}
+    .user-meta {
+      display: flex; flex-direction: column; gap: 5px;
+      margin-bottom: 16px; align-items: center;
+    }
+    .user-meta div {
+      font-size: 1.04em; color: #44335b; background: #fff6; border-radius: 10px;
+      padding: 4px 16px; margin: 2px 0;
+      box-shadow: 0 2px 6px 0 #a2d2ff1a;
+      min-width: 160px; text-align: center;
+    }
+    #coinsDisplay {
+      color: #fff; background: linear-gradient(90deg,#b07cff 0,#ffb5d1 100%);
+      font-size: 1.18em; font-weight: 700;
+      margin-bottom: 16px; padding: 8px 22px;
+      border-radius: 30px;
+      box-shadow: 0 2px 18px #c2a4ff22;
+      text-shadow: 0 2px 2px #fff7;
+      border: 2px solid #fff;
+      transition: background 0.4s;
+    }
     #mainMenu button {
-      margin: 8px; padding: 13px 28px;
-      font-size: 1.2em;
-      background: #FDFD96; border: none; border-radius: 30px;
-      box-shadow: 0 3px 0 #C8A2C8;
-      cursor: pointer; font-weight: bold; transition: 0.2s;
+      margin: 10px; padding: 16px 36px;
+      font-size: 1.24em;
+      background: linear-gradient(90deg, #f7c8e0 0%, #b6eaff 100%);
+      border: none; border-radius: 30px;
+      box-shadow: 0 3px 14px #a2d2ff4d;
+      cursor: pointer; font-weight: 700; color: #44335b;
+      transition: 0.16s;
     }
-    #mainMenu button:hover { background: #FFB4D9; }
-    #mainMenu button:active { transform: scale(0.97); }
-    #gameContainer { background: #fff; z-index: 20;}
+    #mainMenu button:hover { background: linear-gradient(90deg, #ffc0cb 20%, #A2D2FF 100%); transform: scale(1.03);}
+    #mainMenu button:active { transform: scale(0.97);}
+    #gameContainer { background: #fff; z-index: 20; }
     #leaderboardContainer, #infoContainer {
-      background: linear-gradient(180deg, #A2D2FF 0%, #FFC0CB 100%);
-      z-index: 50;
-      padding: 40px 10px 10px 10px;
+      background: linear-gradient(150deg, #A2D2FF 0%, #FFC0CB 100%);
+      z-index: 50; padding: 30px 0 0 0;
       overflow-y: auto;
+      animation: fadeIn 0.3s;
     }
+    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
     #backToMenuBtn, #leaderboardBackBtn, #infoBackBtn {
       position: absolute; top: 18px; left: 18px;
-      padding: 8px 22px;
-      background: #FDFD96;
-      border: none; border-radius: 24px;
-      font-size: 1em; cursor:pointer;
-      box-shadow: 0 3px 0 #C8A2C8;
+      padding: 10px 26px;
+      background: linear-gradient(90deg, #ffdaea 0%, #cceaff 100%);
+      border: none; border-radius: 22px;
+      font-size: 1.02em; font-weight: 700; color: #574488;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #C8A2C8, 0 2px 8px #ffdbf933;
       z-index: 99;
+      transition: background 0.22s;
     }
-    table { width: 95%; margin:20px auto 0 auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.08);}
-    th, td { padding: 10px; text-align: left; font-size: 1.1em;}
-    th { background: #C8A2C8; color: #fff;}
-    @media (max-width:600px) {
-      #mainMenu button, #backToMenuBtn, #leaderboardBackBtn, #infoBackBtn { font-size: 1em; padding:10px 15px;}
+    #backToMenuBtn:hover, #leaderboardBackBtn:hover, #infoBackBtn:hover {
+      background: linear-gradient(90deg, #b07cff 0, #ffb5d1 100%);
+      color: #fff;
+    }
+    table { width: 95%; margin: 26px auto 0 auto; background: #fff; border-radius: 18px; box-shadow: 0 4px 18px 0 #c2a4ff29;}
+    th, td { padding: 14px 10px; text-align: left; font-size: 1.09em;}
+    th { background: #C8A2C8; color: #fff; border-radius: 10px 10px 0 0;}
+    tr:nth-child(odd) { background: #f9f5ff; }
+    #infoContainer p { font-size: 1.1em; color: #493A64; background: #fff7; border-radius: 12px; padding: 10px 14px;}
+    #gameOverPopup {
+      z-index: 999; display: flex; align-items: center; justify-content: center;
+      background: rgba(60,30,80,0.42);
+      animation: fadeIn 0.25s;
+    }
+    .popup-box {
+      background: linear-gradient(120deg, #fff 60%, #ffe3fa 100%);
+      border-radius: 30px; padding: 32px 30px; min-width: 240px;
+      box-shadow: 0 6px 30px #e3caff70;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 16px;
+    }
+    .popup-box h2 { margin:0 0 8px 0; color: #9857d3; font-size: 1.24em;}
+    .popup-box p { color: #47366b; font-size: 1.05em; margin: 0; }
+    .popup-box button {
+      margin-top: 8px; padding: 12px 30px;
+      background: linear-gradient(90deg,#f7c8e0 0,#b6eaff 100%);
+      border-radius: 20px; border: none;
+      color: #44335b; font-weight: 700; font-size: 1.1em; box-shadow: 0 2px 12px #a2d2ff3b;
+      cursor: pointer;
+      transition: background 0.16s;
+    }
+    .popup-box button:hover { background: linear-gradient(90deg, #ffc0cb 20%, #A2D2FF 100%);}
+    @media (max-width: 600px) {
+      #mainMenu button, #backToMenuBtn, #leaderboardBackBtn, #infoBackBtn, .popup-box button {
+        font-size: 0.97em; padding:10px 12px;
+      }
+      .user-header img { width: 62px; height: 62px;}
+    }
+    /* Always center coinsDisplay, even on small screens */
+    @media (max-width: 390px) {
+      #coinsDisplay { font-size: 0.96em; padding: 7px 10px;}
+      .user-meta div { font-size: 0.93em;}
     }
   </style>
 </head>
@@ -62,6 +145,10 @@
     <div class="user-header">
       <img id="userPhoto" src="" alt="Avatar" />
       <span id="userName">@User</span>
+    </div>
+    <div class="user-meta">
+      <div id="yourPlace">Место: ...</div>
+      <div id="yourHighScore">Рекорд: ...</div>
     </div>
     <div id="coinsDisplay"></div>
     <button id="startGameBtn">Начать игру</button>
@@ -78,10 +165,10 @@
   <!-- Таблица лидеров -->
   <div id="leaderboardContainer">
     <button id="leaderboardBackBtn">Назад</button>
-    <h2>Таблица лидеров</h2>
+    <h2 style="color:#7c46a3;text-align:center;margin:10px 0 0 0">Таблица лидеров</h2>
     <table>
       <thead>
-        <tr><th>Пользователь</th><th>Монет</th></tr>
+        <tr><th>Пользователь</th><th>Рекорд</th><th>Монет</th></tr>
       </thead>
       <tbody id="leaderboardBody"></tbody>
     </table>
@@ -90,8 +177,24 @@
   <!-- Информация -->
   <div id="infoContainer">
     <button id="infoBackBtn">Назад</button>
-    <h2>Информация об игре</h2>
-    <p>Кирби летит слева направо по бесконечному фону, собирая монеты и уклоняясь от врагов.<br>Если Кирби коснётся врага — игра окончена.</p>
+    <h2 style="color:#7c46a3;text-align:center;">Информация об игре</h2>
+    <p>
+      <b>Кирби</b> летит по бесконечному миру, собирая монеты и уворачиваясь от врагов.<br>
+      Если Кирби сталкивается с врагом или падает — игра окончена.<br>
+      <b>Управление:</b> клик/тап или пробел.<br>
+      Цель — собрать как можно больше монет за один забег!<br>
+      <br>
+      Ваш рекорд записывается и выводится в таблицу лидеров. Удачи!
+    </p>
+  </div>
+
+  <!-- Popup для результатов -->
+  <div id="gameOverPopup">
+    <div class="popup-box">
+      <h2>Игра окончена!</h2>
+      <p id="gameOverText"></p>
+      <button id="gameOverCloseBtn">В меню</button>
+    </div>
   </div>
 
   <script type="module">
@@ -132,6 +235,12 @@
     const leaderboardBody = document.getElementById("leaderboardBody");
     const infoContainer = document.getElementById("infoContainer");
     const infoBackBtn = document.getElementById("infoBackBtn");
+    const yourPlace = document.getElementById("yourPlace");
+    const yourHighScore = document.getElementById("yourHighScore");
+    const gameOverPopup = document.getElementById("gameOverPopup");
+    const gameOverText = document.getElementById("gameOverText");
+    const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
+    gameOverPopup.style.display = "none";
 
     // User
     let tgUser = tg.initDataUnsafe?.user;
@@ -141,6 +250,7 @@
     }
     const userId = tgUser.id.toString();
     let currentCoins = 0;
+    let highScore = 0;
 
     // Main UI Load
     async function loadUser() {
@@ -150,25 +260,47 @@
       const userRef = ref(db, `users/${userId}`);
       let snapshot = await get(userRef);
       if (!snapshot.exists()) {
-        // Новый пользователь
         await set(userRef, {
-          coins: 0,
+          coins: 0, highScore: 0,
           username: tgUser.username || "",
           photo: tgUser.photo_url || ""
         });
         currentCoins = 0;
+        highScore = 0;
       } else {
         currentCoins = snapshot.val().coins || 0;
+        highScore = snapshot.val().highScore || 0;
       }
       coinsDisplay.textContent = `Монет: ${currentCoins}`;
+      yourHighScore.textContent = `Рекорд: ${highScore}`;
+      await updatePlace();
       mainMenu.style.display = "flex";
     }
     window.onload = loadUser;
+
+    // Обновление места в таблице лидеров
+    async function updatePlace() {
+      yourPlace.textContent = "Место: ...";
+      const usersRef = ref(db, "users/");
+      const snapshot = await get(usersRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const usersArray = Object.entries(data).map(([id, u]) => ({
+          id, highScore: u.highScore || 0
+        }));
+        usersArray.sort((a, b) => b.highScore - a.highScore);
+        const place = usersArray.findIndex(x => x.id === userId) + 1;
+        if (place > 0) yourPlace.textContent = `Место: ${place} из ${usersArray.length}`;
+        else yourPlace.textContent = `Место: —`;
+      }
+    }
 
     // Меню
     startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGame(); };
     leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "block"; loadLeaderboard(); };
     infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "block"; };
+    leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
+    infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
 
     // Лидеры
     async function loadLeaderboard() {
@@ -179,18 +311,17 @@
         const data = snapshot.val();
         const usersArray = Object.entries(data).map(([id, u]) => ({
           username: u.username ? `@${u.username}` : "User " + id,
+          highScore: u.highScore || 0,
           coins: u.coins || 0
         }));
-        usersArray.sort((a, b) => b.coins - a.coins);
+        usersArray.sort((a, b) => b.highScore - a.highScore);
         usersArray.forEach(user => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${user.username}</td><td>${user.coins}</td>`;
+          tr.innerHTML = `<td>${user.username}</td><td>${user.highScore}</td><td>${user.coins}</td>`;
           leaderboardBody.appendChild(tr);
         });
       }
     }
-    leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
-    infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
 
     // Game Logic
     let ctx, animationId, isGameRunning = false;
@@ -209,6 +340,7 @@
 
     function startGame() {
       gameContainer.style.display = "block";
+      gameOverPopup.style.display = "none";
       ctx = gameCanvas.getContext("2d");
       resizeCanvas();
       isGameRunning = true;
@@ -227,6 +359,7 @@
         kirby.style.left = player.x + "px";
         kirby.style.top = player.y + "px";
         kirby.style.zIndex = "900";
+        kirby.draggable = false;
         gameContainer.appendChild(kirby);
         player.el = kirby;
       } else { player.el.style.display = "block"; }
@@ -266,7 +399,7 @@
       }
       coins = coins.filter(c => { if (c.collected || (c.x + c.size < 0)) { gameContainer.removeChild(c.el); return false; } return true; });
       updatePlayer();
-      ctx.fillStyle = "white"; ctx.font = "24px Arial";
+      ctx.fillStyle = "white"; ctx.font = "24px Nunito, Arial";
       ctx.fillText(`Монет за забег: ${scoreThisRun}`, 20, 40);
       if (player.alive) { animationId = requestAnimationFrame(updateGame); }
     }
@@ -281,7 +414,7 @@
       enemyEl.src = enemyGif; enemyEl.style.position = "absolute";
       enemyEl.style.width = enemyWidth + "px"; enemyEl.style.height = enemyHeight + "px";
       enemyEl.style.left = canvasWidth + "px"; enemyEl.style.top = randY + "px";
-      enemyEl.style.zIndex = "850"; gameContainer.appendChild(enemyEl);
+      enemyEl.style.zIndex = "850"; enemyEl.draggable = false; gameContainer.appendChild(enemyEl);
       enemies.push({ x: canvasWidth, y: randY, width: enemyWidth, height: enemyHeight, el: enemyEl });
     }
     function createCoin() {
@@ -290,7 +423,7 @@
       coinEl.src = coinGifURL; coinEl.style.position = "absolute";
       coinEl.style.width = coinSize + "px"; coinEl.style.height = coinSize + "px";
       coinEl.style.left = canvasWidth + "px"; coinEl.style.top = randY + "px";
-      coinEl.style.zIndex = "800"; gameContainer.appendChild(coinEl);
+      coinEl.style.zIndex = "800"; coinEl.draggable = false; gameContainer.appendChild(coinEl);
       coins.push({ x: canvasWidth, y: randY, size: coinSize, collected: false, el: coinEl });
     }
     function updatePlayer() {
@@ -316,6 +449,7 @@
         or.y + or.height < pr.y
       );
     }
+
     function gameOver() {
       player.alive = false;
       cancelAnimationFrame(animationId);
@@ -324,9 +458,27 @@
       document.removeEventListener("touchstart", onClickOrTouch);
       isGameRunning = false;
       currentCoins += scoreThisRun;
-      updateCoinsInDB();
-      setTimeout(endGameAndReturn, 500);
+      // Сохраняем новый рекорд, если он побит
+      let newHigh = false;
+      if (scoreThisRun > highScore) {
+        highScore = scoreThisRun;
+        newHigh = true;
+      }
+      updateCoinsInDB(newHigh, scoreThisRun);
+      // Показываем pop-up
+      let popupText = `Ты собрал <b>${scoreThisRun}</b> монет за забег.<br>`;
+      if (newHigh) popupText += "<span style='color:#b13df3'>НОВЫЙ РЕКОРД!</span><br>";
+      popupText += `Твой рекорд: <b>${highScore}</b>`;
+      setTimeout(() => {
+        showGameOverPopup(popupText);
+      }, 400);
     }
+    function showGameOverPopup(html) {
+      gameOverText.innerHTML = html;
+      gameOverPopup.style.display = "flex";
+    }
+    gameOverCloseBtn.onclick = endGameAndReturn;
+
     function endGameAndReturn() {
       if (isGameRunning) {
         cancelAnimationFrame(animationId);
@@ -335,7 +487,6 @@
         document.removeEventListener("touchstart", onClickOrTouch);
         isGameRunning = false;
         currentCoins += scoreThisRun;
-        updateCoinsInDB();
       }
       if (player.el) player.el.style.display = "none";
       for (const e of enemies) if (e.el) gameContainer.removeChild(e.el);
@@ -343,13 +494,20 @@
       for (const c of coins) if (c.el) gameContainer.removeChild(c.el);
       coins = [];
       gameContainer.style.display = "none";
+      gameOverPopup.style.display = "none";
       coinsDisplay.textContent = `Монет: ${currentCoins}`;
+      yourHighScore.textContent = `Рекорд: ${highScore}`;
+      updatePlace();
       mainMenu.style.display = "flex";
     }
-    async function updateCoinsInDB() {
+
+    async function updateCoinsInDB(isNewHigh, latestScore) {
       const userRef = ref(db, `users/${userId}`);
-      await update(userRef, { coins: currentCoins });
+      let updateData = { coins: currentCoins };
+      if (isNewHigh) updateData.highScore = latestScore;
+      await update(userRef, updateData);
       coinsDisplay.textContent = `Монет: ${currentCoins}`;
+      yourHighScore.textContent = `Рекорд: ${highScore}`;
     }
   </script>
 </body>
