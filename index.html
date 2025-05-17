@@ -2,300 +2,420 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>GalaxyTon Floppy</title>
+  <title>Galaxy TON Floppy — Telegram WebApp</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Nunito:900,700,600,400|Poppins:700,400&display=swap" rel="stylesheet">
   <style>
-    html, body {
-      margin: 0; padding: 0; width: 100vw; height: 100vh; background: #191726;
-      overflow: hidden;
+    html, body { margin: 0; padding: 0; width: 100vw; height: 100vh; background: #12082e; overflow: hidden; }
+    body { font-family: 'Nunito', 'Poppins', 'Open Sans', sans-serif; }
+    #mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup {
+      width: 100vw; height: 100vh; display: none; position: fixed; top: 0; left: 0; flex-direction: column; align-items: center; justify-content: flex-start;
+      background: linear-gradient(120deg, #a2d2ff 0%, #ffe7f3 100%); z-index: 10; overflow-y: auto;
     }
-    body {
-      display: flex; align-items: center; justify-content: center;
+    .menu-inner { margin-top: 80px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+    .user-header {
+      display: flex; flex-direction: column; align-items: center; margin-bottom: 22px; gap: 7px;
+      background: rgba(255,255,255,0.65); border-radius: 17px; box-shadow: 0 2px 16px #c8a2c833; padding: 14px 28px 13px 28px;
     }
-    #gameCanvas {
-      background: linear-gradient(160deg,#cfd9f8 0,#e0d2ff 100%);
-      box-shadow: 0 8px 32px #867fff66, 0 2px 12px #fff4;
-      display: block;
-      border-radius: 32px;
-      touch-action: manipulation;
-      width: 98vw; max-width: 400px;
-      height: 98vh; max-height: 700px;
+    .user-header img {
+      width: 72px; height: 72px; border-radius: 50%; border: 3.5px solid #fff; box-shadow: 0 4px 24px #a2d2ff51; background: #fff;
+      margin-bottom: 2px;
     }
-    #coinsTextInGame {
-      position: absolute;
-      left: 50%; transform: translateX(-50%);
-      top: 50px; z-index: 30;
-      background: linear-gradient(90deg,#b07cff44 0,#ffb5d133 100%);
-      border-radius: 19px;
-      padding: 9px 28px; color: #483977;
-      font-weight: 800; font-size: 1.32em;
-      text-shadow: 0 2px 9px #fff9; letter-spacing: .08em;
-      box-shadow: 0 2px 9px #b07cff13; user-select: none; pointer-events: none;
+    .user-header span {
+      font-size: 1.13em; color: #4b3570; font-weight: 700; text-shadow: 0 1px 3px #eee;
+      max-width: 180px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
     }
+    .user-meta { display: flex; flex-direction: row; gap: 13px; margin-bottom: 17px; align-items: center; width: 100%; justify-content: center; }
+    .user-meta div {
+      font-size: 1.01em; color: #44335b; background: #fff9;
+      border-radius: 12px; padding: 5px 17px; margin: 2px 0; box-shadow: 0 2px 7px #a2d2ff1a;
+      min-width: 90px; text-align: center; font-weight: 700;
+    }
+    #coinsDisplay {
+      color: #fff; background: linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);
+      font-size: 1.11em; font-weight: 800; margin-bottom: 16px; padding: 8px 24px; border-radius: 30px;
+      box-shadow: 0 2px 10px #c2a4ff1a; text-shadow: 0 2px 2px #fff9; border: 2px solid #fff; letter-spacing: .04em;
+      display: inline-block;
+    }
+    .main-btn {
+      margin: 13px 0; padding: 16px 36px; font-size: 1.14em;
+      background: linear-gradient(90deg, #f7c8e0 0%, #b6eaff 100%);
+      border: none; border-radius: 29px;
+      box-shadow: 0 3px 16px #a2d2ff3d, 0 1px 1px #fff; cursor: pointer; font-weight: 700; color: #493a66;
+      transition: 0.16s; display: block;
+    }
+    .main-btn:hover { background: linear-gradient(90deg, #ffc0cb 10%, #a2d2ff 100%); transform: scale(1.06);}
+    .main-btn:active { transform: scale(0.97);}
+    #leaderboardBackBtn, #infoBackBtn {
+      position: absolute; top: 40px; left: 24px; padding: 12px 30px;
+      background: linear-gradient(90deg, #f8daea 0%, #d1eaff 100%); border: none; border-radius: 22px; font-size: 1.04em;
+      font-weight: 700; color: #4e3888; cursor: pointer; box-shadow: 0 3px 0 #c8a2c8, 0 2px 8px #ffdbf933; z-index: 99;
+      transition: background 0.22s;
+    }
+    #leaderboardBackBtn:hover, #infoBackBtn:hover {
+      background: linear-gradient(90deg, #c186fd 0, #ffb5d1 100%); color: #fff;
+    }
+    #infoContainer p { font-size: 1.10em; color: #493A64; background: #fff7; border-radius: 12px; padding: 10px 14px; margin-top: 0;}
+    #gameOverPopup {
+      z-index: 999; display: none; align-items: center; justify-content: center;
+      background: rgba(60,30,80,0.44); animation: fadeIn 0.23s;
+    }
+    .popup-box {
+      background: linear-gradient(120deg, #fff 63%, #ffe3fa 100%);
+      border-radius: 32px; padding: 34px 36px 28px 36px; min-width: 240px;
+      box-shadow: 0 8px 30px #e3caff88; display: flex; flex-direction: column; align-items: center; gap: 18px;
+      margin-top: 80px;
+    }
+    .popup-box h2 { margin: 0 0 8px 0; color: #9857d3; font-size: 1.23em;}
+    .popup-box p { color: #47366b; font-size: 1.07em; margin: 0; }
+    .popup-box button { display: none; }
+    .popup-box button#gameOverCloseBtn { display: block; margin-top: 10px; }
+    /* Countdown Overlay */
     #countdownOverlay {
-      display:none; position:absolute; left:0; top:0; width:100vw; height:100vh; z-index:50;
-      align-items:center; justify-content:center; background:rgba(248,245,255,0.85);
-      font-size:3em; color:#9857d3; font-weight:900; font-family:'Nunito',sans-serif; letter-spacing:.08em;
-      text-shadow:0 2px 12px #fff;
-      flex-direction: column;
+      display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 222;
+      align-items: center; justify-content: center; background: rgba(248,245,255,0.79);
+      font-size: 3em; color: #9857d3; font-weight: 900; font-family: 'Nunito',sans-serif; letter-spacing: .08em; text-shadow: 0 2px 12px #fff;
     }
-    @media (max-width: 500px) {
-      #coinsTextInGame { font-size: 1em; padding: 6px 12px; top: 25px;}
-      #gameCanvas { border-radius: 14px;}
+    #gameContainer { width: 100vw; height: 100vh; display: none; position: fixed; top:0; left:0; background: #161642; z-index: 20; overflow: hidden; }
+    #coinsTextInGame {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      top: 50px; z-index: 300; background: linear-gradient(90deg,#b07cff44 0,#ffb5d133 100%);
+      border-radius: 19px; padding: 9px 28px; color: #483977; font-weight: 800; font-size: 1.32em;
+      text-shadow: 0 2px 9px #fff9; letter-spacing: .08em; box-shadow: 0 2px 9px #b07cff13; user-select: none; pointer-events: none;
+    }
+    @media (max-width: 600px) {
+      .main-btn, #leaderboardBackBtn, #infoBackBtn, .popup-box button { font-size: 0.96em; padding:10px 11px;}
+      .user-header img { width: 60px; height: 60px;}
+      .popup-box {padding:22px 5vw;}
+      #coinsTextInGame { font-size: 1em; padding:7px 14px;}
+    }
+    @media (max-width: 390px) {
+      #coinsDisplay { font-size: 0.93em; padding: 7px 10px;}
+      .user-meta div { font-size: 0.91em;}
+      .user-header {padding:10px 4vw;}
+      #coinsTextInGame { font-size: 0.9em;}
     }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
-  <div id="coinsTextInGame">Coins: 0</div>
-  <div id="countdownOverlay"></div>
-  <script>
-    // Logical size for the game (remains the same on all screens)
-    const LOGICAL_WIDTH = 400;
-    const LOGICAL_HEIGHT = 700;
+  <!-- Меню -->
+  <div id="mainMenu">
+    <div class="menu-inner">
+      <div class="user-header">
+        <img id="userPhoto" src="" alt="Avatar" />
+        <span id="userName">@User</span>
+      </div>
+      <div class="user-meta">
+        <div id="yourPlace">Rank: ...</div>
+        <div id="yourHighScore">Best: ...</div>
+      </div>
+      <div id="coinsDisplay"></div>
+      <button id="startGameBtn" class="main-btn">Start Game</button>
+      <button id="leaderboardBtn" class="main-btn">Leaderboard</button>
+      <button id="infoBtn" class="main-btn">How to Play?</button>
+    </div>
+  </div>
+  <!-- Игра -->
+  <div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+    <div id="countdownOverlay"></div>
+    <div id="coinsTextInGame">Coins: 0</div>
+  </div>
+  <!-- Лидерборд -->
+  <div id="leaderboardContainer">
+    <div class="menu-inner">
+      <button id="leaderboardBackBtn" class="main-btn" style="position:absolute;">Back</button>
+      <h2 style="color:#7c46a3;text-align:center;margin:8px 0 0 0">Leaderboard</h2>
+      <table>
+        <thead>
+          <tr><th>User</th><th>Best</th></tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- Инфо -->
+  <div id="infoContainer">
+    <div class="menu-inner">
+      <button id="infoBackBtn" class="main-btn" style="position:absolute;">Back</button>
+      <h2 style="color:#7c46a3;text-align:center;margin:5px 0 10px 0;">How to Play?</h2>
+      <p>
+        <b>Kirby</b> flies endlessly, collecting coins and dodging enemies.<br>
+        If Kirby hits an enemy or falls — the game is over.<br>
+        <b>Controls:</b> Tap / Click or Space.<br>
+        The goal is to collect as many coins as possible in one run!<br>
+        <br>
+        Your record is saved and displayed in the leaderboard. Good luck!
+      </p>
+    </div>
+  </div>
+  <!-- Game Over Popup -->
+  <div id="gameOverPopup">
+    <div class="menu-inner">
+      <div class="popup-box">
+        <h2>Game Over!</h2>
+        <p id="gameOverText"></p>
+        <button id="gameOverCloseBtn" class="main-btn">Back to Menu</button>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    // Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
+    else tg.expand();
 
-    // Responsive canvas setup
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    function resizeCanvas() {
-      let scale = Math.min(window.innerWidth / LOGICAL_WIDTH, window.innerHeight / LOGICAL_HEIGHT);
-      canvas.style.width = (LOGICAL_WIDTH * scale) + "px";
-      canvas.style.height = (LOGICAL_HEIGHT * scale) + "px";
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = LOGICAL_WIDTH * dpr;
-      canvas.height = LOGICAL_HEIGHT * dpr;
-      ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset
-      ctx.scale(dpr, dpr);
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    // --- Game variables ---
-    const gravity = LOGICAL_HEIGHT * 2;           // gravity in px/sec^2
-    const jumpVelocity = -LOGICAL_HEIGHT * 0.75;  // jump up speed
-    const bgSpeed = LOGICAL_WIDTH * 0.18;         // background speed px/sec
-    const enemySpeed = LOGICAL_WIDTH * 0.36;      // enemy speed px/sec
-
-    let player = {
-      x: LOGICAL_WIDTH * 0.18,
-      y: LOGICAL_HEIGHT * 0.4,
-      width: 50, height: 50,
-      vy: 0,
-      alive: true, canJump: true, rotating: false, rotAngle: 0
+    // Firebase (ВАЖНО: свой config!)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyB90ev3fJRDKmn64hLTJaWjVjpHQtMjhLg",
+      authDomain: "test-with-likes.firebaseapp.com",
+      databaseURL: "https://test-with-likes-default-rtdb.firebaseio.com",
+      projectId: "test-with-likes",
+      storageBucket: "test-with-likes.appspot.com",
+      messagingSenderId: "764738820142",
+      appId: "1:764738820142:web:b22c6608a30e46cdcea7bf",
+      measurementId: "G-WJNF0HSN9P"
     };
-    let enemies = [];
-    let coins = [];
-    let score = 0;
-    let bgX = 0;
-    let slowStart = true, slowStartFrame = 0, showPlayer = false, deathFall = false, firstFlap = false;
-    let ticksAfterStart = 0;
-    let countdownRunning = false;
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    // Images
-    const kirbyImg = new window.Image();
-    kirbyImg.src = "https://raw.githubusercontent.com/qnexst/404token/main/kirby.gif";
-    const enemyImg = new window.Image();
-    enemyImg.src = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
-    const coinImg = new window.Image();
-    coinImg.src = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
-
-    // UI elements
+    // DOM
+    const mainMenu = document.getElementById("mainMenu");
+    const userPhoto = document.getElementById("userPhoto");
+    const userName = document.getElementById("userName");
+    const coinsDisplay = document.getElementById("coinsDisplay");
+    const startGameBtn = document.getElementById("startGameBtn");
+    const leaderboardBtn = document.getElementById("leaderboardBtn");
+    const infoBtn = document.getElementById("infoBtn");
+    const gameContainer = document.getElementById("gameContainer");
+    const gameCanvas = document.getElementById("gameCanvas");
     const coinsTextInGame = document.getElementById("coinsTextInGame");
+    const leaderboardContainer = document.getElementById("leaderboardContainer");
+    const leaderboardBackBtn = document.getElementById("leaderboardBackBtn");
+    const leaderboardBody = document.getElementById("leaderboardBody");
+    const infoContainer = document.getElementById("infoContainer");
+    const infoBackBtn = document.getElementById("infoBackBtn");
+    const yourPlace = document.getElementById("yourPlace");
+    const yourHighScore = document.getElementById("yourHighScore");
+    const gameOverPopup = document.getElementById("gameOverPopup");
+    const gameOverText = document.getElementById("gameOverText");
+    const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
     const countdownOverlay = document.getElementById("countdownOverlay");
 
-    // Start countdown
-    function startGameWithCountdown() {
-      score = 0;
-      player.y = LOGICAL_HEIGHT * 0.4;
-      player.vy = 0;
-      player.alive = true;
-      player.rotating = false;
-      player.rotAngle = 0;
-      enemies = [];
-      coins = [];
-      bgX = 0;
-      deathFall = false;
-      showPlayer = false;
-      firstFlap = false;
-      coinsTextInGame.textContent = "Coins: 0";
-      coinsTextInGame.style.display = "block";
-      slowStart = true;
-      slowStartFrame = 0;
-      ticksAfterStart = 0;
-      countdownRunning = true;
+    // User
+    let tgUser = tg.initDataUnsafe?.user;
+    if (!tgUser) {
+      mainMenu.innerHTML = "<h2>Please open in Telegram!</h2>";
+      throw new Error("Not Telegram WebApp");
+    }
+    const userId = tgUser.id.toString();
+    let highScore = 0;
+    async function loadUser() {
+      userPhoto.src = tgUser.photo_url || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
+      userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
+      const userRef = ref(db, `users/${userId}`);
+      let snapshot = await get(userRef);
+      if (!snapshot.exists()) {
+        await set(userRef, {
+          highScore: 0,
+          username: tgUser.username || "",
+          photo: tgUser.photo_url || ""
+        });
+        highScore = 0;
+      } else {
+        highScore = snapshot.val().highScore || 0;
+      }
+      coinsDisplay.textContent = `Best: ${highScore}`;
+      yourHighScore.textContent = `Best: ${highScore}`;
+      await updatePlace();
+      mainMenu.style.display = "flex";
+    }
+    window.onload = loadUser;
+    async function updatePlace() {
+      yourPlace.textContent = "Rank: ...";
+      const usersRef = ref(db, "users/");
+      const snapshot = await get(usersRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const usersArray = Object.entries(data).map(([id, u]) => ({
+          id, highScore: u.highScore || 0
+        }));
+        usersArray.sort((a, b) => b.highScore - a.highScore);
+        const place = usersArray.findIndex(x => x.id === userId) + 1;
+        if (place > 0) yourPlace.textContent = `Rank: ${place} of ${usersArray.length}`;
+        else yourPlace.textContent = `Rank: —`;
+      }
+    }
+    startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGameWithCountdown(); };
+    leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; loadLeaderboard(); };
+    infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "flex"; };
+    leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
+    infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
+    async function loadLeaderboard() {
+      leaderboardBody.innerHTML = "";
+      const usersRef = ref(db, "users/");
+      const snapshot = await get(usersRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const usersArray = Object.entries(data).map(([id, u]) => ({
+          username: u.username ? `@${u.username}` : "User " + id,
+          highScore: u.highScore || 0,
+        }));
+        usersArray.sort((a, b) => b.highScore - a.highScore);
+        usersArray.forEach(user => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${user.username}</td><td>${user.highScore}</td>`;
+          leaderboardBody.appendChild(tr);
+        });
+      }
+    }
 
-      // GalaxyTon logo + countdown
-      let countdown = 3;
+    // ====== GAME ENGINE: UNIVERSAL TIMING ======
+    // --- CANVAS SCALING (RETINA) ---
+    let GAME = {w:0,h:0};
+    function resizeCanvas() {
+      const logicalWidth = window.innerWidth;
+      const logicalHeight = window.innerHeight;
+      const dpr = window.devicePixelRatio || 1;
+      gameCanvas.width = logicalWidth * dpr;
+      gameCanvas.height = logicalHeight * dpr;
+      gameCanvas.style.width = logicalWidth + 'px';
+      gameCanvas.style.height = logicalHeight + 'px';
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.scale(dpr, dpr);
+      GAME = { w: logicalWidth, h: logicalHeight };
+    }
+    window.addEventListener('resize',()=>{ resizeCanvas(); });
+
+    // --- CORE GAME ---
+    let state = "wait";
+    let coins = 0, countdown = 3;
+    const player = { x:80, y:300, vy:0, w:46, h:46, gravity:1700, jumpPower:-510, alive:true, img:null, deadFall:false };
+    player.img = new window.Image(); player.img.src = "https://raw.githubusercontent.com/qnexst/404token/main/kirby.gif";
+    const enemies = [];
+    const coinImg = new window.Image(); coinImg.src = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
+    const coinsArr = [];
+    let bgOffset = 0;
+
+    function spawnEnemy() { let h=46+Math.random()*32; enemies.push({ x:GAME.w+40, y:Math.random()*(GAME.h-h-120)+60, w:h, h:h, speed: 240+Math.random()*70 }); }
+    function spawnCoin() { coinsArr.push({ x:GAME.w+30, y:Math.random()*(GAME.h-110)+60, size:38, speed:180 }); }
+
+    function drawBG(dt) {
+      bgOffset -= 72*dt;
+      if(bgOffset<-GAME.w) bgOffset+=GAME.w;
+      ctx.fillStyle="#18142b";
+      ctx.fillRect(0,0,GAME.w,GAME.h);
+      ctx.save(); ctx.globalAlpha=0.37;
+      for(let i=0;i<52;i++) {
+        ctx.beginPath(); ctx.arc((i*71+Math.floor(bgOffset))%GAME.w, (i*29)%GAME.h, 1.17, 0, 7);
+        ctx.fillStyle="#fff"; ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // ==== GAME LOOP ====
+    let last = null;
+    function loop(ts) {
+      if(!last) last = ts;
+      let dt = (ts-last)/1000;
+      if(dt>0.09) dt=0.09;
+      last = ts;
+      if(state==="run") gameUpdate(dt);
+      drawBG(dt);
+      if(state==="run"||state==="gameover") drawGame(dt);
+      requestAnimationFrame(loop);
+    }
+    function gameUpdate(dt) {
+      for(const e of enemies) e.x -= e.speed*dt;
+      if(enemies.length<2&&Math.random()<dt*1.19) spawnEnemy();
+      while(enemies.length&&enemies[0].x+enemies[0].w<0) enemies.shift();
+      for(const c of coinsArr) c.x -= c.speed*dt;
+      if(coinsArr.length<2&&Math.random()<dt*1.09) spawnCoin();
+      while(coinsArr.length&&coinsArr[0].x+coinsArr[0].size<0) coinsArr.shift();
+      if(player.deadFall) {
+        player.vy += player.gravity*dt;
+        player.y += player.vy*dt;
+        if(player.y>GAME.h) setTimeout(()=>showGameOver("GAME OVER!"),480);
+        return;
+      }
+      player.vy += player.gravity*dt;
+      player.y += player.vy*dt;
+      if(player.y>GAME.h-player.h) { player.y=GAME.h-player.h; gameOver(); }
+      for(const c of coinsArr) if(Math.abs((player.x+player.w/2)-(c.x+c.size/2))<32&&Math.abs((player.y+player.h/2)-(c.y+c.size/2))<32) { coins++; c.x=-1000;}
+      for(const e of enemies) if(Math.abs((player.x+player.w/2)-(e.x+e.w/2))<(player.w+e.w)/2-8&&Math.abs((player.y+player.h/2)-(e.y+e.h/2))<(player.h+e.h)/2-8) { player.deadFall=true; player.vy=130; player.gravity=1800; }
+      coinsTextInGame.textContent = "Coins: "+coins;
+    }
+    function drawGame(dt) {
+      for(const c of coinsArr) ctx.drawImage(coinImg, c.x, c.y, c.size, c.size);
+      for(const e of enemies) { ctx.save(); ctx.beginPath(); ctx.arc(e.x+e.w/2, e.y+e.h/2, e.w/2, 0, 7); ctx.fillStyle="#3918be"; ctx.shadowColor="#fff"; ctx.shadowBlur=9; ctx.fill(); ctx.restore(); }
+      ctx.save();
+      if(player.deadFall) { ctx.translate(player.x+player.w/2, player.y+player.h/2); ctx.rotate(Math.PI/2); ctx.drawImage(player.img, -player.w/2, -player.h/2, player.w, player.h); }
+      else ctx.drawImage(player.img, player.x, player.y, player.w, player.h);
+      ctx.restore();
+    }
+
+    // ===== START GAME W/ COUNTDOWN =====
+    function startGameWithCountdown() {
+      resizeCanvas();
+      coins = 0; player.x=80; player.y=300; player.vy=0; player.alive=true; player.deadFall=false; player.gravity=1700; enemies.length=0; coinsArr.length=0;
+      coinsTextInGame.textContent = "Coins: 0";
       countdownOverlay.style.display = "flex";
-      countdownOverlay.innerHTML = `
-        <img src="https://galaxyton.com/assets/logo.png" alt="GalaxyTon" style="width:90px;display:block;margin-bottom:24px;">
-        <div>${countdown}</div>
-      `;
-      let cdInt = setInterval(() => {
-        countdown--;
-        if (countdown === 0) {
-          countdownOverlay.innerHTML = `
-            <img src="https://galaxyton.com/assets/logo.png" alt="GalaxyTon" style="width:90px;display:block;margin-bottom:24px;">
-            <div>GO!</div>
-          `;
-        } else if (countdown < 0) {
+      gameContainer.style.display = "block";
+      state = "countdown";
+      let cnt = 3;
+      countdownOverlay.textContent = cnt;
+      let timer = setInterval(() => {
+        cnt--;
+        if(cnt>0) countdownOverlay.textContent = cnt;
+        else if(cnt===0) countdownOverlay.textContent = "GO!";
+        else {
+          clearInterval(timer);
           countdownOverlay.style.display = "none";
-          clearInterval(cdInt);
-          showPlayer = true;
-          countdownRunning = false;
-        } else {
-          countdownOverlay.innerHTML = `
-            <img src="https://galaxyton.com/assets/logo.png" alt="GalaxyTon" style="width:90px;display:block;margin-bottom:24px;">
-            <div>${countdown}</div>
-          `;
+          state = "run";
         }
       }, 900);
     }
-    startGameWithCountdown();
 
-    // Controls
-    window.addEventListener('keydown', (e) => {
-      if ((e.code === 'Space' || e.code === 'ArrowUp') && player.alive && !countdownRunning) flap();
-      if (e.code === "KeyR" && !player.alive) startGameWithCountdown();
+    // === Game Over, Back to Menu ===
+    function showGameOver(msg) {
+      state='gameover';
+      gameOverText.innerHTML = `You collected <b>${coins}</b> coins.<br>Your best: <b>${highScore}</b>`;
+      gameOverPopup.style.display = "flex";
+    }
+    function gameOver() {
+      let newHigh = false;
+      if(coins>highScore) { highScore=coins; newHigh=true; }
+      updateScoreInDB(newHigh, coins);
+      setTimeout(() => showGameOver(), 300);
+    }
+    gameOverCloseBtn.onclick = () => {
+      gameOverPopup.style.display = "none";
+      gameContainer.style.display = "none";
+      coinsDisplay.textContent = `Best: ${highScore}`;
+      yourHighScore.textContent = `Best: ${highScore}`;
+      updatePlace();
+      mainMenu.style.display = "flex";
+    };
+    async function updateScoreInDB(isNewHigh, latestScore) {
+      const userRef = ref(db, `users/${userId}`);
+      let updateData = {};
+      if (isNewHigh) updateData.highScore = latestScore;
+      await update(userRef, updateData);
+    }
+    // ==== Управление ====
+    window.addEventListener('keydown',e=>{
+      if(state!=="run") return;
+      if(e.code==="Space"||e.code==="ArrowUp") if(!player.deadFall) player.vy=player.jumpPower;
     });
-    canvas.addEventListener('mousedown', () => { if (player.alive && !countdownRunning) flap(); });
-    canvas.addEventListener('touchstart', () => { if (player.alive && !countdownRunning) flap(); });
+    window.addEventListener('mousedown',()=>{ if(state==="run"&&!player.deadFall) player.vy=player.jumpPower; });
+    window.addEventListener('touchstart',()=>{ if(state==="run"&&!player.deadFall) player.vy=player.jumpPower; });
 
-    function flap() {
-      if (!player.alive) return;
-      if (slowStart) { slowStart = false; player.vy = jumpVelocity; firstFlap = true; return; }
-      player.vy = jumpVelocity;
-    }
+    // ==== Запуск лупа ====
+    requestAnimationFrame(loop);
 
-    // Main game loop
-    let lastTime = 0;
-    function gameLoop(timestamp) {
-      if (!lastTime) lastTime = timestamp;
-      let dt = (timestamp - lastTime) / 1000;
-      lastTime = timestamp;
-      if (dt > 0.07) dt = 0.07;
-
-      update(dt);
-      draw();
-      requestAnimationFrame(gameLoop);
-    }
-
-    function update(dt) {
-      if (countdownRunning) return;
-      ticksAfterStart++;
-
-      if (player.alive) {
-        // Only player slow at start
-        let gravityNow = slowStart ? gravity * 0.25 : gravity;
-        player.vy += gravityNow * dt;
-        player.y += player.vy * dt;
-
-        if (player.y + player.height > LOGICAL_HEIGHT * 0.93) {
-          player.y = LOGICAL_HEIGHT * 0.93 - player.height;
-          player.vy = 0;
-          if (!slowStart) player.alive = false, deathFall = true;
-        }
-        if (player.y < 0) { player.y = 0; player.vy = 0; }
-
-        // Enemies
-        if (ticksAfterStart > 60 && Math.random() < 0.02) spawnEnemy();
-        enemies.forEach(e => { e.x -= enemySpeed * dt; });
-        enemies = enemies.filter(e => e.x > -e.width);
-
-        // Coins
-        if (Math.random() < 0.02) spawnCoin();
-        coins.forEach(c => { c.x -= bgSpeed * dt * 1.4; });
-        coins = coins.filter(c => c.x > -c.size && !c.collected);
-
-        // Collect coins
-        coins.forEach(c => {
-          if (!c.collected && checkCollision(player, c)) {
-            c.collected = true; score++;
-          }
-        });
-
-        // Check enemy collision
-        enemies.forEach(e => {
-          if (checkCollision(player, e)) {
-            player.alive = false; deathFall = true;
-          }
-        });
-      }
-      // death fall
-      if (deathFall) {
-        player.rotating = true;
-        player.rotAngle = 90;
-        player.y += LOGICAL_HEIGHT * 0.015;
-        if (player.y > LOGICAL_HEIGHT + player.height) {
-          deathFall = false;
-          coinsTextInGame.style.display = "none";
-          setTimeout(startGameWithCountdown, 1200);
-        }
-      }
-      // BG
-      bgX -= bgSpeed * dt;
-      if (bgX < -LOGICAL_WIDTH) bgX += LOGICAL_WIDTH;
-      coinsTextInGame.textContent = "Coins: " + score;
-    }
-
-    function draw() {
-      // BG
-      ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-      if (countdownRunning) {
-        ctx.save();
-        ctx.globalAlpha = 0.06;
-        ctx.drawImage(kirbyImg, LOGICAL_WIDTH/2-120, 60, 240, 140);
-        ctx.restore();
-      }
-      // Sky
-      ctx.fillStyle = '#d2d9fa';
-      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-
-      // Moving ground band
-      ctx.fillStyle = "#b5aaf7";
-      ctx.fillRect((bgX), LOGICAL_HEIGHT-80, LOGICAL_WIDTH, 80);
-      ctx.fillRect((bgX)+LOGICAL_WIDTH, LOGICAL_HEIGHT-80, LOGICAL_WIDTH, 80);
-
-      // Coins
-      coins.forEach(c => {
-        if (!c.collected) ctx.drawImage(coinImg, c.x, c.y, c.size, c.size);
-      });
-      // Enemies
-      enemies.forEach(e => {
-        ctx.drawImage(enemyImg, e.x, e.y, e.width, e.height);
-      });
-      // Player
-      if (showPlayer && (player.alive || deathFall)) {
-        ctx.save();
-        ctx.translate(player.x+player.width/2, player.y+player.height/2);
-        if (player.rotating) ctx.rotate(Math.PI/2);
-        ctx.drawImage(kirbyImg, -player.width/2, -player.height/2, player.width, player.height);
-        ctx.restore();
-      }
-    }
-
-    function spawnEnemy() {
-      enemies.push({
-        x: LOGICAL_WIDTH + 30,
-        y: Math.random()*(LOGICAL_HEIGHT*0.6)+LOGICAL_HEIGHT*0.15,
-        width: 56, height: 56
-      });
-    }
-    function spawnCoin() {
-      coins.push({
-        x: LOGICAL_WIDTH + 10,
-        y: Math.random()*(LOGICAL_HEIGHT*0.7)+LOGICAL_HEIGHT*0.13,
-        size: 32, collected: false
-      });
-    }
-    function checkCollision(a, b) {
-      let aw = a.width||a.size, ah = a.height||a.size, ax = a.x, ay = a.y;
-      let bw = b.width||b.size, bh = b.height||b.size, bx = b.x, by = b.y;
-      return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
-    }
-
-    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>
-
