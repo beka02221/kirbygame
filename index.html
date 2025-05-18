@@ -138,12 +138,6 @@
     </div>
   </div>
  <script type="module">
-  // --- SOUNDS ---
-  const sfx_die = new Audio("sfx_die.mp3");
-  const sfx_point = new Audio("sfx_point.mp3");
-  sfx_die.preload = sfx_point.preload = sfx_wing.preload = "auto";
-  sfx_die.volume = 0.7; sfx_point.volume = 0.9; sfx_wing.volume = 0.83;
-
   // Telegram WebApp
   const tg = window.Telegram.WebApp;
   if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
@@ -186,6 +180,12 @@
   const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
   const countdownOverlay = document.getElementById("countdownOverlay");
   const gameHudCoins = document.getElementById("gameHudCoins");
+
+  // ====== Сдвигаем меню, таблицы, попапы вниз на 40px ======
+  document.querySelectorAll('.menu-inner').forEach(el => {
+    el.style.marginTop = "120px"; // вместо 80px (80+40)
+  });
+
   // User
   let tgUser = tg.initDataUnsafe?.user;
   if (!tgUser) {
@@ -242,21 +242,16 @@
       const data = snapshot.val();
       const usersArray = Object.entries(data).map(([id, u]) => ({username:u.username?`@${u.username}`:"User "+id,highScore:u.highScore||0,}));
       usersArray.sort((a, b) => b.highScore - a.highScore);
-      usersArray.forEach((user, idx) => {
+      usersArray.forEach(user => {
         const tr = document.createElement("tr");
-        // выделить TOP-3 цветом
-        let topStyle = "";
-        if(idx === 0) topStyle = "font-weight:900;color:#a934db;background:linear-gradient(90deg,#ffd2fb 50%,#e6d7ff 100%)";
-        else if(idx === 1) topStyle = "font-weight:800;color:#5351d9;background:linear-gradient(90deg,#f9e6ff 50%,#cde7f7 100%)";
-        else if(idx === 2) topStyle = "font-weight:800;color:#ffb300;background:linear-gradient(90deg,#f3ebfd 50%,#fceabb 100%)";
-        tr.innerHTML = `<td style="${topStyle}">${user.username}</td><td style="${topStyle}">${user.highScore}</td>`;
+        tr.innerHTML = `<td>${user.username}</td><td>${user.highScore}</td>`;
         leaderboardBody.appendChild(tr);
       });
     }
   }
 
   // -------- CANVAS GAME --------
-  const FIXED_FPS = 100;
+  const FIXED_FPS = 60;
   const BASE_GRAVITY = 0.2;
   const BASE_LIFT = -4.5;
   const BASE_SCROLL = 2;
@@ -304,6 +299,22 @@
     gameCanvas.height = canvasHeight;
   }
   window.addEventListener("resize", () => { if (isGameRunning) resizeCanvas(); });
+
+  // --------- Управление обработчиками ---------
+  let controlsAttached = false;
+  function attachControls() {
+    if (controlsAttached) return;
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onClickOrTouch);
+    document.addEventListener("touchstart", onClickOrTouch);
+    controlsAttached = true;
+  }
+  function detachControls() {
+    document.removeEventListener("keydown", onKeyDown);
+    document.removeEventListener("mousedown", onClickOrTouch);
+    document.removeEventListener("touchstart", onClickOrTouch);
+    controlsAttached = false;
+  }
 
   function startGameWithCountdown() {
     gameContainer.style.display = "block";
@@ -353,9 +364,7 @@
     slowStart = true; slowStartFrame = 0; ticksAfterStart = 0;
     gameHudCoins.textContent = "Coins: 0";
     gameHudCoins.style.display = "block";
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("mousedown", onClickOrTouch);
-    document.addEventListener("touchstart", onClickOrTouch);
+    attachControls();
     lastFrameTime = performance.now();
     animationId = requestAnimationFrame(updateGame);
   }
@@ -390,10 +399,9 @@
         coinSpawnTimer += dt;
         if (coinSpawnTimer > COIN_SPAWN_SEC) { createCoin(); coinSpawnTimer = 0; }
 
-        // --- Враги: двигаются влево и анимированы с разной скоростью ---
+        // --- Враги: двигаются влево и анимированы ---
         for (let i = 0; i < enemies.length; i++) {
-          // Каждый враг летит со своей скоростью (random при создании)
-          enemies[i].x -= enemies[i].speed * dt * FIXED_FPS;
+          enemies[i].x -= BASE_SCROLL * dt * FIXED_FPS;
           drawEnemy(enemies[i]);
           if (checkCollision(player, enemies[i])) { handleDeathAnimation(); return; }
         }
@@ -403,11 +411,7 @@
         for (let i = 0; i < coins.length; i++) {
           coins[i].x -= BASE_SCROLL * dt * FIXED_FPS;
           drawCoin(coins[i]);
-          if (!coins[i].collected && checkCollision(player, coins[i])) {
-            scoreThisRun++;
-            coins[i].collected = true;
-            sfx_point.currentTime = 0; sfx_point.play();
-          }
+          if (checkCollision(player, coins[i])) { scoreThisRun++; coins[i].collected = true; }
         }
         coins = coins.filter(c => !c.collected && c.x + c.size > 0);
 
@@ -427,16 +431,20 @@
     ctx.restore();
   }
   function drawEnemy(e) {
+    // Враг анимирован: e1.png / e2.png
     ctx.drawImage(enemyImgs[enemyAnimFrame], e.x, e.y, e.width, e.height);
   }
   function drawCoin(c) {
     ctx.drawImage(coinImg, c.x, c.y, c.size, c.size);
   }
   function createEnemy() {
-    const randY = Math.random() * (canvasHeight - 42 - 20) + 10;
-    // скорость для врага от 1.6 до 2.7 (в 2 раза разная скорость)
-    const speed = BASE_SCROLL * (1 + Math.random() * 0.7);
-    enemies.push({ x: canvasWidth, y: randY, width: 54, height: 40, speed: speed });
+    // Используем пропорции по первой картинке
+    let baseW = enemyImgs[0].naturalWidth || 959;
+    let baseH = enemyImgs[0].naturalHeight || 710;
+    let desiredH = 40; // фиксированная высота
+    let desiredW = Math.round(desiredH * (baseW / baseH));
+    const randY = Math.random() * (canvasHeight - desiredH - 20) + 10;
+    enemies.push({ x: canvasWidth, y: randY, width: desiredW, height: desiredH });
   }
   function createCoin() {
     const randY = Math.random() * (canvasHeight - 40 - 20) + 10;
@@ -465,27 +473,8 @@
     if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
   }
 
-  function onKeyDown(e) {
-    if (e.code === "Space") {
-      handleFlap();
-      switchKirbyFrame();
-      playWingSound();
-    }
-  }
-  function onClickOrTouch(e) {
-    // Чтобы нажатие не повторялось если сработали оба события (touch и mouse), ставим таймер
-    if (onClickOrTouch.lastCall && performance.now() - onClickOrTouch.lastCall < 80) return;
-    onClickOrTouch.lastCall = performance.now();
-    handleFlap();
-    switchKirbyFrame();
-    playWingSound();
-  }
-
-  function playWingSound() {
-    // Только один звук за тап
-    sfx_wing.currentTime = 0;
-    sfx_wing.play();
-  }
+  function onKeyDown(e) { if (e.code === "Space") { handleFlap(); switchKirbyFrame(); } }
+  function onClickOrTouch() { handleFlap(); switchKirbyFrame(); }
 
   function handleFlap() {
     if (!player.alive) return;
@@ -514,16 +503,11 @@
     isGameRunning = false;
     deathFall = true;
     gameHudCoins.style.display = "none";
-    document.removeEventListener("keydown", onKeyDown);
-    document.removeEventListener("mousedown", onClickOrTouch);
-    document.removeEventListener("touchstart", onClickOrTouch);
+    detachControls();
     player.rotating = true;
     kirbyAngle = MAX_ANGLE;
     player.velocityY = 3.5;
     lastFrameTime = performance.now();
-    // Звук смерти и вибрация
-    sfx_die.currentTime = 0; sfx_die.play();
-    if (window.navigator.vibrate) window.navigator.vibrate([190,80,90]);
     animationId = requestAnimationFrame(updateGame);
   }
   function updateDeathFall(dt) {
@@ -557,9 +541,7 @@
   function endGameAndReturn() {
     if (isGameRunning || deathFall) {
       cancelAnimationFrame(animationId);
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("mousedown", onClickOrTouch);
-      document.removeEventListener("touchstart", onClickOrTouch);
+      detachControls();
       isGameRunning = false; deathFall = false;
     }
     gameContainer.style.display = "none";
@@ -579,6 +561,7 @@
     yourHighScore.textContent = `Best: ${highScore}`;
   }
 </script>
+
 
 </body>
 </html>
