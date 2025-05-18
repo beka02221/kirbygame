@@ -242,10 +242,9 @@
     let kirbyCurrentFrame = 0; // 0 = k1, 1 = k2
 
     // Остальные изображения как раньше
-    let enemyImg = new Image(), coinImg = new Image(), bgImage = new Image();
+    let enemyImg = new Image(), coinImg = new Image();
     enemyImg.src = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
     coinImg.src = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
-    bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
     function resizeCanvas() {
       canvasWidth = window.innerWidth;
       canvasHeight = window.innerHeight;
@@ -312,8 +311,9 @@
       let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
       lastFrameTime = now;
 
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      drawScrollingBackground(dt);
+      // --- ВМЕСТО drawScrollingBackground — рисуем пастельный градиент ---
+      drawGradientBackground();
+
       if (showPlayer) {
         updatePlayer(dt);
         drawPlayer();
@@ -343,12 +343,17 @@
       }
       if (deathFall) updateDeathFall(dt);
     }
-    function drawScrollingBackground(dt) {
-      bgX -= BASE_SCROLL * dt * FIXED_FPS;
-      if (bgX <= -canvasWidth) { bgX = 0; }
-      ctx.drawImage(bgImage, bgX, 0, canvasWidth, canvasHeight);
-      ctx.drawImage(bgImage, bgX + canvasWidth, 0, canvasWidth, canvasHeight);
+
+    // --- ВМЕСТО drawScrollingBackground(dt) ---
+    function drawGradientBackground() {
+      let gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+      gradient.addColorStop(0, '#a2d2ff');    // пастельный синий
+      gradient.addColorStop(0.5, '#b07cff');  // пастельно-фиолетовый
+      gradient.addColorStop(1, '#ffe7f3');    // пастельно-розовый
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
+
     function drawPlayer() {
       const img = kirbyImgs[kirbyCurrentFrame];
       if (!player.rotating)
@@ -395,12 +400,9 @@
       if (!firstTapDone) { firstTapDone = true; player.velocityY = player.lift; }
       else player.velocityY = player.lift;
     }
-
-    // --- Механика по тапу: просто переключение между k1 и k2 ---
     function switchKirbyFrame() {
       kirbyCurrentFrame = 1 - kirbyCurrentFrame; // 0→1, 1→0
     }
-
     function checkCollision(pl, obj) {
       const pr = { x: pl.x + 10, y: pl.y + 10, width: pl.width - 20, height: pl.height - 20 };
       const ow = (obj.width  || obj.size) - 20;
@@ -482,3 +484,4 @@
   </script>
 </body>
 </html>
+
