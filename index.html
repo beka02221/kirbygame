@@ -162,7 +162,6 @@
     }
     const userId = tgUser.id.toString();
     let highScore = 0;
-
     async function loadUser() {
       userPhoto.src = tgUser.photo_url || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
       userPhoto.onerror = function() {
@@ -185,7 +184,6 @@
       mainMenu.style.display = "flex";
     }
     window.onload = loadUser;
-
     async function updatePlace() {
       yourPlace.textContent = "Rank: ...";
       const usersRef = ref(db, "users/");
@@ -239,21 +237,19 @@
     let scoreThisRun = 0, bgX = 0;
     let showPlayer = false, slowStart = true, deathFall = false;
     let gameStartTime = 0, lastFrameTime = 0, firstTapDone = false;
-
-    // --- Для анимации персонажа ---
-    let kirbyImgs = [new Image(), new Image()];
-    kirbyImgs[0].src = "k1.png"; // для тап-эффекта
-    kirbyImgs[1].src = "k2.png"; // обычный
-
     let enemyImg = new Image(), coinImg = new Image(), bgImage = new Image();
     enemyImg.src = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
     coinImg.src = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
-    bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
+    bgImage.src = "https://i.pinimg.com/736x/d2/1f/31/d21f318b5c788b1133502b5bc12f7a31.jpg";
 
-    // --- Новый механизм: кадр персонажа 0=k1, 1=k2 ---
-    let kirbyFrame = 1; // изначально к2
-    let kirbyTapTimer = 0;
-    const KIRBY_TAP_DURATION = 120; // миллисекунд (0.12 сек) сколько показывается k1.png после тапа
+    // ------- Для анимации Кирби -------
+    let kirbyImgs = [new Image(), new Image()];
+    kirbyImgs[0].src = "k1.png"; // кадр 1 — когда тапаем
+    kirbyImgs[1].src = "k2.png"; // кадр 2 — обычный
+
+    let kirbyFrame = 1; // по умолчанию — k2
+    let kirbyAnimTimeout = null;
+    const KIRBY_TAP_ANIM_TIME = 90; // ms
 
     function resizeCanvas() {
       canvasWidth = window.innerWidth;
@@ -286,10 +282,8 @@
       gameStartTime = performance.now();
       lastFrameTime = gameStartTime;
       firstTapDone = false;
-      // сбрасываем кадр персонажа
-      kirbyFrame = 1;
-      kirbyTapTimer = 0;
-
+      kirbyFrame = 1; // всегда k2 при старте
+      if (kirbyAnimTimeout) { clearTimeout(kirbyAnimTimeout); kirbyAnimTimeout = null; }
       let countdown = 3;
       countdownOverlay.style.display = "flex";
       countdownOverlay.textContent = countdown;
@@ -319,20 +313,9 @@
       lastFrameTime = performance.now();
       animationId = requestAnimationFrame(updateGame);
     }
-
     function updateGame(now = performance.now()) {
       let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
       lastFrameTime = now;
-
-      // Управляем возвратом кадра обратно на к2 после тапа
-      if (kirbyFrame === 0 && kirbyTapTimer > 0) {
-        kirbyTapTimer -= dt * 1000;
-        if (kirbyTapTimer <= 0) {
-          kirbyFrame = 1;
-          kirbyTapTimer = 0;
-        }
-      }
-
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       drawScrollingBackground(dt);
       if (showPlayer) {
@@ -410,19 +393,32 @@
       if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
     }
 
-    function onKeyDown(e) { if (e.code === "Space") handleFlap(); }
-    function onClickOrTouch() { handleFlap(); }
+    // --- Обработка тапов и space --- 
+    function onKeyDown(e) {
+      if (e.code === "Space") {
+        handleFlap();
+        showTapAnimation();
+      }
+    }
+    function onClickOrTouch() {
+      handleFlap();
+      showTapAnimation();
+    }
+    // --- Логика "мигания" персонажа ---
+    function showTapAnimation() {
+      kirbyFrame = 0; // k1.png
+      if (kirbyAnimTimeout) clearTimeout(kirbyAnimTimeout);
+      kirbyAnimTimeout = setTimeout(() => {
+        kirbyFrame = 1; // k2.png
+        kirbyAnimTimeout = null;
+      }, KIRBY_TAP_ANIM_TIME);
+    }
 
     function handleFlap() {
       if (!player.alive) return;
       if (!firstTapDone) { firstTapDone = true; player.velocityY = player.lift; }
       else player.velocityY = player.lift;
-
-      // ---- АНИМАЦИЯ КАДРА ПРИ ТАПЕ ----
-      kirbyFrame = 0;
-      kirbyTapTimer = KIRBY_TAP_DURATION;
     }
-
     function checkCollision(pl, obj) {
       const pr = { x: pl.x + 10, y: pl.y + 10, width: pl.width - 20, height: pl.height - 20 };
       const ow = (obj.width  || obj.size) - 20;
@@ -504,3 +500,4 @@
   </script>
 </body>
 </html>
+
