@@ -109,408 +109,435 @@
       </div>
     </div>
   </div>
- <script type="module">
-  // Telegram WebApp
-  const tg = window.Telegram.WebApp;
-  if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
-  else tg.expand();
-  // Firebase 9+
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
-  import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
-  const firebaseConfig = {
-    apiKey: "AIzaSyB90ev3fJRDKmn64hLTJaWjVjpHQtMjhLg",
-    authDomain: "test-with-likes.firebaseapp.com",
-    databaseURL: "https://test-with-likes-default-rtdb.firebaseio.com",
-    projectId: "test-with-likes",
-    storageBucket: "test-with-likes.appspot.com",
-    messagingSenderId: "764738820142",
-    appId: "1:764738820142:web:b22c6608a30e46cdcea7bf",
-    measurementId: "G-WJNF0HSN9P"
+<script type="module">
+// Telegram WebApp
+const tg = window.Telegram.WebApp;
+if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
+else tg.expand();
+// Firebase 9+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyB90ev3fJRDKmn64hLTJaWjVjpHQtMjhLg",
+  authDomain: "test-with-likes.firebaseapp.com",
+  databaseURL: "https://test-with-likes-default-rtdb.firebaseio.com",
+  projectId: "test-with-likes",
+  storageBucket: "test-with-likes.appspot.com",
+  messagingSenderId: "764738820142",
+  appId: "1:764738820142:web:b22c6608a30e46cdcea7bf",
+  measurementId: "G-WJNF0HSN9P"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// DOM Elements
+const mainMenu = document.getElementById("mainMenu");
+const userPhoto = document.getElementById("userPhoto");
+const userName = document.getElementById("userName");
+const coinsDisplay = document.getElementById("coinsDisplay");
+const startGameBtn = document.getElementById("startGameBtn");
+const leaderboardBtn = document.getElementById("leaderboardBtn");
+const infoBtn = document.getElementById("infoBtn");
+const gameContainer = document.getElementById("gameContainer");
+const gameCanvas = document.getElementById("gameCanvas");
+const leaderboardContainer = document.getElementById("leaderboardContainer");
+const leaderboardBackBtn = document.getElementById("leaderboardBackBtn");
+const leaderboardBody = document.getElementById("leaderboardBody");
+const infoContainer = document.getElementById("infoContainer");
+const infoBackBtn = document.getElementById("infoBackBtn");
+const yourPlace = document.getElementById("yourPlace");
+const yourHighScore = document.getElementById("yourHighScore");
+const gameOverPopup = document.getElementById("gameOverPopup");
+const gameOverText = document.getElementById("gameOverText");
+const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
+const countdownOverlay = document.getElementById("countdownOverlay");
+const gameHudCoins = document.getElementById("gameHudCoins");
+// User
+let tgUser = tg.initDataUnsafe?.user;
+if (!tgUser) {
+  mainMenu.innerHTML = "<h2>Please open in Telegram!</h2>";
+  throw new Error("Not Telegram WebApp");
+}
+const userId = tgUser.id.toString();
+let highScore = 0;
+async function loadUser() {
+  userPhoto.src = tgUser.photo_url || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
+  userPhoto.onerror = function() {
+    if (userPhoto.src !== "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png") {
+      userPhoto.src = "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
+    }
   };
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  // DOM Elements
-  const mainMenu = document.getElementById("mainMenu");
-  const userPhoto = document.getElementById("userPhoto");
-  const userName = document.getElementById("userName");
-  const coinsDisplay = document.getElementById("coinsDisplay");
-  const startGameBtn = document.getElementById("startGameBtn");
-  const leaderboardBtn = document.getElementById("leaderboardBtn");
-  const infoBtn = document.getElementById("infoBtn");
-  const gameContainer = document.getElementById("gameContainer");
-  const gameCanvas = document.getElementById("gameCanvas");
-  const leaderboardContainer = document.getElementById("leaderboardContainer");
-  const leaderboardBackBtn = document.getElementById("leaderboardBackBtn");
-  const leaderboardBody = document.getElementById("leaderboardBody");
-  const infoContainer = document.getElementById("infoContainer");
-  const infoBackBtn = document.getElementById("infoBackBtn");
-  const yourPlace = document.getElementById("yourPlace");
-  const yourHighScore = document.getElementById("yourHighScore");
-  const gameOverPopup = document.getElementById("gameOverPopup");
-  const gameOverText = document.getElementById("gameOverText");
-  const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
-  const countdownOverlay = document.getElementById("countdownOverlay");
-  const gameHudCoins = document.getElementById("gameHudCoins");
-  // User
-  let tgUser = tg.initDataUnsafe?.user;
-  if (!tgUser) {
-    mainMenu.innerHTML = "<h2>Please open in Telegram!</h2>";
-    throw new Error("Not Telegram WebApp");
+  userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
+  const userRef = ref(db, `users/${userId}`);
+  let snapshot = await get(userRef);
+  if (!snapshot.exists()) {
+    await set(userRef, {highScore:0,username:tgUser.username||"",photo:tgUser.photo_url||""});
+    highScore = 0;
+  } else {
+    highScore = snapshot.val().highScore || 0;
   }
-  const userId = tgUser.id.toString();
-  let highScore = 0;
-  async function loadUser() {
-    userPhoto.src = tgUser.photo_url || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
-    userPhoto.onerror = function() {
-      if (userPhoto.src !== "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png") {
-        userPhoto.src = "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
-      }
-    };
-    userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
-    const userRef = ref(db, `users/${userId}`);
-    let snapshot = await get(userRef);
-    if (!snapshot.exists()) {
-      await set(userRef, {highScore:0,username:tgUser.username||"",photo:tgUser.photo_url||""});
-      highScore = 0;
+  coinsDisplay.textContent = `Best: ${highScore}`;
+  yourHighScore.textContent = `Best: ${highScore}`;
+  await updatePlace();
+  mainMenu.style.display = "flex";
+}
+window.onload = loadUser;
+async function updatePlace() {
+  yourPlace.textContent = "Rank: ...";
+  const usersRef = ref(db, "users/");
+  const snapshot = await get(usersRef);
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    const usersArray = Object.entries(data).map(([id, u]) => ({id,highScore:u.highScore||0}));
+    usersArray.sort((a, b) => b.highScore - a.highScore);
+    const place = usersArray.findIndex(x => x.id === userId) + 1;
+    if (place > 0) yourPlace.textContent = `Rank: ${place} of ${usersArray.length}`;
+    else yourPlace.textContent = `Rank: —`;
+  }
+}
+startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGameWithCountdown(); };
+leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; loadLeaderboard(); };
+infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "flex"; };
+leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
+infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
+
+// --- ULTRA КРАСИВАЯ ТАБЛИЦА ЛИДЕРОВ ---
+async function loadLeaderboard() {
+  leaderboardBody.innerHTML = "";
+  const usersRef = ref(db, "users/");
+  const snapshot = await get(usersRef);
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    let usersArray = Object.entries(data).map(([id, u]) => ({
+      username: u.username ? `@${u.username}` : "User " + id,
+      photo: u.photo || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png",
+      highScore: u.highScore || 0,
+    }));
+    usersArray.sort((a, b) => b.highScore - a.highScore);
+
+    leaderboardBody.parentElement.querySelector('table').style =
+      "width:98%;border-radius:18px;background:rgba(255,255,255,0.89);box-shadow:0 8px 32px #7e47a84d;overflow:hidden;margin-top:22px;";
+    leaderboardBody.parentElement.querySelector('thead').innerHTML =
+      "<tr><th style='text-align:center;font-size:1.13em;color:#7644ba;padding:13px 0;'>User</th><th style='text-align:center;font-size:1.13em;color:#7644ba;'>Best</th></tr>";
+
+    usersArray.forEach((user, i) => {
+      let medal = "";
+      if (i === 0) medal = "🥇";
+      else if (i === 1) medal = "🥈";
+      else if (i === 2) medal = "🥉";
+      let tr = document.createElement("tr");
+      tr.style = "background:" + (i % 2 ? "#f8eaff99" : "#fff8") + ";";
+      tr.innerHTML = `
+        <td style="padding:9px 0 9px 0;text-align:center;">
+          <img src="${user.photo}" onerror="this.src='https://raw.githubusercontent.com/qnexst/404token/main/avatar.png';" style="width:38px;height:38px;border-radius:50%;border:2px solid #fff;margin-right:9px;vertical-align:middle;box-shadow:0 2px 10px #b8d8fa34;">
+          <span style="font-size:1em;font-weight:600;color:#4b3570;">${medal} ${user.username}</span>
+        </td>
+        <td style="padding:9px 0;text-align:center;font-size:1.12em;font-weight:700;color:#9857d3;">
+          ${user.highScore}
+        </td>`;
+      leaderboardBody.appendChild(tr);
+    });
+  }
+}
+
+// -------- CANVAS GAME --------
+const FIXED_FPS = 60;
+const BASE_GRAVITY = 0.2;
+const BASE_LIFT = -4.5;
+const BASE_SCROLL = 2;
+const BASE_MAXFALL = 4.5;
+const ENEMY_SPAWN_SEC = 1;
+const COIN_SPAWN_SEC = 0.95;
+
+let ctx, animationId, isGameRunning = false;
+let canvasWidth = 0, canvasHeight = 0;
+let player = {};
+let enemies = [];
+let coins = [];
+let enemySpawnTimer = 0;
+let coinSpawnTimer = 0;
+let scoreThisRun = 0, bgX = 0;
+let showPlayer = false, slowStart = true, deathFall = false;
+let gameStartTime = 0, lastFrameTime = 0, firstTapDone = false;
+
+// Kirby (игрок)
+let kirbyImgs = [new Image(), new Image()];
+kirbyImgs[0].src = "k1.png";
+kirbyImgs[1].src = "k2.png";
+let kirbyCurrentFrame = 0;
+let kirbyAngle = 0;
+const MIN_ANGLE = -27;
+const MAX_ANGLE = 78;
+const ANGLE_RETURN_SPEED = 8;
+
+// --- Враги (анимированный спрайт) ---
+let enemyImgs = [new Image(), new Image()];
+enemyImgs[0].src = "e1.png";
+enemyImgs[1].src = "e2.png";
+let enemyAnimFrame = 0;
+let enemyAnimLastTime = performance.now();
+
+// Остальные изображения
+let coinImg = new Image(), bgImage = new Image();
+coinImg.src = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
+bgImage.src = "https://blog.itselectlab.com/wp-content/uploads/background.png";
+
+function resizeCanvas() {
+  canvasWidth = window.innerWidth;
+  canvasHeight = window.innerHeight;
+  gameCanvas.width = canvasWidth;
+  gameCanvas.height = canvasHeight;
+}
+window.addEventListener("resize", () => { if (isGameRunning) resizeCanvas(); });
+
+function startGameWithCountdown() {
+  gameContainer.style.display = "block";
+  gameOverPopup.style.display = "none";
+  gameHudCoins.style.display = "none";
+  ctx = gameCanvas.getContext("2d");
+  resizeCanvas();
+  scoreThisRun = 0;
+  player = {
+    x: 100, y: canvasHeight/2, width: 48, height: 48, velocityY: 0, gravity: BASE_GRAVITY,
+    lift: BASE_LIFT, alive: true, maxFallSpeed: BASE_MAXFALL, rotating: false
+  };
+  enemies = [];
+  coins = [];
+  enemySpawnTimer = 0;
+  coinSpawnTimer = 0;
+  bgX = 0;
+  deathFall = false;
+  showPlayer = false;
+  slowStart = true;
+  slowStartFrame = 0;
+  gameStartTime = performance.now();
+  lastFrameTime = gameStartTime;
+  firstTapDone = false;
+  kirbyCurrentFrame = 0;
+  kirbyAngle = 0;
+  let countdown = 3;
+  countdownOverlay.style.display = "flex";
+  countdownOverlay.textContent = countdown;
+  let cdInt = setInterval(() => {
+    countdown--;
+    if (countdown === 0) {
+      countdownOverlay.textContent = "GO!";
+    } else if (countdown < 0) {
+      countdownOverlay.style.display = "none";
+      clearInterval(cdInt);
+      showPlayer = true;
+      startGameCore();
     } else {
-      highScore = snapshot.val().highScore || 0;
+      countdownOverlay.textContent = countdown;
     }
-    coinsDisplay.textContent = `Best: ${highScore}`;
-    yourHighScore.textContent = `Best: ${highScore}`;
-    await updatePlace();
-    mainMenu.style.display = "flex";
-  }
-  window.onload = loadUser;
-  async function updatePlace() {
-    yourPlace.textContent = "Rank: ...";
-    const usersRef = ref(db, "users/");
-    const snapshot = await get(usersRef);
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      const usersArray = Object.entries(data).map(([id, u]) => ({id,highScore:u.highScore||0}));
-      usersArray.sort((a, b) => b.highScore - a.highScore);
-      const place = usersArray.findIndex(x => x.id === userId) + 1;
-      if (place > 0) yourPlace.textContent = `Rank: ${place} of ${usersArray.length}`;
-      else yourPlace.textContent = `Rank: —`;
-    }
-  }
-  startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGameWithCountdown(); };
-  leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; loadLeaderboard(); };
-  infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "flex"; };
-  leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
-  infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
-  async function loadLeaderboard() {
-    leaderboardBody.innerHTML = "";
-    const usersRef = ref(db, "users/");
-    const snapshot = await get(usersRef);
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      const usersArray = Object.entries(data).map(([id, u]) => ({username:u.username?`@${u.username}`:"User "+id,highScore:u.highScore||0,}));
-      usersArray.sort((a, b) => b.highScore - a.highScore);
-      usersArray.forEach(user => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${user.username}</td><td>${user.highScore}</td>`;
-        leaderboardBody.appendChild(tr);
-      });
-    }
+  }, 900);
+}
+let slowStartFrame = 0, ticksAfterStart = 0;
+function startGameCore() {
+  isGameRunning = true;
+  slowStart = true; slowStartFrame = 0; ticksAfterStart = 0;
+  gameHudCoins.textContent = "Coins: 0";
+  gameHudCoins.style.display = "block";
+  document.addEventListener("keydown", onKeyDown);
+  document.addEventListener("mousedown", onClickOrTouch);
+  document.addEventListener("touchstart", onClickOrTouch);
+  lastFrameTime = performance.now();
+  animationId = requestAnimationFrame(updateGame);
+}
+
+function updateGame(now = performance.now()) {
+  let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
+  lastFrameTime = now;
+
+  // Фон (двойной чтобы не было щели)
+  bgX -= BASE_SCROLL * dt * FIXED_FPS;
+  if (bgX <= -canvasWidth) { bgX += canvasWidth; }
+  ctx.drawImage(bgImage, Math.round(bgX), 0, canvasWidth, canvasHeight);
+  ctx.drawImage(bgImage, Math.round(bgX + canvasWidth), 0, canvasWidth, canvasHeight);
+
+  // --- Анимация врага ---
+  if (now - enemyAnimLastTime > 160) {
+    enemyAnimFrame = 1 - enemyAnimFrame;
+    enemyAnimLastTime = now;
   }
 
-  // -------- CANVAS GAME --------
-  const FIXED_FPS = 60;
-  const BASE_GRAVITY = 0.2;
-  const BASE_LIFT = -4.5;
-  const BASE_SCROLL = 2;
-  const BASE_MAXFALL = 4.5;
-  const ENEMY_SPAWN_SEC = 1;
-  const COIN_SPAWN_SEC = 0.95;
+  if (showPlayer) {
+    updatePlayer(dt);
+    drawPlayer();
 
-  let ctx, animationId, isGameRunning = false;
-  let canvasWidth = 0, canvasHeight = 0;
-  let player = {};
-  let enemies = [];
-  let coins = [];
-  let enemySpawnTimer = 0;
-  let coinSpawnTimer = 0;
-  let scoreThisRun = 0, bgX = 0;
-  let showPlayer = false, slowStart = true, deathFall = false;
-  let gameStartTime = 0, lastFrameTime = 0, firstTapDone = false;
-
-  // Kirby (игрок)
-  let kirbyImgs = [new Image(), new Image()];
-  kirbyImgs[0].src = "k1.png";
-  kirbyImgs[1].src = "k2.png";
-  let kirbyCurrentFrame = 0;
-  let kirbyAngle = 0;
-  const MIN_ANGLE = -27;
-  const MAX_ANGLE = 78;
-  const ANGLE_RETURN_SPEED = 8;
-
-  // --- Враги (анимированный спрайт) ---
-  let enemyImgs = [new Image(), new Image()];
-  enemyImgs[0].src = "e1.png";
-  enemyImgs[1].src = "e2.png";
-  let enemyAnimFrame = 0;
-  let enemyAnimLastTime = performance.now();
-
-  // Остальные изображения
-  let coinImg = new Image(), bgImage = new Image();
-  coinImg.src = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
-  bgImage.src = "https://blog.itselectlab.com/wp-content/uploads/background.png";
-
-  function resizeCanvas() {
-    canvasWidth = window.innerWidth;
-    canvasHeight = window.innerHeight;
-    gameCanvas.width = canvasWidth;
-    gameCanvas.height = canvasHeight;
-  }
-  window.addEventListener("resize", () => { if (isGameRunning) resizeCanvas(); });
-
-  function startGameWithCountdown() {
-    gameContainer.style.display = "block";
-    gameOverPopup.style.display = "none";
-    gameHudCoins.style.display = "none";
-    ctx = gameCanvas.getContext("2d");
-    resizeCanvas();
-    scoreThisRun = 0;
-    player = {
-      x: 100, y: canvasHeight/2, width: 48, height: 48, velocityY: 0, gravity: BASE_GRAVITY,
-      lift: BASE_LIFT, alive: true, maxFallSpeed: BASE_MAXFALL, rotating: false
-    };
-    enemies = [];
-    coins = [];
-    enemySpawnTimer = 0;
-    coinSpawnTimer = 0;
-    bgX = 0;
-    deathFall = false;
-    showPlayer = false;
-    slowStart = true;
-    slowStartFrame = 0;
-    gameStartTime = performance.now();
-    lastFrameTime = gameStartTime;
-    firstTapDone = false;
-    kirbyCurrentFrame = 0;
-    kirbyAngle = 0;
-    let countdown = 3;
-    countdownOverlay.style.display = "flex";
-    countdownOverlay.textContent = countdown;
-    let cdInt = setInterval(() => {
-      countdown--;
-      if (countdown === 0) {
-        countdownOverlay.textContent = "GO!";
-      } else if (countdown < 0) {
-        countdownOverlay.style.display = "none";
-        clearInterval(cdInt);
-        showPlayer = true;
-        startGameCore();
-      } else {
-        countdownOverlay.textContent = countdown;
+    if (isGameRunning) {
+      ticksAfterStart++;
+      // Враги появляются не сразу (отложено после старта)
+      if (ticksAfterStart > 120) {
+        enemySpawnTimer += dt;
+        if (enemySpawnTimer > ENEMY_SPAWN_SEC) { createEnemy(); enemySpawnTimer = 0; }
       }
-    }, 900);
+      coinSpawnTimer += dt;
+      if (coinSpawnTimer > COIN_SPAWN_SEC) { createCoin(); coinSpawnTimer = 0; }
+
+      // --- Враги: двигаются влево и анимированы ---
+      for (let i = 0; i < enemies.length; i++) {
+        let enemy = enemies[i];
+        enemy.x -= enemy.speed * dt * FIXED_FPS;
+        drawEnemy(enemy);
+        if (checkCollision(player, enemy)) { handleDeathAnimation(); return; }
+      }
+      enemies = enemies.filter(e => e.x + e.width > 0);
+
+      // --- Монеты ---
+      for (let i = 0; i < coins.length; i++) {
+        coins[i].x -= BASE_SCROLL * dt * FIXED_FPS;
+        drawCoin(coins[i]);
+        if (checkCollision(player, coins[i])) { scoreThisRun++; coins[i].collected = true; }
+      }
+      coins = coins.filter(c => !c.collected && c.x + c.size > 0);
+
+      gameHudCoins.textContent = "Coins: " + scoreThisRun;
+      if (player.alive) { animationId = requestAnimationFrame(updateGame); }
+    }
   }
-  let slowStartFrame = 0, ticksAfterStart = 0;
-  function startGameCore() {
-    isGameRunning = true;
-    slowStart = true; slowStartFrame = 0; ticksAfterStart = 0;
-    gameHudCoins.textContent = "Coins: 0";
-    gameHudCoins.style.display = "block";
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("mousedown", onClickOrTouch);
-    document.addEventListener("touchstart", onClickOrTouch);
-    lastFrameTime = performance.now();
+  if (deathFall) updateDeathFall(dt);
+}
+
+function drawPlayer() {
+  const img = kirbyImgs[kirbyCurrentFrame];
+  ctx.save();
+  ctx.translate(player.x + player.width/2, player.y + player.height/2);
+  ctx.rotate((kirbyAngle * Math.PI) / 180);
+  ctx.drawImage(img, -player.width/2, -player.height/2, player.width, player.height);
+  ctx.restore();
+}
+function drawEnemy(e) {
+  // Враг анимирован: e1.png / e2.png
+  ctx.drawImage(enemyImgs[enemyAnimFrame], e.x, e.y, e.width, e.height);
+}
+function drawCoin(c) {
+  ctx.drawImage(coinImg, c.x, c.y, c.size, c.size);
+}
+function createEnemy() {
+  const randY = Math.random() * (canvasHeight - 42 - 20) + 10;
+  // ---- Новое: у каждого врага своя скорость (2–4)
+  const randSpeed = 2 + Math.random() * 2;
+  enemies.push({ x: canvasWidth, y: randY, width: 54, height: 40, speed: randSpeed });
+}
+function createCoin() {
+  const randY = Math.random() * (canvasHeight - 40 - 20) + 10;
+  coins.push({ x: canvasWidth, y: randY, size: 40, collected: false });
+}
+
+function updatePlayer(dt) {
+  let gravity = player.gravity;
+  if (slowStart) {
+    slowStartFrame++;
+    gravity = 0.07;
+    if (slowStartFrame > 72) slowStart = false;
+  }
+  player.velocityY += gravity * dt * FIXED_FPS;
+  if (player.velocityY > player.maxFallSpeed) player.velocityY = player.maxFallSpeed;
+  player.y += player.velocityY * dt * FIXED_FPS;
+  if (player.y < 0) { player.y = 0; player.velocityY = 0; }
+
+  // --- Логика наклона персонажа ---
+  let targetAngle = 0;
+  if (player.velocityY < -1) targetAngle = MIN_ANGLE;
+  else if (player.velocityY > 2) targetAngle = MAX_ANGLE;
+  else targetAngle = 24;
+  kirbyAngle += (targetAngle - kirbyAngle) * Math.min(dt * ANGLE_RETURN_SPEED, 1);
+
+  if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
+}
+
+function onKeyDown(e) { if (e.code === "Space") { handleFlap(); switchKirbyFrame(); } }
+function onClickOrTouch() { handleFlap(); switchKirbyFrame(); }
+
+function handleFlap() {
+  if (!player.alive) return;
+  if (!firstTapDone) { firstTapDone = true; player.velocityY = player.lift; }
+  else player.velocityY = player.lift;
+  kirbyAngle = MIN_ANGLE;
+}
+function switchKirbyFrame() {
+  kirbyCurrentFrame = 1 - kirbyCurrentFrame;
+}
+function checkCollision(pl, obj) {
+  const pr = { x: pl.x + 10, y: pl.y + 10, width: pl.width - 20, height: pl.height - 20 };
+  const ow = (obj.width  || obj.size) - 20;
+  const oh = (obj.height || obj.size) - 20;
+  const or = { x: obj.x + 10, y: obj.y + 10, width:  ow > 0 ? ow : 0, height: oh > 0 ? oh : 0 };
+  return !(
+    or.x > pr.x + pr.width ||
+    or.x + or.width < pr.x ||
+    or.y > pr.y + pr.height ||
+    or.y + or.height < pr.y
+  );
+}
+function handleDeathAnimation() {
+  if (!player.alive) return;
+  player.alive = false;
+  isGameRunning = false;
+  deathFall = true;
+  gameHudCoins.style.display = "none";
+  document.removeEventListener("keydown", onKeyDown);
+  document.removeEventListener("mousedown", onClickOrTouch);
+  document.removeEventListener("touchstart", onClickOrTouch);
+  player.rotating = true;
+  kirbyAngle = MAX_ANGLE;
+  player.velocityY = 3.5;
+  lastFrameTime = performance.now();
+  animationId = requestAnimationFrame(updateGame);
+}
+function updateDeathFall(dt) {
+  player.y += player.velocityY * dt * FIXED_FPS * 1.1;
+  player.velocityY += 0.33 * dt * FIXED_FPS;
+  kirbyAngle += (MAX_ANGLE - kirbyAngle) * Math.min(dt * 8, 1);
+  if (player.y > canvasHeight + player.height) {
+    deathFall = false;
+    showGameOverSequence();
+  } else {
     animationId = requestAnimationFrame(updateGame);
   }
-
-  function updateGame(now = performance.now()) {
-    let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
-    lastFrameTime = now;
-
-    // Фон (двойной чтобы не было щели)
-    bgX -= BASE_SCROLL * dt * FIXED_FPS;
-    if (bgX <= -canvasWidth) { bgX += canvasWidth; }
-    ctx.drawImage(bgImage, Math.round(bgX), 0, canvasWidth, canvasHeight);
-    ctx.drawImage(bgImage, Math.round(bgX + canvasWidth), 0, canvasWidth, canvasHeight);
-
-    // --- Анимация врага ---
-    if (now - enemyAnimLastTime > 160) {
-      enemyAnimFrame = 1 - enemyAnimFrame;
-      enemyAnimLastTime = now;
-    }
-
-    if (showPlayer) {
-      updatePlayer(dt);
-      drawPlayer();
-
-      if (isGameRunning) {
-        ticksAfterStart++;
-        // Враги появляются не сразу (отложено после старта)
-        if (ticksAfterStart > 120) {
-          enemySpawnTimer += dt;
-          if (enemySpawnTimer > ENEMY_SPAWN_SEC) { createEnemy(); enemySpawnTimer = 0; }
-        }
-        coinSpawnTimer += dt;
-        if (coinSpawnTimer > COIN_SPAWN_SEC) { createCoin(); coinSpawnTimer = 0; }
-
-        // --- Враги: двигаются влево и анимированы ---
-        for (let i = 0; i < enemies.length; i++) {
-          enemies[i].x -= BASE_SCROLL * dt * FIXED_FPS;
-          drawEnemy(enemies[i]);
-          if (checkCollision(player, enemies[i])) { handleDeathAnimation(); return; }
-        }
-        enemies = enemies.filter(e => e.x + e.width > 0);
-
-        // --- Монеты ---
-        for (let i = 0; i < coins.length; i++) {
-          coins[i].x -= BASE_SCROLL * dt * FIXED_FPS;
-          drawCoin(coins[i]);
-          if (checkCollision(player, coins[i])) { scoreThisRun++; coins[i].collected = true; }
-        }
-        coins = coins.filter(c => !c.collected && c.x + c.size > 0);
-
-        gameHudCoins.textContent = "Coins: " + scoreThisRun;
-        if (player.alive) { animationId = requestAnimationFrame(updateGame); }
-      }
-    }
-    if (deathFall) updateDeathFall(dt);
+}
+function showGameOverSequence() {
+  let newHigh = false;
+  if (scoreThisRun > highScore) {
+    highScore = scoreThisRun;
+    newHigh = true;
   }
-
-  function drawPlayer() {
-    const img = kirbyImgs[kirbyCurrentFrame];
-    ctx.save();
-    ctx.translate(player.x + player.width/2, player.y + player.height/2);
-    ctx.rotate((kirbyAngle * Math.PI) / 180);
-    ctx.drawImage(img, -player.width/2, -player.height/2, player.width, player.height);
-    ctx.restore();
-  }
-  function drawEnemy(e) {
-    // Враг анимирован: e1.png / e2.png
-    ctx.drawImage(enemyImgs[enemyAnimFrame], e.x, e.y, e.width, e.height);
-  }
-  function drawCoin(c) {
-    ctx.drawImage(coinImg, c.x, c.y, c.size, c.size);
-  }
-  function createEnemy() {
-    const randY = Math.random() * (canvasHeight - 42 - 20) + 10;
-    enemies.push({ x: canvasWidth, y: randY, width: 54, height: 40 }); // уменьшенный размер!
-  }
-  function createCoin() {
-    const randY = Math.random() * (canvasHeight - 40 - 20) + 10;
-    coins.push({ x: canvasWidth, y: randY, size: 40, collected: false });
-  }
-
-  function updatePlayer(dt) {
-    let gravity = player.gravity;
-    if (slowStart) {
-      slowStartFrame++;
-      gravity = 0.07;
-      if (slowStartFrame > 72) slowStart = false;
-    }
-    player.velocityY += gravity * dt * FIXED_FPS;
-    if (player.velocityY > player.maxFallSpeed) player.velocityY = player.maxFallSpeed;
-    player.y += player.velocityY * dt * FIXED_FPS;
-    if (player.y < 0) { player.y = 0; player.velocityY = 0; }
-
-    // --- Логика наклона персонажа ---
-    let targetAngle = 0;
-    if (player.velocityY < -1) targetAngle = MIN_ANGLE;
-    else if (player.velocityY > 2) targetAngle = MAX_ANGLE;
-    else targetAngle = 24;
-    kirbyAngle += (targetAngle - kirbyAngle) * Math.min(dt * ANGLE_RETURN_SPEED, 1);
-
-    if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
-  }
-
-  function onKeyDown(e) { if (e.code === "Space") { handleFlap(); switchKirbyFrame(); } }
-  function onClickOrTouch() { handleFlap(); switchKirbyFrame(); }
-
-  function handleFlap() {
-    if (!player.alive) return;
-    if (!firstTapDone) { firstTapDone = true; player.velocityY = player.lift; }
-    else player.velocityY = player.lift;
-    kirbyAngle = MIN_ANGLE;
-  }
-  function switchKirbyFrame() {
-    kirbyCurrentFrame = 1 - kirbyCurrentFrame;
-  }
-  function checkCollision(pl, obj) {
-    const pr = { x: pl.x + 10, y: pl.y + 10, width: pl.width - 20, height: pl.height - 20 };
-    const ow = (obj.width  || obj.size) - 20;
-    const oh = (obj.height || obj.size) - 20;
-    const or = { x: obj.x + 10, y: obj.y + 10, width:  ow > 0 ? ow : 0, height: oh > 0 ? oh : 0 };
-    return !(
-      or.x > pr.x + pr.width ||
-      or.x + or.width < pr.x ||
-      or.y > pr.y + pr.height ||
-      or.y + or.height < pr.y
-    );
-  }
-  function handleDeathAnimation() {
-    if (!player.alive) return;
-    player.alive = false;
-    isGameRunning = false;
-    deathFall = true;
-    gameHudCoins.style.display = "none";
+  updateScoreInDB(newHigh, scoreThisRun);
+  let popupText = `You collected <b>${scoreThisRun}</b> coins this run.<br>`;
+  if (newHigh) popupText += "<span style='color:#b13df3'>NEW RECORD!</span><br>";
+  popupText += `Your best: <b>${highScore}</b>`;
+  setTimeout(() => showGameOverPopup(popupText), 500);
+}
+function showGameOverPopup(html) {
+  gameOverText.innerHTML = html;
+  gameOverPopup.style.display = "flex";
+}
+gameOverCloseBtn.onclick = endGameAndReturn;
+function endGameAndReturn() {
+  if (isGameRunning || deathFall) {
+    cancelAnimationFrame(animationId);
     document.removeEventListener("keydown", onKeyDown);
     document.removeEventListener("mousedown", onClickOrTouch);
     document.removeEventListener("touchstart", onClickOrTouch);
-    player.rotating = true;
-    kirbyAngle = MAX_ANGLE;
-    player.velocityY = 3.5;
-    lastFrameTime = performance.now();
-    animationId = requestAnimationFrame(updateGame);
+    isGameRunning = false; deathFall = false;
   }
-  function updateDeathFall(dt) {
-    player.y += player.velocityY * dt * FIXED_FPS * 1.1;
-    player.velocityY += 0.33 * dt * FIXED_FPS;
-    kirbyAngle += (MAX_ANGLE - kirbyAngle) * Math.min(dt * 8, 1);
-    if (player.y > canvasHeight + player.height) {
-      deathFall = false;
-      showGameOverSequence();
-    } else {
-      animationId = requestAnimationFrame(updateGame);
-    }
-  }
-  function showGameOverSequence() {
-    let newHigh = false;
-    if (scoreThisRun > highScore) {
-      highScore = scoreThisRun;
-      newHigh = true;
-    }
-    updateScoreInDB(newHigh, scoreThisRun);
-    let popupText = `You collected <b>${scoreThisRun}</b> coins this run.<br>`;
-    if (newHigh) popupText += "<span style='color:#b13df3'>NEW RECORD!</span><br>";
-    popupText += `Your best: <b>${highScore}</b>`;
-    setTimeout(() => showGameOverPopup(popupText), 500);
-  }
-  function showGameOverPopup(html) {
-    gameOverText.innerHTML = html;
-    gameOverPopup.style.display = "flex";
-  }
-  gameOverCloseBtn.onclick = endGameAndReturn;
-  function endGameAndReturn() {
-    if (isGameRunning || deathFall) {
-      cancelAnimationFrame(animationId);
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("mousedown", onClickOrTouch);
-      document.removeEventListener("touchstart", onClickOrTouch);
-      isGameRunning = false; deathFall = false;
-    }
-    gameContainer.style.display = "none";
-    gameOverPopup.style.display = "none";
-    coinsDisplay.textContent = `Best: ${highScore}`;
-    yourHighScore.textContent = `Best: ${highScore}`;
-    updatePlace();
-    mainMenu.style.display = "flex";
-    ticksAfterStart = 0;
-  }
-  async function updateScoreInDB(isNewHigh, latestScore) {
-    const userRef = ref(db, `users/${userId}`);
-    let updateData = {};
-    if (isNewHigh) updateData.highScore = latestScore;
-    await update(userRef, updateData);
-    coinsDisplay.textContent = `Best: ${highScore}`;
-    yourHighScore.textContent = `Best: ${highScore}`;
-  }
+  gameContainer.style.display = "none";
+  gameOverPopup.style.display = "none";
+  coinsDisplay.textContent = `Best: ${highScore}`;
+  yourHighScore.textContent = `Best: ${highScore}`;
+  updatePlace();
+  mainMenu.style.display = "flex";
+  ticksAfterStart = 0;
+}
+async function updateScoreInDB(isNewHigh, latestScore) {
+  const userRef = ref(db, `users/${userId}`);
+  let updateData = {};
+  if (isNewHigh) updateData.highScore = latestScore;
+  await update(userRef, updateData);
+  coinsDisplay.textContent = `Best: ${highScore}`;
+  yourHighScore.textContent = `Best: ${highScore}`;
+}
 </script>
 
 </body>
