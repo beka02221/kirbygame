@@ -42,18 +42,36 @@
     .popup-box button {margin-top:5px;padding:13px 32px;background:linear-gradient(90deg,#f7c8e0 0,#b6eaff 100%);border-radius:20px;border:none;color:#44335b;font-weight:700;font-size:1.09em;box-shadow:0 2px 12px #a2d2ff3b;cursor:pointer;transition:background 0.14s;display:block;}
     .popup-box button#gameOverCloseBtn {display:block;}
     #countdownOverlay {display:none;position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:222;align-items:center;justify-content:center;background:rgba(248,245,255,0.78);font-size:3em;color:#9857d3;font-weight:900;font-family:'Nunito',sans-serif;letter-spacing:.08em;text-shadow:0 2px 12px #fff;}
-    /* LEADERBOARD TABLE MODERNIZED */
-    #leaderboardBody tr {transition:background 0.18s;}
-    #leaderboardBody tr:hover {background:rgba(150,87,220,0.09);}
-    #leaderboardContainer table {border-collapse:separate;border-spacing:0 8px;margin:14px 0 0 0;width:93%;background:rgba(255,255,255,0.61);border-radius:20px;box-shadow:0 5px 22px #c3a6ef18;overflow:hidden;}
-    #leaderboardContainer th, #leaderboardContainer td {padding:11px 18px;font-size:1.12em;}
-    #leaderboardContainer th {background:#efe8ff;color:#824ae7;font-weight:900;border-bottom:2.5px solid #b48ce3;}
-    #leaderboardContainer td {background:rgba(245,245,255,0.94);color:#4d3680;font-weight:700;}
-    #leaderboardContainer tr:nth-child(1) td {background:linear-gradient(90deg,#ffe78b 0,#fffae3 100%);}
-    #leaderboardContainer tr:nth-child(2) td {background:linear-gradient(90deg,#b2f1ff 0,#e9faff 100%);}
-    #leaderboardContainer tr:nth-child(3) td {background:linear-gradient(90deg,#ffd4fa 0,#f7e3ff 100%);}
-    @media (max-width:600px){.main-btn,#leaderboardBackBtn,#infoBackBtn,.popup-box button{font-size:0.97em;padding:11px 12px;}.user-header img{width:60px;height:60px;}.popup-box{padding:22px 10vw;}#gameHudCoins{font-size:1.3em;padding:7px 10vw;}}
-    @media (max-width:390px){#coinsDisplay{font-size:0.94em;padding:7px 10px;}.user-meta div{font-size:0.92em;}.user-header{padding:10px 7vw;}#gameHudCoins{font-size:1.12em;padding:7px 4vw;}}
+    /* Улучшенный Leaderboard */
+    #leaderboardContainer .menu-inner {width:95%;max-width:440px;}
+    #leaderboardBody tr {transition:background 0.17s;}
+    #leaderboardBody tr:nth-child(odd) {background:#f8e7fd70;}
+    #leaderboardBody tr:hover {background:#c186fd33;}
+    #leaderboardContainer table {
+      width:100%;border-radius:19px;box-shadow:0 2px 16px #e9c3ff5b;
+      overflow:hidden;margin-top:15px;font-size:1.12em;background:#fff8;
+      border-collapse:separate;border-spacing:0 6px;
+    }
+    #leaderboardContainer th, #leaderboardContainer td {
+      padding:14px 0;text-align:center;color:#68318d;border-bottom:1.5px solid #e8c8fd;
+      font-weight:700;letter-spacing:.02em;
+    }
+    #leaderboardContainer th {background:linear-gradient(90deg,#e7cbfa 0,#fbe1fd 100%);}
+    #leaderboardContainer td {font-weight:600;}
+    @media (max-width:600px){
+      .main-btn,#leaderboardBackBtn,#infoBackBtn,.popup-box button{font-size:0.97em;padding:11px 12px;}
+      .user-header img{width:60px;height:60px;}
+      .popup-box{padding:22px 10vw;}
+      #gameHudCoins{font-size:1.3em;padding:7px 10vw;}
+      #leaderboardContainer .menu-inner {margin-top:55px;}
+    }
+    @media (max-width:390px){
+      #coinsDisplay{font-size:0.94em;padding:7px 10px;}
+      .user-meta div{font-size:0.92em;}
+      .user-header{padding:10px 7vw;}
+      #gameHudCoins{font-size:1.12em;padding:7px 4vw;}
+      #leaderboardContainer table{font-size:0.98em;}
+    }
   </style>
 </head>
 <body>
@@ -88,7 +106,7 @@
       <h2 style="color:#7c46a3;text-align:center;margin:8px 0 0 0">Leaderboard</h2>
       <table>
         <thead>
-          <tr><th>User</th><th>Best</th></tr>
+          <tr><th style="border-radius:15px 0 0 0;">User</th><th style="border-radius:0 15px 0 0;">Best</th></tr>
         </thead>
         <tbody id="leaderboardBody"></tbody>
       </table>
@@ -119,16 +137,18 @@
       </div>
     </div>
   </div>
-  <!-- SFX -->
-  <audio id="sfx_die" src="sfx_die.mp3" preload="auto"></audio>
-  <audio id="sfx_point" src="sfx_point.mp3" preload="auto"></audio>
-  <audio id="sfx_wing" src="sfx_wing.mp3" preload="auto"></audio>
-<script type="module">
+ <script type="module">
+  // --- SOUNDS ---
+  const sfx_die = new Audio("sfx_die.mp3");
+  const sfx_point = new Audio("sfx_point.mp3");
+  const sfx_wing = new Audio("sfx_wing.mp3");
+  sfx_die.preload = sfx_point.preload = sfx_wing.preload = "auto";
+  sfx_die.volume = 0.7; sfx_point.volume = 0.9; sfx_wing.volume = 0.83;
+
   // Telegram WebApp
   const tg = window.Telegram.WebApp;
   if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
   else tg.expand();
-
   // Firebase 9+
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
   import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
@@ -167,10 +187,6 @@
   const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
   const countdownOverlay = document.getElementById("countdownOverlay");
   const gameHudCoins = document.getElementById("gameHudCoins");
-  // SFX
-  const sfx_die = document.getElementById("sfx_die");
-  const sfx_point = document.getElementById("sfx_point");
-  const sfx_wing = document.getElementById("sfx_wing");
   // User
   let tgUser = tg.initDataUnsafe?.user;
   if (!tgUser) {
@@ -225,14 +241,16 @@
     const snapshot = await get(usersRef);
     if (snapshot.exists()) {
       const data = snapshot.val();
-      const usersArray = Object.entries(data).map(([id, u]) => ({
-        username:u.username?`@${u.username}`:"User "+id,
-        highScore:u.highScore||0,
-      }));
+      const usersArray = Object.entries(data).map(([id, u]) => ({username:u.username?`@${u.username}`:"User "+id,highScore:u.highScore||0,}));
       usersArray.sort((a, b) => b.highScore - a.highScore);
       usersArray.forEach((user, idx) => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${user.username}</td><td>${user.highScore}</td>`;
+        // выделить TOP-3 цветом
+        let topStyle = "";
+        if(idx === 0) topStyle = "font-weight:900;color:#a934db;background:linear-gradient(90deg,#ffd2fb 50%,#e6d7ff 100%)";
+        else if(idx === 1) topStyle = "font-weight:800;color:#5351d9;background:linear-gradient(90deg,#f9e6ff 50%,#cde7f7 100%)";
+        else if(idx === 2) topStyle = "font-weight:800;color:#ffb300;background:linear-gradient(90deg,#f3ebfd 50%,#fceabb 100%)";
+        tr.innerHTML = `<td style="${topStyle}">${user.username}</td><td style="${topStyle}">${user.highScore}</td>`;
         leaderboardBody.appendChild(tr);
       });
     }
@@ -373,8 +391,9 @@
         coinSpawnTimer += dt;
         if (coinSpawnTimer > COIN_SPAWN_SEC) { createCoin(); coinSpawnTimer = 0; }
 
-        // --- Враги: двигаются влево и анимированы ---
+        // --- Враги: двигаются влево и анимированы с разной скоростью ---
         for (let i = 0; i < enemies.length; i++) {
+          // Каждый враг летит со своей скоростью (random при создании)
           enemies[i].x -= enemies[i].speed * dt * FIXED_FPS;
           drawEnemy(enemies[i]);
           if (checkCollision(player, enemies[i])) { handleDeathAnimation(); return; }
@@ -385,8 +404,9 @@
         for (let i = 0; i < coins.length; i++) {
           coins[i].x -= BASE_SCROLL * dt * FIXED_FPS;
           drawCoin(coins[i]);
-          if (!coins[i].collected && checkCollision(player, coins[i])) { 
-            scoreThisRun++; coins[i].collected = true; 
+          if (!coins[i].collected && checkCollision(player, coins[i])) {
+            scoreThisRun++;
+            coins[i].collected = true;
             sfx_point.currentTime = 0; sfx_point.play();
           }
         }
@@ -408,7 +428,6 @@
     ctx.restore();
   }
   function drawEnemy(e) {
-    // Враг анимирован: e1.png / e2.png
     ctx.drawImage(enemyImgs[enemyAnimFrame], e.x, e.y, e.width, e.height);
   }
   function drawCoin(c) {
@@ -416,9 +435,9 @@
   }
   function createEnemy() {
     const randY = Math.random() * (canvasHeight - 42 - 20) + 10;
-    // Генерируем уникальную скорость для каждой птицы от 1.6 до 3.2 (можно менять)
-    const speed = Math.random() * 1.6 + 1.6;
-    enemies.push({ x: canvasWidth, y: randY, width: 54, height: 40, speed });
+    // скорость для врага от 1.6 до 2.7 (в 2 раза разная скорость)
+    const speed = BASE_SCROLL * (1 + Math.random() * 0.7);
+    enemies.push({ x: canvasWidth, y: randY, width: 54, height: 40, speed: speed });
   }
   function createCoin() {
     const randY = Math.random() * (canvasHeight - 40 - 20) + 10;
@@ -447,16 +466,33 @@
     if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
   }
 
-  function onKeyDown(e) { if (e.code === "Space") { handleFlap(); switchKirbyFrame(); } }
-  function onClickOrTouch() { handleFlap(); switchKirbyFrame(); }
+  function onKeyDown(e) {
+    if (e.code === "Space") {
+      handleFlap();
+      switchKirbyFrame();
+      playWingSound();
+    }
+  }
+  function onClickOrTouch(e) {
+    // Чтобы нажатие не повторялось если сработали оба события (touch и mouse), ставим таймер
+    if (onClickOrTouch.lastCall && performance.now() - onClickOrTouch.lastCall < 80) return;
+    onClickOrTouch.lastCall = performance.now();
+    handleFlap();
+    switchKirbyFrame();
+    playWingSound();
+  }
+
+  function playWingSound() {
+    // Только один звук за тап
+    sfx_wing.currentTime = 0;
+    sfx_wing.play();
+  }
 
   function handleFlap() {
     if (!player.alive) return;
     if (!firstTapDone) { firstTapDone = true; player.velocityY = player.lift; }
     else player.velocityY = player.lift;
     kirbyAngle = MIN_ANGLE;
-    // SFX jump
-    sfx_wing.currentTime = 0; sfx_wing.play();
   }
   function switchKirbyFrame() {
     kirbyCurrentFrame = 1 - kirbyCurrentFrame;
@@ -486,10 +522,9 @@
     kirbyAngle = MAX_ANGLE;
     player.velocityY = 3.5;
     lastFrameTime = performance.now();
-    // SFX die
+    // Звук смерти и вибрация
     sfx_die.currentTime = 0; sfx_die.play();
-    // Vibration
-    if (navigator.vibrate) navigator.vibrate([160, 80, 90]);
+    if (window.navigator.vibrate) window.navigator.vibrate([190,80,90]);
     animationId = requestAnimationFrame(updateGame);
   }
   function updateDeathFall(dt) {
@@ -545,5 +580,7 @@
     yourHighScore.textContent = `Best: ${highScore}`;
   }
 </script>
+
 </body>
 </html>
+
