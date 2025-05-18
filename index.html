@@ -43,7 +43,7 @@
     .main-btn {margin:14px 0 0 0;padding:15px 36px;font-size:1.15em;background:linear-gradient(90deg,#f7c8e0 0%,#b6eaff 100%);border:none;border-radius:29px;box-shadow:0 3px 16px #a2d2ff4d,0 1px 1px #fff;cursor:pointer;font-weight:700;color:#493a66;transition:0.16s;display:block;}
     .main-btn:hover {background:linear-gradient(90deg,#ffc0cb 10%,#a2d2ff 100%);transform:scale(1.06);}
     .main-btn:active {transform:scale(0.96);}
-    #leaderboardBackBtn, #infoBackBtn {position:absolute;top:60px;left:24px;padding:11px 30px;background:linear-gradient(90deg,#f8daea 0%,#d1eaff 100%);border:none;border-radius:22px;font-size:1.04em;font-weight:700;color:#4e3888;cursor:pointer;box-shadow:0 3px 0 #c8a2c8,0 2px 8px #ffdbf933;z-index:99;transition:background 0.22s;}
+    #leaderboardBackBtn, #infoBackBtn {position:absolute;top:100px;left:24px;padding:11px 30px;background:linear-gradient(90deg,#f8daea 0%,#d1eaff 100%);border:none;border-radius:22px;font-size:1.04em;font-weight:700;color:#4e3888;cursor:pointer;box-shadow:0 3px 0 #c8a2c8,0 2px 8px #ffdbf933;z-index:99;transition:background 0.22s;}
     #leaderboardBackBtn:hover, #infoBackBtn:hover {background:linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);color:#fff;}
     #infoContainer p {font-size:1.10em;color:#493A64;background:#fff7;border-radius:12px;padding:10px 14px;margin-top:0;}
     #gameOverPopup {z-index:999;display:none;align-items:center;justify-content:center;background:rgba(60,30,80,0.42);animation:fadeIn 0.23s;}
@@ -163,15 +163,15 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
   import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
   const firebaseConfig = {
-    apiKey: "AIzaSyB90ev3fJRDKmn64hLTJaWjVjpHQtMjhLg",
-    authDomain: "test-with-likes.firebaseapp.com",
-    databaseURL: "https://test-with-likes-default-rtdb.firebaseio.com",
-    projectId: "test-with-likes",
-    storageBucket: "test-with-likes.appspot.com",
-    messagingSenderId: "764738820142",
-    appId: "1:764738820142:web:b22c6608a30e46cdcea7bf",
-    measurementId: "G-WJNF0HSN9P"
-  };
+  apiKey: "AIzaSyBsYVTUOqyeneSEPgW81bX_Cmb6DABPiws",
+  authDomain: "kirby-fly.firebaseapp.com",
+  databaseURL: "https://kirby-fly-default-rtdb.firebaseio.com",
+  projectId: "kirby-fly",
+  storageBucket: "kirby-fly.firebasestorage.app",
+  messagingSenderId: "100130749805",
+  appId: "1:100130749805:web:4466d63dc2654fec172e64",
+  measurementId: "G-1HNHYTGNYG"
+};
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
