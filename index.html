@@ -24,7 +24,7 @@
     #gameHudCoins {position:absolute;top:50px;left:50%;transform:translateX(-50%);font-size:2em;font-weight:900;color:#fff;background:linear-gradient(90deg,#b07cff 0,#ffb5d1 100%);padding:10px 32px;border-radius:28px;box-shadow:0 6px 28px #c2a4ff22;text-shadow:0 2px 6px #a2d2ffb2;border:2px solid #fff;pointer-events:none;z-index:110;letter-spacing:.02em;font-family:'Nunito','Poppins',sans-serif;transition:background 0.28s;user-select:none;}
     .tooltip {margin-bottom:22px;background:#fff4;color:#7e47a8;font-size:1.13em;padding:9px 22px;border-radius:20px;box-shadow:0 8px 22px #b8d8fa36;letter-spacing:.03em;transition:background 0.3s;max-width:90vw;text-align:center;}
     .user-header {display:flex;flex-direction:column;align-items:center;margin-bottom:20px;gap:6px;background:rgba(255,255,255,0.63);border-radius:18px;box-shadow:0 4px 16px #c8a2c866;padding:18px 32px 15px 32px;}
-    .user-header img {width:72px;height:72px;border-radius:50%;border:3.5px solid #fff;box-shadow:0 4px 24px 0 #a2d2ff61;background:#fff;margin-bottom:3px;}
+    .user-header img {width:72px;height:72px;border-radius:50%;border:3.5px solid #fff;box-shadow:0 4px 24px 0 #a2d2ff61;background:#fff;margin-bottom:3px;object-fit:cover;}
     .user-header span {font-size:1.14em;color:#4b3570;font-weight:700;text-shadow:0 2px 4px #eee;max-width:200px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;letter-spacing:.01em;}
     .user-meta {display:flex;flex-direction:row;gap:10px;margin-bottom:18px;align-items:center;width:100%;justify-content:center;}
     .user-meta div {font-size:1.01em;color:#44335b;background:#fff9;border-radius:13px;padding:5px 18px;margin:2px 0;box-shadow:0 2px 8px #a2d2ff1a;min-width:90px;text-align:center;font-weight:600;}
@@ -160,7 +160,14 @@
     const userId = tgUser.id.toString();
     let highScore = 0;
     async function loadUser() {
+      // --- FIX: Фолбек для дефолтного аватара через onerror ---
       userPhoto.src = tgUser.photo_url || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
+      userPhoto.onerror = function() {
+        if (userPhoto.src !== "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png") {
+          userPhoto.src = "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
+        }
+      };
+      // --------------------------------------------------------
       userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
       const userRef = ref(db, `users/${userId}`);
       let snapshot = await get(userRef);
@@ -460,3 +467,4 @@
   </script>
 </body>
 </html>
+
