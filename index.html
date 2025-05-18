@@ -141,7 +141,6 @@
   // --- SOUNDS ---
   const sfx_die = new Audio("sfx_die.mp3");
   const sfx_point = new Audio("sfx_point.mp3");
-  const sfx_wing = new Audio("sfx_wing.mp3");
   sfx_die.preload = sfx_point.preload = sfx_wing.preload = "auto";
   sfx_die.volume = 0.7; sfx_point.volume = 0.9; sfx_wing.volume = 0.83;
 
@@ -257,7 +256,7 @@
   }
 
   // -------- CANVAS GAME --------
-  const FIXED_FPS = 120;
+  const FIXED_FPS = 100;
   const BASE_GRAVITY = 0.2;
   const BASE_LIFT = -4.5;
   const BASE_SCROLL = 2;
