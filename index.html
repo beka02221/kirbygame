@@ -8,8 +8,16 @@
   <link href="https://fonts.googleapis.com/css?family=Nunito:800,700,600,400|Poppins:600,400&display=swap" rel="stylesheet">
   <style>
     html, body { margin:0; padding:0; width:100vw; height:100vh; font-family:'Nunito','Poppins','Open Sans',sans-serif; background:#f7f4ff; overflow:hidden; user-select:none;}
-    #preloader { position:fixed;top:0;left:0;width:100vw;height:100vh;background:#eee; display:flex;align-items:center;justify-content:center;z-index:2000; transition:opacity .3s;}
-    .loader { border: 10px solid #e0d4fe; border-top: 10px solid #a98be7; border-radius: 50%; width: 72px; height: 72px; animation: spin 1s linear infinite; box-shadow: 0 2px 22px #d1b6e799;}
+    #preloader {
+      position:fixed;top:0;left:0;width:100vw;height:100vh;background:#eee;
+      display:flex;align-items:center;justify-content:center;z-index:2000;
+      transition:opacity .3s;
+    }
+    .loader {
+      border: 10px solid #e0d4fe; border-top: 10px solid #a98be7; border-radius: 50%;
+      width: 72px; height: 72px; animation: spin 1s linear infinite;
+      box-shadow: 0 2px 22px #d1b6e799;
+    }
     @keyframes spin { 100% { transform: rotate(360deg);} }
     #mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup {
       width:100vw;height:100vh;display:none;position:fixed;top:0;left:0;
@@ -140,33 +148,33 @@
       </div>
     </div>
   </div>
-<script type="module">
+ <script type="module">
   // --- SOUNDS ---
   const sfx_die = new Audio("sfx_die.mp3");
   const sfx_point = new Audio("sfx_point.mp3");
-  // sfx_wing полностью убран!
-
   sfx_die.preload = sfx_point.preload = "auto";
-  sfx_die.volume = 0.7; sfx_point.volume = 0.9;
+  sfx_die.volume = 0.7;
+  sfx_point.volume = 0.9;
+  // Определяем iOS (iPhone/iPad)
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   // Telegram WebApp
   const tg = window.Telegram.WebApp;
   if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
   else tg.expand();
-
   // Firebase 9+
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
   import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
-  const firebaseConfig = {
-    apiKey: "AIzaSyB90ev3fJRDKmn64hLTJaWjVjpHQtMjhLg",
-    authDomain: "test-with-likes.firebaseapp.com",
-    databaseURL: "https://test-with-likes-default-rtdb.firebaseio.com",
-    projectId: "test-with-likes",
-    storageBucket: "test-with-likes.appspot.com",
-    messagingSenderId: "764738820142",
-    appId: "1:764738820142:web:b22c6608a30e46cdcea7bf",
-    measurementId: "G-WJNF0HSN9P"
-  };
+ const firebaseConfig = {
+  apiKey: "AIzaSyBsYVTUOqyeneSEPgW81bX_Cmb6DABPiws",
+  authDomain: "kirby-fly.firebaseapp.com",
+  databaseURL: "https://kirby-fly-default-rtdb.firebaseio.com",
+  projectId: "kirby-fly",
+  storageBucket: "kirby-fly.firebasestorage.app",
+  messagingSenderId: "100130749805",
+  appId: "1:100130749805:web:4466d63dc2654fec172e64",
+  measurementId: "G-1HNHYTGNYG"
+};
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
@@ -193,7 +201,6 @@
   const countdownOverlay = document.getElementById("countdownOverlay");
   const gameHudCoins = document.getElementById("gameHudCoins");
   const preloader = document.getElementById("preloader");
-
   // User
   let tgUser;
   let userId, highScore = 0;
@@ -205,11 +212,10 @@
   let coinImg = new Image(), bgImage = new Image();
   kirbyImgs[0].src = "k1.png"; kirbyImgs[1].src = "k2.png";
   enemyImgs[0].src = "e1.png"; enemyImgs[1].src = "e2.png";
-  coinImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/c07093d1e8085ba.png"; // your new PNG
+  coinImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/c07093d1e8085ba.png";
   bgImage.src = "https://blog.itselectlab.com/wp-content/uploads/background.png";
   function assetLoaded() { allLoaded++; if(allLoaded>=loadTotal) showApp(); }
   [kirbyImgs[0], kirbyImgs[1], enemyImgs[0], enemyImgs[1]].forEach(img => img.onload = assetLoaded);
-  // show loader until Firebase/user loaded and images
   function showApp() { preloader.style.opacity = 0; setTimeout(()=>{preloader.style.display="none";},320); }
   async function finishLoading() {
     tgUser = tg.initDataUnsafe?.user;
@@ -282,11 +288,11 @@
   }
 
   // -------- CANVAS GAME --------
-  const BASE_GRAVITY = 0.2;
-  const BASE_LIFT = -4.5;
-  const BASE_SCROLL = 2;
-  const BASE_MAXFALL = 4.5;
-  const ENEMY_SPAWN_SEC = 1;
+  const BASE_GRAVITY = 0.58;    // оптимальные значения для плавности
+  const BASE_LIFT = -10.7;
+  const BASE_SCROLL = 230;      // px/sec
+  const BASE_MAXFALL = 13.5;
+  const ENEMY_SPAWN_SEC = 1.0;
   const COIN_SPAWN_SEC = 0.95;
 
   let ctx, animationId, isGameRunning = false;
@@ -321,7 +327,8 @@
     gameContainer.style.display = "block";
     gameOverPopup.style.display = "none";
     gameHudCoins.style.display = "none";
-    ctx = gameCanvas.getContext("2d");
+    ctx = gameCanvas.getContext("2d", {alpha: false});
+    ctx.imageSmoothingEnabled = false;
     resizeCanvas();
     scoreThisRun = 0;
     player = {
@@ -386,7 +393,7 @@
         inputLock = true;
         handleFlap();
         switchKirbyFrame();
-        // playWingSound();  // УБРАНО!
+        if (!isIOS) playWingSound();
         setTimeout(() => {inputLock = false;}, 120);
       }
       e.preventDefault();
@@ -397,7 +404,7 @@
       inputLock = true;
       handleFlap();
       switchKirbyFrame();
-      // playWingSound(); // УБРАНО!
+      if (!isIOS) playWingSound();
       setTimeout(() => {inputLock = false;}, 120);
     }
     e.preventDefault();
@@ -407,19 +414,29 @@
       inputLock = true;
       handleFlap();
       switchKirbyFrame();
-      // playWingSound(); // УБРАНО!
+      if (!isIOS) playWingSound();
       setTimeout(() => {inputLock = false;}, 120);
     }
     e.preventDefault();
   }
 
-  // function playWingSound() { ... } // УБРАНО!
+  function playWingSound() {
+    // (на iOS не вызывается!)
+    // если захочешь вернуть — советую пулить Audio-объекты
+  }
+
+  // --- каждые 5 монет — звук монеты ---
+  function playPointSoundIfNeeded(score) {
+    if (score > 0 && score % 5 === 0) {
+      sfx_point.currentTime = 0; sfx_point.play();
+    }
+  }
 
   function updateGame(now = performance.now()) {
-    let dt = Math.min((now - lastFrameTime) / 1000, 0.2); // seconds, max 200ms per frame
+    let dt = Math.min((now - lastFrameTime) / 1000, 0.045);
     lastFrameTime = now;
 
-    bgX -= BASE_SCROLL * dt * 60; // px/sec logic
+    bgX -= BASE_SCROLL * dt;
     if (bgX <= -canvasWidth) { bgX += canvasWidth; }
     ctx.drawImage(bgImage, Math.round(bgX), 0, canvasWidth, canvasHeight);
     ctx.drawImage(bgImage, Math.round(bgX + canvasWidth), 0, canvasWidth, canvasHeight);
@@ -443,19 +460,19 @@
         if (coinSpawnTimer > COIN_SPAWN_SEC) { createCoin(); coinSpawnTimer = 0; }
 
         for (let i = 0; i < enemies.length; i++) {
-          enemies[i].x -= enemies[i].speed * dt * 60;
+          enemies[i].x -= enemies[i].speed * dt;
           drawEnemy(enemies[i]);
           if (checkCollision(player, enemies[i])) { handleDeathAnimation(); return; }
         }
         enemies = enemies.filter(e => e.x + e.width > 0);
 
         for (let i = 0; i < coins.length; i++) {
-          coins[i].x -= BASE_SCROLL * dt * 60;
+          coins[i].x -= BASE_SCROLL * dt;
           drawCoin(coins[i]);
           if (!coins[i].collected && checkCollision(player, coins[i])) {
             scoreThisRun++;
             coins[i].collected = true;
-            sfx_point.currentTime = 0; sfx_point.play();
+            playPointSoundIfNeeded(scoreThisRun);
           }
         }
         coins = coins.filter(c => !c.collected && c.x + c.size > 0);
@@ -495,7 +512,7 @@
     let gravity = player.gravity;
     if (slowStart) {
       slowStartFrame++;
-      gravity = 0.07;
+      gravity = 0.15;
       if (slowStartFrame > 72) slowStart = false;
     }
     player.velocityY += gravity * dt * 60;
@@ -598,3 +615,4 @@
 </script>
 </body>
 </html>
+
