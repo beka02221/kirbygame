@@ -160,14 +160,12 @@
     const userId = tgUser.id.toString();
     let highScore = 0;
     async function loadUser() {
-      // --- FIX: Фолбек для дефолтного аватара через onerror ---
       userPhoto.src = tgUser.photo_url || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
       userPhoto.onerror = function() {
         if (userPhoto.src !== "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png") {
           userPhoto.src = "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
         }
       };
-      // --------------------------------------------------------
       userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
       const userRef = ref(db, `users/${userId}`);
       let snapshot = await get(userRef);
@@ -237,20 +235,17 @@
     let showPlayer = false, slowStart = true, deathFall = false;
     let gameStartTime = 0, lastFrameTime = 0, firstTapDone = false;
 
-    // --- АНИМИРОВАННЫЙ КИРБИ через sprite sheet ---
-    let kirbySprite = new Image();
-    kirbySprite.src = "https://raw.githubusercontent.com/qnexst/404token/main/kirby_run_sprite.png"; // 6 кадров
-    const KIRBY_FRAMES = 6; // количество кадров по горизонтали
-    const KIRBY_FPS = 14;   // кадров в секунду (можно менять)
-    let kirbyFrame = 0;
+    // --- АНИМАЦИЯ ПЕРСОНАЖА ---
+    let kirbyImgs = [new Image(), new Image()];
+    kirbyImgs[0].src = "k1.png"; // первый кадр
+    kirbyImgs[1].src = "k2.png"; // второй кадр
+    let kirbyFrame = 0; // 0 или 1
     let kirbyAnimTimer = 0;
+    const KIRBY_ANIM_INTERVAL = 0.13; // секунды
 
-    // Остальные изображения:
-    let enemyImg = new Image();
+    let enemyImg = new Image(), coinImg = new Image(), bgImage = new Image();
     enemyImg.src = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
-    let coinImg = new Image();
     coinImg.src = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
-    let bgImage = new Image();
     bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
 
     function resizeCanvas() {
@@ -316,16 +311,16 @@
     function updateGame(now = performance.now()) {
       let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
       lastFrameTime = now;
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      drawScrollingBackground(dt);
 
-      // --- Анимация Кирби ---
+      // --- Анимация главного персонажа ---
       kirbyAnimTimer += dt;
-      if (kirbyAnimTimer > 1 / KIRBY_FPS) {
-        kirbyFrame = (kirbyFrame + 1) % KIRBY_FRAMES;
+      if (kirbyAnimTimer > KIRBY_ANIM_INTERVAL) {
+        kirbyFrame = (kirbyFrame + 1) % 2;
         kirbyAnimTimer = 0;
       }
 
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      drawScrollingBackground(dt);
       if (showPlayer) {
         updatePlayer(dt);
         drawPlayer();
@@ -361,30 +356,18 @@
       ctx.drawImage(bgImage, bgX, 0, canvasWidth, canvasHeight);
       ctx.drawImage(bgImage, bgX + canvasWidth, 0, canvasWidth, canvasHeight);
     }
-
-    // --- НОВАЯ drawPlayer() с анимацией спрайта ---
     function drawPlayer() {
-      let frameW = kirbySprite.width / KIRBY_FRAMES;
-      let frameH = kirbySprite.height;
-      ctx.save();
-      if (player.rotating) {
+      const img = kirbyImgs[kirbyFrame];
+      if (!player.rotating)
+        ctx.drawImage(img, player.x, player.y, player.width, player.height);
+      else {
+        ctx.save();
         ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
         ctx.rotate(player.rotAngle * Math.PI / 180);
-        ctx.drawImage(
-          kirbySprite,
-          frameW * kirbyFrame, 0, frameW, frameH,
-          -player.width / 2, -player.height / 2, player.width, player.height
-        );
-      } else {
-        ctx.drawImage(
-          kirbySprite,
-          frameW * kirbyFrame, 0, frameW, frameH,
-          player.x, player.y, player.width, player.height
-        );
+        ctx.drawImage(img, -player.width/2, -player.height/2, player.width, player.height);
+        ctx.restore();
       }
-      ctx.restore();
     }
-
     function drawEnemy(e) {
       ctx.drawImage(enemyImg, e.x, e.y, e.width, e.height);
     }
