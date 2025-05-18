@@ -47,7 +47,7 @@
   </style>
 </head>
 <body>
-  <!-- Весь твой html (меню, таблицы, инфо и т.д.) — всё полностью! -->
+  <!-- Main Menu -->
   <div id="mainMenu">
     <div class="menu-inner">
       <div class="tooltip">Collect coins and dodge enemies! 🪙</div>
@@ -65,11 +65,13 @@
       <button id="infoBtn" class="main-btn">How to Play?</button>
     </div>
   </div>
+  <!-- Game Screen -->
   <div id="gameContainer">
     <canvas id="gameCanvas"></canvas>
     <div id="gameHudCoins" style="display:none;">Coins: 0</div>
     <div id="countdownOverlay"></div>
   </div>
+  <!-- Leaderboard -->
   <div id="leaderboardContainer">
     <div class="menu-inner">
       <button id="leaderboardBackBtn" class="main-btn" style="position:absolute;">Back</button>
@@ -82,6 +84,7 @@
       </table>
     </div>
   </div>
+  <!-- Info -->
   <div id="infoContainer">
     <div class="menu-inner">
       <button id="infoBackBtn" class="main-btn" style="position:absolute;">Back</button>
@@ -96,6 +99,7 @@
       </p>
     </div>
   </div>
+  <!-- Game Over Popup -->
   <div id="gameOverPopup">
     <div class="menu-inner">
       <div class="popup-box">
@@ -231,17 +235,24 @@
     let showPlayer = false, slowStart = true, deathFall = false;
     let gameStartTime = 0, lastFrameTime = 0, firstTapDone = false;
 
-    // Новый массив кадров
+    // Фотки персонажа
     let kirbyImgs = [new Image(), new Image()];
     kirbyImgs[0].src = "k1.png";
     kirbyImgs[1].src = "k2.png";
-    let kirbyCurrentFrame = 0;
+    let kirbyCurrentFrame = 0; // 0 = k1, 1 = k2
+
+    // Угол наклона персонажа
+    let kirbyAngle = 0; // текущий угол в градусах
+    const MIN_ANGLE = -27; // максимальный вверх (при прыжке)
+    const MAX_ANGLE = 78; // максимальный вниз (при падении)
+    const ANGLE_RETURN_SPEED = 8; // скорость возврата к "естественной" позиции
 
     // Остальные изображения
     let enemyImg = new Image(), coinImg = new Image(), bgImage = new Image();
     enemyImg.src = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
     coinImg.src = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
     bgImage.src = "https://blog.itselectlab.com/wp-content/uploads/background.png";
+
     function resizeCanvas() {
       canvasWidth = window.innerWidth;
       canvasHeight = window.innerHeight;
@@ -259,8 +270,7 @@
       scoreThisRun = 0;
       player = {
         x: 100, y: canvasHeight/2, width: 48, height: 48, velocityY: 0, gravity: BASE_GRAVITY,
-        lift: BASE_LIFT, alive: true, maxFallSpeed: BASE_MAXFALL,
-        rotAngle: 0, targetRot: 0 // угол наклона
+        lift: BASE_LIFT, alive: true, maxFallSpeed: BASE_MAXFALL, rotating: false
       };
       enemies = [];
       coins = [];
@@ -274,9 +284,8 @@
       gameStartTime = performance.now();
       lastFrameTime = gameStartTime;
       firstTapDone = false;
-      kirbyCurrentFrame = 0;
-      player.rotAngle = 0;
-      player.targetRot = 0;
+      kirbyCurrentFrame = 0; // всегда стартовать с k1
+      kirbyAngle = 0;
       let countdown = 3;
       countdownOverlay.style.display = "flex";
       countdownOverlay.textContent = countdown;
@@ -311,8 +320,11 @@
       let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
       lastFrameTime = now;
 
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      drawScrollingBackground(dt);
+      // --- Фон. Исправлено появление щели! ---
+      bgX -= BASE_SCROLL * dt * FIXED_FPS;
+      if (bgX <= -canvasWidth) { bgX += canvasWidth; }
+      ctx.drawImage(bgImage, Math.round(bgX), 0, canvasWidth, canvasHeight);
+      ctx.drawImage(bgImage, Math.round(bgX + canvasWidth), 0, canvasWidth, canvasHeight);
 
       if (showPlayer) {
         updatePlayer(dt);
@@ -344,21 +356,15 @@
       if (deathFall) updateDeathFall(dt);
     }
 
-    function drawScrollingBackground(dt) {
-      bgX -= BASE_SCROLL * dt * FIXED_FPS;
-      if (bgX <= -canvasWidth) { bgX = 0; }
-      ctx.drawImage(bgImage, bgX, 0, canvasWidth, canvasHeight);
-      ctx.drawImage(bgImage, bgX + canvasWidth, 0, canvasWidth, canvasHeight);
-    }
     function drawPlayer() {
       const img = kirbyImgs[kirbyCurrentFrame];
       ctx.save();
-      ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
-      ctx.rotate(player.rotAngle * Math.PI / 180);
+      // Поворачиваем спрайт вокруг центра
+      ctx.translate(player.x + player.width/2, player.y + player.height/2);
+      ctx.rotate((kirbyAngle * Math.PI) / 180);
       ctx.drawImage(img, -player.width/2, -player.height/2, player.width, player.height);
       ctx.restore();
     }
-
     function drawEnemy(e) {
       ctx.drawImage(enemyImg, e.x, e.y, e.width, e.height);
     }
@@ -373,6 +379,7 @@
       const randY = Math.random() * (canvasHeight - 40 - 20) + 10;
       coins.push({ x: canvasWidth, y: randY, size: 40, collected: false });
     }
+
     function updatePlayer(dt) {
       let gravity = player.gravity;
       if (slowStart) {
@@ -384,36 +391,32 @@
       if (player.velocityY > player.maxFallSpeed) player.velocityY = player.maxFallSpeed;
       player.y += player.velocityY * dt * FIXED_FPS;
       if (player.y < 0) { player.y = 0; player.velocityY = 0; }
-      if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
 
-      // --- Логика поворота персонажа ---
-      // targetRot плавно уходит к 90 (вниз), если падает
-      // если тап — резко поднимается (например, -35), потом возвращается к 0, и снова к 90 при падении
-      // плавное изменение угла:
-      //   player.rotAngle += (player.targetRot - player.rotAngle) * 0.24; // сглажено
-      // Но чуть реалистичнее — скорость падения влияет на угол (как Flappy Bird)
-      const maxDown = 90, maxUp = -35;
-      let v = player.velocityY;
-      // При сильном падении — быстро вниз головой
-      if (v > 1.6) player.targetRot = maxDown;
-      else if (v < -2) player.targetRot = maxUp;
-      else player.targetRot = v * 22; // небольшой коэффициент, чтобы в 0 было 0, при падении ближе к maxDown
-      if (player.targetRot > maxDown) player.targetRot = maxDown;
-      if (player.targetRot < maxUp) player.targetRot = maxUp;
-      // Плавное сглаживание угла
-      player.rotAngle += (player.targetRot - player.rotAngle) * 0.24;
+      // --- Логика наклона персонажа ---
+      // Когда падает — головой вниз (max 78°), когда прыгает — max -27°
+      let targetAngle = 0;
+      if (player.velocityY < -1) targetAngle = MIN_ANGLE;
+      else if (player.velocityY > 2) targetAngle = MAX_ANGLE;
+      else targetAngle = 24; // нейтраль (немного вниз, чтобы выглядело органично)
+      // Плавный возврат к целевому углу
+      kirbyAngle += (targetAngle - kirbyAngle) * Math.min(dt * ANGLE_RETURN_SPEED, 1);
+
+      if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
     }
+
     function onKeyDown(e) { if (e.code === "Space") { handleFlap(); switchKirbyFrame(); } }
     function onClickOrTouch() { handleFlap(); switchKirbyFrame(); }
+
     function handleFlap() {
       if (!player.alive) return;
       if (!firstTapDone) { firstTapDone = true; player.velocityY = player.lift; }
       else player.velocityY = player.lift;
-      // При прыжке — голова вверх
-      player.targetRot = -35;
+      // При прыжке сразу резко поднять голову выше нормы
+      kirbyAngle = MIN_ANGLE;
     }
+
     function switchKirbyFrame() {
-      kirbyCurrentFrame = 1 - kirbyCurrentFrame;
+      kirbyCurrentFrame = 1 - kirbyCurrentFrame; // 0→1→0→1
     }
 
     function checkCollision(pl, obj) {
@@ -437,8 +440,10 @@
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("mousedown", onClickOrTouch);
       document.removeEventListener("touchstart", onClickOrTouch);
-      player.rotAngle = 90; // смерть — сразу вниз головой
-      player.targetRot = 90;
+
+      // Анимация: падает головой вниз (угол максимально вниз)
+      player.rotating = true;
+      kirbyAngle = MAX_ANGLE;
       player.velocityY = 3.5;
       lastFrameTime = performance.now();
       animationId = requestAnimationFrame(updateGame);
@@ -446,7 +451,7 @@
     function updateDeathFall(dt) {
       player.y += player.velocityY * dt * FIXED_FPS * 1.1;
       player.velocityY += 0.33 * dt * FIXED_FPS;
-      player.rotAngle += (90 - player.rotAngle) * 0.35; // добиваем до 90°
+      kirbyAngle += (MAX_ANGLE - kirbyAngle) * Math.min(dt * 8, 1);
       if (player.y > canvasHeight + player.height) {
         deathFall = false;
         showGameOverSequence();
@@ -498,5 +503,4 @@
   </script>
 </body>
 </html>
-
 
