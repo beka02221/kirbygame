@@ -2,396 +2,461 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Floppy Kirby Canvas</title>
+  <title>Floppy Kirby — Telegram WebApp</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Nunito:800,700,600,400|Poppins:600,400&display=swap" rel="stylesheet">
   <style>
-    html, body { margin:0; padding:0; width:100vw; height:100vh; overflow:hidden; background:#ede9fa; }
-    body { touch-action: none; }
-    canvas { display: block; width: 100vw; height: 100vh; background: #ede9fa; }
+    html, body { margin:0; padding:0; width:100vw; height:100vh; font-family:'Nunito','Poppins','Open Sans',sans-serif; background:#f7f4ff; overflow:hidden; user-select:none;}
+    #mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup {
+      width:100vw;height:100vh;display:none;position:fixed;top:0;left:0;
+      flex-direction:column;align-items:center;justify-content:flex-start;
+      background:linear-gradient(120deg,#a2d2ff 0%,#ffe7f3 100%);
+      overflow-y:auto;padding:0!important;
+    }
+    #mainMenu .menu-inner,
+    #leaderboardContainer .menu-inner,
+    #infoContainer .menu-inner,
+    #gameOverPopup .menu-inner {
+      margin-top:80px;width:100%;display:flex;flex-direction:column;align-items:center;
+    }
+    #gameContainer {width:100vw;height:100vh;display:none;position:fixed;top:0;left:0;background:#fff;z-index:20;overflow:hidden;}
+    #gameHudCoins {position:absolute;top:50px;left:50%;transform:translateX(-50%);font-size:2em;font-weight:900;color:#fff;background:linear-gradient(90deg,#b07cff 0,#ffb5d1 100%);padding:10px 32px;border-radius:28px;box-shadow:0 6px 28px #c2a4ff22;text-shadow:0 2px 6px #a2d2ffb2;border:2px solid #fff;pointer-events:none;z-index:110;letter-spacing:.02em;font-family:'Nunito','Poppins',sans-serif;transition:background 0.28s;user-select:none;}
+    .tooltip {margin-bottom:22px;background:#fff4;color:#7e47a8;font-size:1.13em;padding:9px 22px;border-radius:20px;box-shadow:0 8px 22px #b8d8fa36;letter-spacing:.03em;transition:background 0.3s;max-width:90vw;text-align:center;}
+    .user-header {display:flex;flex-direction:column;align-items:center;margin-bottom:20px;gap:6px;background:rgba(255,255,255,0.63);border-radius:18px;box-shadow:0 4px 16px #c8a2c866;padding:18px 32px 15px 32px;}
+    .user-header img {width:72px;height:72px;border-radius:50%;border:3.5px solid #fff;box-shadow:0 4px 24px 0 #a2d2ff61;background:#fff;margin-bottom:3px;}
+    .user-header span {font-size:1.14em;color:#4b3570;font-weight:700;text-shadow:0 2px 4px #eee;max-width:200px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;letter-spacing:.01em;}
+    .user-meta {display:flex;flex-direction:row;gap:10px;margin-bottom:18px;align-items:center;width:100%;justify-content:center;}
+    .user-meta div {font-size:1.01em;color:#44335b;background:#fff9;border-radius:13px;padding:5px 18px;margin:2px 0;box-shadow:0 2px 8px #a2d2ff1a;min-width:90px;text-align:center;font-weight:600;}
+    #coinsDisplay {color:#fff;background:linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);font-size:1.12em;font-weight:700;margin-bottom:16px;padding:8px 24px;border-radius:30px;box-shadow:0 3px 12px #c2a4ff1a;text-shadow:0 2px 2px #fff9;border:2px solid #fff;letter-spacing:.04em;display:inline-block;}
+    .main-btn {margin:14px 0;padding:15px 36px;font-size:1.15em;background:linear-gradient(90deg,#f7c8e0 0%,#b6eaff 100%);border:none;border-radius:29px;box-shadow:0 3px 16px #a2d2ff4d,0 1px 1px #fff;cursor:pointer;font-weight:700;color:#493a66;transition:0.16s;display:block;}
+    .main-btn:hover {background:linear-gradient(90deg,#ffc0cb 10%,#a2d2ff 100%);transform:scale(1.06);}
+    .main-btn:active {transform:scale(0.96);}
+    #leaderboardBackBtn, #infoBackBtn {position:absolute;top:40px;left:24px;padding:11px 30px;background:linear-gradient(90deg,#f8daea 0%,#d1eaff 100%);border:none;border-radius:22px;font-size:1.04em;font-weight:700;color:#4e3888;cursor:pointer;box-shadow:0 3px 0 #c8a2c8,0 2px 8px #ffdbf933;z-index:99;transition:background 0.22s;}
+    #leaderboardBackBtn:hover, #infoBackBtn:hover {background:linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);color:#fff;}
+    #infoContainer p {font-size:1.10em;color:#493A64;background:#fff7;border-radius:12px;padding:10px 14px;margin-top:0;}
+    #gameOverPopup {z-index:999;display:none;align-items:center;justify-content:center;background:rgba(60,30,80,0.42);animation:fadeIn 0.23s;}
+    .popup-box {background:linear-gradient(120deg,#fff 63%,#ffe3fa 100%);border-radius:32px;padding:34px 36px 28px 36px;min-width:240px;box-shadow:0 8px 30px #e3caff88;display:flex;flex-direction:column;align-items:center;gap:18px;margin-top:80px;}
+    .popup-box h2 {margin:0 0 8px 0;color:#9857d3;font-size:1.23em;}
+    .popup-box p {color:#47366b;font-size:1.07em;margin:0;}
+    .popup-box button {margin-top:5px;padding:13px 32px;background:linear-gradient(90deg,#f7c8e0 0,#b6eaff 100%);border-radius:20px;border:none;color:#44335b;font-weight:700;font-size:1.09em;box-shadow:0 2px 12px #a2d2ff3b;cursor:pointer;transition:background 0.14s;display:block;}
+    .popup-box button#gameOverCloseBtn {display:block;}
+    #countdownOverlay {display:none;position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:222;align-items:center;justify-content:center;background:rgba(248,245,255,0.78);font-size:3em;color:#9857d3;font-weight:900;font-family:'Nunito',sans-serif;letter-spacing:.08em;text-shadow:0 2px 12px #fff;}
+    @media (max-width:600px){.main-btn,#leaderboardBackBtn,#infoBackBtn,.popup-box button{font-size:0.97em;padding:11px 12px;}.user-header img{width:60px;height:60px;}.popup-box{padding:22px 10vw;}#gameHudCoins{font-size:1.3em;padding:7px 10vw;}}
+    @media (max-width:390px){#coinsDisplay{font-size:0.94em;padding:7px 10px;}.user-meta div{font-size:0.92em;}.user-header{padding:10px 7vw;}#gameHudCoins{font-size:1.12em;padding:7px 4vw;}}
   </style>
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
-<script type="module">
-// ------------- Firebase setup ------------------
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
-import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
-const firebaseConfig = {
-  apiKey: "AIzaSyB90ev3fJRDKmn64hLTJaWjVjpHQtMjhLg",
-  authDomain: "test-with-likes.firebaseapp.com",
-  databaseURL: "https://test-with-likes-default-rtdb.firebaseio.com",
-  projectId: "test-with-likes",
-  storageBucket: "test-with-likes.appspot.com",
-  messagingSenderId: "764738820142",
-  appId: "1:764738820142:web:b22c6608a30e46cdcea7bf",
-  measurementId: "G-WJNF0HSN9P"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// ------------- Telegram User ------------------
-const tg = window.Telegram.WebApp;
-tg.expand?.();
-const tgUser = tg.initDataUnsafe?.user;
-if (!tgUser) {
-  alert("Open the game via Telegram!");
-  throw new Error("No Telegram user found");
-}
-const userId = tgUser.id.toString();
-let username = tgUser.username || "No username";
-let photo = tgUser.photo_url || "";
-
-// ------------- Canvas & Game State ------------------
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-let W = window.innerWidth, H = window.innerHeight;
-canvas.width = W; canvas.height = H;
-window.addEventListener('resize', () => {
-  W = window.innerWidth; H = window.innerHeight;
-  canvas.width = W; canvas.height = H;
-});
-
-// -------- Game assets ---------
-const avatarImg = new window.Image();
-avatarImg.src = photo || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
-const kirbyImg = new window.Image();
-kirbyImg.src = "kirby.gif";
-const enemyImg = new window.Image();
-enemyImg.src = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
-const coinImg = new window.Image();
-coinImg.src = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
-const bgImg = new window.Image();
-bgImg.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
-
-// -------- Menus ---------
-let currentScreen = "loading"; // loading, menu, play, leaderboard, howtoplay, gameover
-let leaderboardData = [];
-let bestScore = 0;
-let yourPlace = 0;
-
-// -------- Menu Buttons ---------
-const menuButtons = [
-  {text: "START GAME", action: ()=>startCountdown()},
-  {text: "LEADERBOARD", action: ()=>openLeaderboard()},
-  {text: "HOW TO PLAY?", action: ()=>{ currentScreen = "howtoplay"; drawScreen(); }},
-];
-
-// -------- Game State ---------
-let player, enemies, coins, score, isAlive, isFalling, slowStart, firstTap, scrollX, enemySpawn, coinSpawn, gameTimer;
-const scrollSpeed = 3.2, gravity = 0.28, lift = -5.1, maxFall = 3.5;
-const ENEMY_SPAWN_SEC = 1.4;
-const COIN_SPAWN_SEC = 0.95;
-
-// ------------- Main Loop -------------
-function drawScreen() {
-  ctx.clearRect(0,0,W,H);
-  // Draw BG for all screens
-  ctx.drawImage(bgImg, scrollX%W, 0, W, H);
-  ctx.drawImage(bgImg, (scrollX%W)+W, 0, W, H);
-
-  if(currentScreen === "loading") drawLoading();
-  else if(currentScreen === "menu") drawMenu();
-  else if(currentScreen === "leaderboard") drawLeaderboard();
-  else if(currentScreen === "howtoplay") drawHowToPlay();
-  else if(currentScreen === "play") drawGame();
-  else if(currentScreen === "countdown") drawCountdown();
-  else if(currentScreen === "gameover") drawGameOver();
-}
-function gameLoop(ts){
-  scrollX -= scrollSpeed;
-  drawScreen();
-  if(currentScreen==="play") updateGame();
-  requestAnimationFrame(gameLoop);
-}
-
-// --------- Screens Rendering -----------
-function drawLoading(){
-  ctx.fillStyle = "#a17cff";
-  ctx.font = "900 2.3em Nunito,Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("Loading...", W/2, H/2);
-}
-function drawMenu(){
-  // Avatar
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(W/2, 170, 52, 0, Math.PI*2);
-  ctx.closePath();
-  ctx.shadowColor = "#b8a2f9";
-  ctx.shadowBlur = 14;
-  ctx.drawImage(avatarImg, W/2-52, 118, 104, 104);
-  ctx.restore();
-
-  // Username
-  ctx.font = "700 1.28em Nunito,Arial";
-  ctx.fillStyle = "#493a66";
-  ctx.textAlign = "center";
-  ctx.fillText('@'+username, W/2, 245);
-
-  // Leaderboard & Best
-  ctx.font = "bold 1.1em Nunito,Arial";
-  ctx.fillStyle = "#4c3380";
-  ctx.fillText("Your Best: "+bestScore, W/2, 295);
-  ctx.font = "600 1em Nunito,Arial";
-  ctx.fillStyle = "#876cbf";
-  ctx.fillText("Rank: "+yourPlace, W/2, 325);
-
-  // Buttons
-  menuButtons.forEach((btn, i) => {
-    drawBtn(W/2-130, 370+i*74, 260, 54, btn.text);
-  });
-}
-function drawBtn(x,y,w,h,text){
-  ctx.save();
-  ctx.shadowColor = "#ccc3ff"; ctx.shadowBlur = 12;
-  ctx.fillStyle = "#ffe6fa";
-  ctx.fillRect(x, y, w, h);
-  ctx.shadowBlur = 0;
-  ctx.strokeStyle = "#bfa1fa";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x, y, w, h);
-  ctx.font = "bold 1.25em Nunito,Arial";
-  ctx.fillStyle = "#7e47a8";
-  ctx.textAlign = "center";
-  ctx.fillText(text, x+w/2, y+h/2+9);
-  ctx.restore();
-}
-function drawLeaderboard(){
-  ctx.font = "900 2em Nunito";
-  ctx.fillStyle = "#6d39bb";
-  ctx.textAlign = "center";
-  ctx.fillText("Leaderboard", W/2, 105);
-
-  ctx.font = "700 1.15em Nunito";
-  ctx.fillStyle = "#3d285b";
-  ctx.fillText("Top 10", W/2, 138);
-
-  ctx.font = "700 1.13em Nunito";
-  ctx.fillStyle = "#493a66";
-  leaderboardData.forEach((u,i)=>{
-    if(u.id===userId) ctx.fillStyle="#d755e9";
-    else ctx.fillStyle="#493a66";
-    ctx.fillText(`${i+1}. @${u.username || 'User'} - ${u.highScore}`, W/2, 170+i*36);
-  });
-
-  drawBtn(34, H-80, 170, 49, "Back");
-}
-function drawHowToPlay(){
-  ctx.font = "900 1.65em Nunito";
-  ctx.fillStyle = "#9e54ed";
-  ctx.textAlign = "center";
-  ctx.fillText("How to Play", W/2, 120);
-  ctx.font = "600 1.12em Nunito";
-  ctx.fillStyle = "#533c86";
-  ctx.fillText("Tap, click or press SPACE to fly up.", W/2, 170);
-  ctx.fillText("Collect coins, avoid enemies!", W/2, 205);
-  ctx.fillText("Try to beat your best and get in TOP 10!", W/2, 240);
-
-  drawBtn(34, H-80, 170, 49, "Back");
-}
-function drawCountdown(){
-  ctx.font = "900 4.3em Nunito";
-  ctx.fillStyle = "#a663e5";
-  ctx.textAlign = "center";
-  ctx.fillText(gameTimer > 0 ? gameTimer : "GO!", W/2, H/2-20);
-}
-function drawGameOver(){
-  ctx.font = "900 2.1em Nunito";
-  ctx.fillStyle = "#ea469e";
-  ctx.textAlign = "center";
-  ctx.fillText("Game Over!", W/2, H/2-120);
-  ctx.font = "700 1.18em Nunito";
-  ctx.fillStyle = "#3d285b";
-  ctx.fillText("You collected " + score + " coins", W/2, H/2-64);
-  if(score > bestScore) {
-    ctx.font = "700 1.18em Nunito";
-    ctx.fillStyle = "#c150ff";
-    ctx.fillText("NEW RECORD!", W/2, H/2-32);
-  }
-  drawBtn(W/2-110, H/2+30, 220, 60, "Back to Menu");
-}
-
-// ----------- Game Logic (Canvas) --------------
-function startGame(){
-  player = {x: W*0.22, y: H/2, vy:0, w: 56, h:56, alive:true, rot:0, show:true};
-  enemies = [];
-  coins = [];
-  score = 0;
-  isAlive = true;
-  isFalling = false;
-  slowStart = true;
-  firstTap = false;
-  enemySpawn = 0;
-  coinSpawn = 0;
-  scrollX = 0;
-  currentScreen = "play";
-}
-function startCountdown(){
-  gameTimer = 3;
-  currentScreen = "countdown";
-  let cd = setInterval(()=>{
-    gameTimer--;
-    if(gameTimer < 0){
-      clearInterval(cd);
-      startGame();
+  <!-- Main Menu -->
+  <div id="mainMenu">
+    <div class="menu-inner">
+      <div class="tooltip">Collect coins and dodge enemies! 🪙</div>
+      <div class="user-header">
+        <img id="userPhoto" src="" alt="Avatar" />
+        <span id="userName">@User</span>
+      </div>
+      <div class="user-meta">
+        <div id="yourPlace">Rank: ...</div>
+        <div id="yourHighScore">Best: ...</div>
+      </div>
+      <div id="coinsDisplay"></div>
+      <button id="startGameBtn" class="main-btn">Start Game</button>
+      <button id="leaderboardBtn" class="main-btn">Leaderboard</button>
+      <button id="infoBtn" class="main-btn">How to Play?</button>
+    </div>
+  </div>
+  <!-- Game Screen -->
+  <div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameHudCoins" style="display:none;">Coins: 0</div>
+    <div id="countdownOverlay"></div>
+  </div>
+  <!-- Leaderboard -->
+  <div id="leaderboardContainer">
+    <div class="menu-inner">
+      <button id="leaderboardBackBtn" class="main-btn" style="position:absolute;">Back</button>
+      <h2 style="color:#7c46a3;text-align:center;margin:8px 0 0 0">Leaderboard</h2>
+      <table>
+        <thead>
+          <tr><th>User</th><th>Best</th></tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- Info -->
+  <div id="infoContainer">
+    <div class="menu-inner">
+      <button id="infoBackBtn" class="main-btn" style="position:absolute;">Back</button>
+      <h2 style="color:#7c46a3;text-align:center;margin:5px 0 10px 0;">How to Play?</h2>
+      <p>
+        <b>Kirby</b> flies endlessly, collecting coins and dodging enemies.<br>
+        If Kirby hits an enemy or falls — the game is over.<br>
+        <b>Controls:</b> Tap / Click or Space.<br>
+        The goal is to collect as many coins as possible in one run!<br>
+        <br>
+        Your record is saved and displayed in the leaderboard. Good luck!
+      </p>
+    </div>
+  </div>
+  <!-- Game Over Popup -->
+  <div id="gameOverPopup">
+    <div class="menu-inner">
+      <div class="popup-box">
+        <h2>Game Over!</h2>
+        <p id="gameOverText"></p>
+        <button id="gameOverCloseBtn" class="main-btn">Back to Menu</button>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    // Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
+    else tg.expand();
+    // Firebase 9+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyB90ev3fJRDKmn64hLTJaWjVjpHQtMjhLg",
+      authDomain: "test-with-likes.firebaseapp.com",
+      databaseURL: "https://test-with-likes-default-rtdb.firebaseio.com",
+      projectId: "test-with-likes",
+      storageBucket: "test-with-likes.appspot.com",
+      messagingSenderId: "764738820142",
+      appId: "1:764738820142:web:b22c6608a30e46cdcea7bf",
+      measurementId: "G-WJNF0HSN9P"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    // DOM Elements
+    const mainMenu = document.getElementById("mainMenu");
+    const userPhoto = document.getElementById("userPhoto");
+    const userName = document.getElementById("userName");
+    const coinsDisplay = document.getElementById("coinsDisplay");
+    const startGameBtn = document.getElementById("startGameBtn");
+    const leaderboardBtn = document.getElementById("leaderboardBtn");
+    const infoBtn = document.getElementById("infoBtn");
+    const gameContainer = document.getElementById("gameContainer");
+    const gameCanvas = document.getElementById("gameCanvas");
+    const leaderboardContainer = document.getElementById("leaderboardContainer");
+    const leaderboardBackBtn = document.getElementById("leaderboardBackBtn");
+    const leaderboardBody = document.getElementById("leaderboardBody");
+    const infoContainer = document.getElementById("infoContainer");
+    const infoBackBtn = document.getElementById("infoBackBtn");
+    const yourPlace = document.getElementById("yourPlace");
+    const yourHighScore = document.getElementById("yourHighScore");
+    const gameOverPopup = document.getElementById("gameOverPopup");
+    const gameOverText = document.getElementById("gameOverText");
+    const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
+    const countdownOverlay = document.getElementById("countdownOverlay");
+    const gameHudCoins = document.getElementById("gameHudCoins");
+    // User
+    let tgUser = tg.initDataUnsafe?.user;
+    if (!tgUser) {
+      mainMenu.innerHTML = "<h2>Please open in Telegram!</h2>";
+      throw new Error("Not Telegram WebApp");
     }
-    drawScreen();
-  }, 930);
-}
-function updateGame(){
-  // Spawn
-  enemySpawn += 1/60;
-  coinSpawn += 1/60;
-  if(enemySpawn >= ENEMY_SPAWN_SEC) { addEnemy(); enemySpawn=0; }
-  if(coinSpawn >= COIN_SPAWN_SEC) { addCoin(); coinSpawn=0; }
-  // Move enemies
-  enemies.forEach(e=>{e.x -= scrollSpeed;});
-  coins.forEach(c=>{c.x -= scrollSpeed;});
-  enemies = enemies.filter(e=>e.x+e.w>0);
-  coins = coins.filter(c=>!c.collected && c.x+c.w>0);
-  // Move player
-  if(isAlive){
-    if(slowStart){ player.vy+=0.07; if(player.vy>1.1) slowStart=false; }
-    else player.vy+=gravity;
-    if(player.vy>maxFall) player.vy=maxFall;
-    player.y+=player.vy;
-    if(player.y < 0) { player.y=0; player.vy=0; }
-    if(player.y+player.h > H) { isAlive=false; isFalling=true; }
-  } else if(isFalling){
-    player.vy+=0.36; player.y+=player.vy;
-    player.rot = 90;
-    if(player.y > H+player.h){ isFalling=false; setTimeout(gameOver, 400);}
-  }
-  // Collisions
-  if(isAlive){
-    for(let e of enemies){
-      if(collides(player,e)){ isAlive=false; isFalling=true; player.rot=90; break; }
+    const userId = tgUser.id.toString();
+    let highScore = 0;
+    async function loadUser() {
+      userPhoto.src = tgUser.photo_url || "https://raw.githubusercontent.com/qnexst/404token/main/avatar.png";
+      userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
+      const userRef = ref(db, `users/${userId}`);
+      let snapshot = await get(userRef);
+      if (!snapshot.exists()) {
+        await set(userRef, {highScore:0,username:tgUser.username||"",photo:tgUser.photo_url||""});
+        highScore = 0;
+      } else {
+        highScore = snapshot.val().highScore || 0;
+      }
+      coinsDisplay.textContent = `Best: ${highScore}`;
+      yourHighScore.textContent = `Best: ${highScore}`;
+      await updatePlace();
+      mainMenu.style.display = "flex";
     }
-    for(let c of coins){
-      if(!c.collected && collides(player,c)){ score++; c.collected=true;}
+    window.onload = loadUser;
+    async function updatePlace() {
+      yourPlace.textContent = "Rank: ...";
+      const usersRef = ref(db, "users/");
+      const snapshot = await get(usersRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const usersArray = Object.entries(data).map(([id, u]) => ({id,highScore:u.highScore||0}));
+        usersArray.sort((a, b) => b.highScore - a.highScore);
+        const place = usersArray.findIndex(x => x.id === userId) + 1;
+        if (place > 0) yourPlace.textContent = `Rank: ${place} of ${usersArray.length}`;
+        else yourPlace.textContent = `Rank: —`;
+      }
     }
-  }
-  // Draw game
-  drawGame();
-}
-function drawGame(){
-  // Coins
-  coins.forEach(c=>{
-    ctx.save();
-    ctx.globalAlpha = c.collected?0.3:1;
-    ctx.drawImage(coinImg, c.x, c.y, c.w, c.h);
-    ctx.restore();
-  });
-  // Enemies
-  enemies.forEach(e=>{
-    ctx.save();
-    ctx.drawImage(enemyImg, e.x, e.y, e.w, e.h);
-    ctx.restore();
-  });
-  // Player
-  if(player.show){
-    ctx.save();
-    ctx.translate(player.x+player.w/2, player.y+player.h/2);
-    ctx.rotate(player.rot * Math.PI/180);
-    ctx.drawImage(kirbyImg, -player.w/2, -player.h/2, player.w, player.h);
-    ctx.restore();
-  }
-  // HUD
-  ctx.font = "bold 2.2em Nunito";
-  ctx.fillStyle = "#fff";
-  ctx.strokeStyle = "#c286ff";
-  ctx.lineWidth = 6;
-  ctx.textAlign = "center";
-  ctx.strokeText("Coins: "+score, W/2, 58);
-  ctx.fillText("Coins: "+score, W/2, 58);
-}
-function addEnemy(){
-  const y = Math.random()*(H-110)+20;
-  enemies.push({x:W+70, y, w:70, h:70});
-}
-function addCoin(){
-  const y = Math.random()*(H-70)+10;
-  coins.push({x:W+50, y, w:44, h:44, collected:false});
-}
-function collides(a,b){
-  return a.x<a=>x+b.w && a.x+a.w>b.x && a.y<a.y+b.h && a.y+a.h>b.y;
-}
-function gameOver(){
-  if(score>bestScore){
-    bestScore=score;
-    updateScoreOnServer(score);
-  }
-  currentScreen = "gameover";
-  getLeaderboard();
-}
+    startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGameWithCountdown(); };
+    leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; loadLeaderboard(); };
+    infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "flex"; };
+    leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
+    infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
+    async function loadLeaderboard() {
+      leaderboardBody.innerHTML = "";
+      const usersRef = ref(db, "users/");
+      const snapshot = await get(usersRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const usersArray = Object.entries(data).map(([id, u]) => ({username:u.username?`@${u.username}`:"User "+id,highScore:u.highScore||0,}));
+        usersArray.sort((a, b) => b.highScore - a.highScore);
+        usersArray.forEach(user => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${user.username}</td><td>${user.highScore}</td>`;
+          leaderboardBody.appendChild(tr);
+        });
+      }
+    }
 
-// --------- Firebase & LB ----------
-async function updateScoreOnServer(sc){
-  const userRef = ref(db, `users/${userId}`);
-  await update(userRef, {
-    username, photo, highScore: sc
-  });
-}
-async function getLeaderboard(){
-  const usersRef = ref(db, "users/");
-  const snapshot = await get(usersRef);
-  leaderboardData = [];
-  yourPlace = "-";
-  if(snapshot.exists()){
-    let arr = Object.entries(snapshot.val()).map(([id, u])=>({
-      id, username: u.username, highScore: u.highScore || 0
-    }));
-    arr.sort((a,b)=>b.highScore-a.highScore);
-    leaderboardData = arr.slice(0,10);
-    let idx = arr.findIndex(x=>x.id===userId);
-    yourPlace = idx>=0 ? (idx+1) : "-";
-    bestScore = arr.find(x=>x.id===userId)?.highScore || 0;
-  }
-  if(currentScreen==="menu"||currentScreen==="leaderboard") drawScreen();
-}
+    // -------- CANVAS GAME --------
+    const FIXED_FPS = 60;
+    const BASE_GRAVITY = 0.3;
+    const BASE_LIFT = -5.2;
+    const BASE_SCROLL = 1.8;
+    const BASE_MAXFALL = 3.1;
+    const ENEMY_SPAWN_SEC = 1.4;
+    const COIN_SPAWN_SEC = 0.95;
 
-// --------- Controls (on Canvas!) ----------
-canvas.addEventListener("click", handleInput);
-canvas.addEventListener("touchstart", handleInput);
-document.addEventListener("keydown", e=>{
-  if(e.code==="Space" && (currentScreen==="play"||currentScreen==="countdown")) handleInput();
-});
-function handleInput(evt){
-  const mx = (evt.touches ? evt.touches[0].clientX : evt.offsetX);
-  const my = (evt.touches ? evt.touches[0].clientY : evt.offsetY);
-  if(currentScreen==="menu"){
-    menuButtons.forEach((btn,i)=>{
-      let bx = W/2-130, by = 370+i*74, bw=260, bh=54;
-      if(mx>bx&&mx<bx+bw&&my>by&&my<by+bh) btn.action();
-    });
-  } else if(currentScreen==="leaderboard"||currentScreen==="howtoplay"){
-    if(mx>34&&mx<204&&my>H-80&&my<H-31){
-      currentScreen="menu"; drawScreen();
+    let ctx, animationId, isGameRunning = false;
+    let canvasWidth = 0, canvasHeight = 0;
+    let player = {};
+    let enemies = [];
+    let coins = [];
+    let enemySpawnTimer = 0;
+    let coinSpawnTimer = 0;
+    let scoreThisRun = 0, bgX = 0;
+    let showPlayer = false, slowStart = true, deathFall = false;
+    let gameStartTime = 0, lastFrameTime = 0, firstTapDone = false;
+    let kirbyImg = new Image(), enemyImg = new Image(), coinImg = new Image(), bgImage = new Image();
+    kirbyImg.src = "https://i.imgur.com/oMuJ6J7.png"; // png kirby
+    enemyImg.src = "https://i.imgur.com/qQEKsiR.png"; // enemy sample
+    coinImg.src = "https://i.imgur.com/PG9bOYK.png"; // coin png
+    bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
+    function resizeCanvas() {
+      canvasWidth = window.innerWidth;
+      canvasHeight = window.innerHeight;
+      gameCanvas.width = canvasWidth;
+      gameCanvas.height = canvasHeight;
     }
-  } else if(currentScreen==="play"){
-    if(!player.alive) return;
-    if(!firstTap){ firstTap=true; player.vy=lift; }
-    else player.vy=lift;
-  } else if(currentScreen==="gameover"){
-    let bx=W/2-110, by=H/2+30, bw=220, bh=60;
-    if(mx>bx&&mx<bx+bw&&my>by&&my<by+bh){
-      currentScreen="menu"; drawScreen();
-    }
-  }
-}
-// --------- Initial load -----------
-async function preload(){
-  // Preload avatar to fix draw bug
-  await new Promise(r=>{avatarImg.onload=r;});
-  await getLeaderboard();
-  currentScreen="menu"; drawScreen();
-}
-preload();
-requestAnimationFrame(gameLoop);
+    window.addEventListener("resize", () => { if (isGameRunning) resizeCanvas(); });
 
-</script>
+    function startGameWithCountdown() {
+      gameContainer.style.display = "block";
+      gameOverPopup.style.display = "none";
+      gameHudCoins.style.display = "none";
+      ctx = gameCanvas.getContext("2d");
+      resizeCanvas();
+      scoreThisRun = 0;
+      player = {
+        x: 100, y: canvasHeight/2, width: 48, height: 48, velocityY: 0, gravity: BASE_GRAVITY,
+        lift: BASE_LIFT, alive: true, maxFallSpeed: BASE_MAXFALL, rotating: false, rotAngle: 0
+      };
+      enemies = [];
+      coins = [];
+      enemySpawnTimer = 0;
+      coinSpawnTimer = 0;
+      bgX = 0;
+      deathFall = false;
+      showPlayer = false;
+      slowStart = true;
+      slowStartFrame = 0;
+      gameStartTime = performance.now();
+      lastFrameTime = gameStartTime;
+      firstTapDone = false;
+      let countdown = 3;
+      countdownOverlay.style.display = "flex";
+      countdownOverlay.textContent = countdown;
+      let cdInt = setInterval(() => {
+        countdown--;
+        if (countdown === 0) {
+          countdownOverlay.textContent = "GO!";
+        } else if (countdown < 0) {
+          countdownOverlay.style.display = "none";
+          clearInterval(cdInt);
+          showPlayer = true;
+          startGameCore();
+        } else {
+          countdownOverlay.textContent = countdown;
+        }
+      }, 900);
+    }
+    let slowStartFrame = 0, ticksAfterStart = 0;
+    function startGameCore() {
+      isGameRunning = true;
+      slowStart = true; slowStartFrame = 0; ticksAfterStart = 0;
+      gameHudCoins.textContent = "Coins: 0";
+      gameHudCoins.style.display = "block";
+      document.addEventListener("keydown", onKeyDown);
+      document.addEventListener("mousedown", onClickOrTouch);
+      document.addEventListener("touchstart", onClickOrTouch);
+      lastFrameTime = performance.now();
+      animationId = requestAnimationFrame(updateGame);
+    }
+    function updateGame(now = performance.now()) {
+      let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
+      lastFrameTime = now;
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      drawScrollingBackground(dt);
+      if (showPlayer) {
+        updatePlayer(dt);
+        drawPlayer();
+        if (isGameRunning) {
+          ticksAfterStart++;
+          if (ticksAfterStart > 120) {
+            enemySpawnTimer += dt;
+            if (enemySpawnTimer > ENEMY_SPAWN_SEC) { createEnemy(); enemySpawnTimer = 0; }
+          }
+          coinSpawnTimer += dt;
+          if (coinSpawnTimer > COIN_SPAWN_SEC) { createCoin(); coinSpawnTimer = 0; }
+          for (let i = 0; i < enemies.length; i++) {
+            enemies[i].x -= BASE_SCROLL * dt * FIXED_FPS;
+            drawEnemy(enemies[i]);
+            if (checkCollision(player, enemies[i])) { handleDeathAnimation(); return; }
+          }
+          enemies = enemies.filter(e => e.x + e.width > 0);
+          for (let i = 0; i < coins.length; i++) {
+            coins[i].x -= BASE_SCROLL * dt * FIXED_FPS;
+            drawCoin(coins[i]);
+            if (checkCollision(player, coins[i])) { scoreThisRun++; coins[i].collected = true; }
+          }
+          coins = coins.filter(c => !c.collected && c.x + c.size > 0);
+          gameHudCoins.textContent = "Coins: " + scoreThisRun;
+          if (player.alive) { animationId = requestAnimationFrame(updateGame); }
+        }
+      }
+      if (deathFall) updateDeathFall(dt);
+    }
+    function drawScrollingBackground(dt) {
+      bgX -= BASE_SCROLL * dt * FIXED_FPS;
+      if (bgX <= -canvasWidth) { bgX = 0; }
+      ctx.drawImage(bgImage, bgX, 0, canvasWidth, canvasHeight);
+      ctx.drawImage(bgImage, bgX + canvasWidth, 0, canvasWidth, canvasHeight);
+    }
+    function drawPlayer() {
+      if (!player.rotating)
+        ctx.drawImage(kirbyImg, player.x, player.y, player.width, player.height);
+      else {
+        ctx.save();
+        ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
+        ctx.rotate(player.rotAngle * Math.PI / 180);
+        ctx.drawImage(kirbyImg, -player.width/2, -player.height/2, player.width, player.height);
+        ctx.restore();
+      }
+    }
+    function drawEnemy(e) {
+      ctx.drawImage(enemyImg, e.x, e.y, e.width, e.height);
+    }
+    function drawCoin(c) {
+      ctx.drawImage(coinImg, c.x, c.y, c.size, c.size);
+    }
+    function createEnemy() {
+      const randY = Math.random() * (canvasHeight - 80 - 20) + 10;
+      enemies.push({ x: canvasWidth, y: randY, width: 80, height: 80 });
+    }
+    function createCoin() {
+      const randY = Math.random() * (canvasHeight - 40 - 20) + 10;
+      coins.push({ x: canvasWidth, y: randY, size: 40, collected: false });
+    }
+    function updatePlayer(dt) {
+      let gravity = player.gravity;
+      if (slowStart) {
+        slowStartFrame++;
+        gravity = 0.07;
+        if (slowStartFrame > 72) slowStart = false;
+      }
+      player.velocityY += gravity * dt * FIXED_FPS;
+      if (player.velocityY > player.maxFallSpeed) player.velocityY = player.maxFallSpeed;
+      player.y += player.velocityY * dt * FIXED_FPS;
+      if (player.y < 0) { player.y = 0; player.velocityY = 0; }
+      if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
+    }
+    function onKeyDown(e) { if (e.code === "Space") handleFlap(); }
+    function onClickOrTouch() { handleFlap(); }
+    function handleFlap() {
+      if (!player.alive) return;
+      if (!firstTapDone) { firstTapDone = true; player.velocityY = player.lift; }
+      else player.velocityY = player.lift;
+    }
+    function checkCollision(pl, obj) {
+      const pr = { x: pl.x + 10, y: pl.y + 10, width: pl.width - 20, height: pl.height - 20 };
+      const ow = (obj.width  || obj.size) - 20;
+      const oh = (obj.height || obj.size) - 20;
+      const or = { x: obj.x + 10, y: obj.y + 10, width:  ow > 0 ? ow : 0, height: oh > 0 ? oh : 0 };
+      return !(
+        or.x > pr.x + pr.width ||
+        or.x + or.width < pr.x ||
+        or.y > pr.y + pr.height ||
+        or.y + or.height < pr.y
+      );
+    }
+    function handleDeathAnimation() {
+      if (!player.alive) return;
+      player.alive = false;
+      isGameRunning = false;
+      deathFall = true;
+      gameHudCoins.style.display = "none";
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onClickOrTouch);
+      document.removeEventListener("touchstart", onClickOrTouch);
+      player.rotating = true;
+      player.rotAngle = 90;
+      player.velocityY = 3.5;
+      lastFrameTime = performance.now();
+      animationId = requestAnimationFrame(updateGame);
+    }
+    function updateDeathFall(dt) {
+      player.y += player.velocityY * dt * FIXED_FPS * 1.1;
+      player.velocityY += 0.33 * dt * FIXED_FPS;
+      if (player.y > canvasHeight + player.height) {
+        deathFall = false;
+        showGameOverSequence();
+      } else {
+        animationId = requestAnimationFrame(updateGame);
+      }
+    }
+    function showGameOverSequence() {
+      let newHigh = false;
+      if (scoreThisRun > highScore) {
+        highScore = scoreThisRun;
+        newHigh = true;
+      }
+      updateScoreInDB(newHigh, scoreThisRun);
+      let popupText = `You collected <b>${scoreThisRun}</b> coins this run.<br>`;
+      if (newHigh) popupText += "<span style='color:#b13df3'>NEW RECORD!</span><br>";
+      popupText += `Your best: <b>${highScore}</b>`;
+      setTimeout(() => showGameOverPopup(popupText), 500);
+    }
+    function showGameOverPopup(html) {
+      gameOverText.innerHTML = html;
+      gameOverPopup.style.display = "flex";
+    }
+    gameOverCloseBtn.onclick = endGameAndReturn;
+    function endGameAndReturn() {
+      if (isGameRunning || deathFall) {
+        cancelAnimationFrame(animationId);
+        document.removeEventListener("keydown", onKeyDown);
+        document.removeEventListener("mousedown", onClickOrTouch);
+        document.removeEventListener("touchstart", onClickOrTouch);
+        isGameRunning = false; deathFall = false;
+      }
+      gameContainer.style.display = "none";
+      gameOverPopup.style.display = "none";
+      coinsDisplay.textContent = `Best: ${highScore}`;
+      yourHighScore.textContent = `Best: ${highScore}`;
+      updatePlace();
+      mainMenu.style.display = "flex";
+      ticksAfterStart = 0;
+    }
+    async function updateScoreInDB(isNewHigh, latestScore) {
+      const userRef = ref(db, `users/${userId}`);
+      let updateData = {};
+      if (isNewHigh) updateData.highScore = latestScore;
+      await update(userRef, updateData);
+      coinsDisplay.textContent = `Best: ${highScore}`;
+      yourHighScore.textContent = `Best: ${highScore}`;
+    }
+  </script>
 </body>
 </html>
-
