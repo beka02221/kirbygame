@@ -8,16 +8,8 @@
   <link href="https://fonts.googleapis.com/css?family=Nunito:800,700,600,400|Poppins:600,400&display=swap" rel="stylesheet">
   <style>
     html, body { margin:0; padding:0; width:100vw; height:100vh; font-family:'Nunito','Poppins','Open Sans',sans-serif; background:#f7f4ff; overflow:hidden; user-select:none;}
-    #preloader {
-      position:fixed;top:0;left:0;width:100vw;height:100vh;background:#eee;
-      display:flex;align-items:center;justify-content:center;z-index:2000;
-      transition:opacity .3s;
-    }
-    .loader {
-      border: 10px solid #e0d4fe; border-top: 10px solid #a98be7; border-radius: 50%;
-      width: 72px; height: 72px; animation: spin 1s linear infinite;
-      box-shadow: 0 2px 22px #d1b6e799;
-    }
+    #preloader { position:fixed;top:0;left:0;width:100vw;height:100vh;background:#eee; display:flex;align-items:center;justify-content:center;z-index:2000; transition:opacity .3s;}
+    .loader { border: 10px solid #e0d4fe; border-top: 10px solid #a98be7; border-radius: 50%; width: 72px; height: 72px; animation: spin 1s linear infinite; box-shadow: 0 2px 22px #d1b6e799;}
     @keyframes spin { 100% { transform: rotate(360deg);} }
     #mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup {
       width:100vw;height:100vh;display:none;position:fixed;top:0;left:0;
@@ -148,18 +140,20 @@
       </div>
     </div>
   </div>
- <script type="module">
+<script type="module">
   // --- SOUNDS ---
   const sfx_die = new Audio("sfx_die.mp3");
   const sfx_point = new Audio("sfx_point.mp3");
-  const sfx_wing = new Audio("sfx_wing.mp3");
-  sfx_die.preload = sfx_point.preload = sfx_wing.preload = "auto";
-  sfx_die.volume = 0.7; sfx_point.volume = 0.9; sfx_wing.volume = 0.83;
+  // sfx_wing полностью убран!
+
+  sfx_die.preload = sfx_point.preload = "auto";
+  sfx_die.volume = 0.7; sfx_point.volume = 0.9;
 
   // Telegram WebApp
   const tg = window.Telegram.WebApp;
   if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
   else tg.expand();
+
   // Firebase 9+
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
   import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
@@ -199,6 +193,7 @@
   const countdownOverlay = document.getElementById("countdownOverlay");
   const gameHudCoins = document.getElementById("gameHudCoins");
   const preloader = document.getElementById("preloader");
+
   // User
   let tgUser;
   let userId, highScore = 0;
@@ -210,7 +205,7 @@
   let coinImg = new Image(), bgImage = new Image();
   kirbyImgs[0].src = "k1.png"; kirbyImgs[1].src = "k2.png";
   enemyImgs[0].src = "e1.png"; enemyImgs[1].src = "e2.png";
-  coinImg.src = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
+  coinImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/c07093d1e8085ba.png"; // your new PNG
   bgImage.src = "https://blog.itselectlab.com/wp-content/uploads/background.png";
   function assetLoaded() { allLoaded++; if(allLoaded>=loadTotal) showApp(); }
   [kirbyImgs[0], kirbyImgs[1], enemyImgs[0], enemyImgs[1]].forEach(img => img.onload = assetLoaded);
@@ -287,7 +282,6 @@
   }
 
   // -------- CANVAS GAME --------
-  const FIXED_FPS = 90;
   const BASE_GRAVITY = 0.2;
   const BASE_LIFT = -4.5;
   const BASE_SCROLL = 2;
@@ -392,7 +386,7 @@
         inputLock = true;
         handleFlap();
         switchKirbyFrame();
-        playWingSound();
+        // playWingSound();  // УБРАНО!
         setTimeout(() => {inputLock = false;}, 120);
       }
       e.preventDefault();
@@ -403,7 +397,7 @@
       inputLock = true;
       handleFlap();
       switchKirbyFrame();
-      playWingSound();
+      // playWingSound(); // УБРАНО!
       setTimeout(() => {inputLock = false;}, 120);
     }
     e.preventDefault();
@@ -413,22 +407,19 @@
       inputLock = true;
       handleFlap();
       switchKirbyFrame();
-      playWingSound();
+      // playWingSound(); // УБРАНО!
       setTimeout(() => {inputLock = false;}, 120);
     }
     e.preventDefault();
   }
 
-  function playWingSound() {
-    sfx_wing.currentTime = 0;
-    sfx_wing.play();
-  }
+  // function playWingSound() { ... } // УБРАНО!
 
   function updateGame(now = performance.now()) {
-    let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
+    let dt = Math.min((now - lastFrameTime) / 1000, 0.2); // seconds, max 200ms per frame
     lastFrameTime = now;
 
-    bgX -= BASE_SCROLL * dt * FIXED_FPS;
+    bgX -= BASE_SCROLL * dt * 60; // px/sec logic
     if (bgX <= -canvasWidth) { bgX += canvasWidth; }
     ctx.drawImage(bgImage, Math.round(bgX), 0, canvasWidth, canvasHeight);
     ctx.drawImage(bgImage, Math.round(bgX + canvasWidth), 0, canvasWidth, canvasHeight);
@@ -452,14 +443,14 @@
         if (coinSpawnTimer > COIN_SPAWN_SEC) { createCoin(); coinSpawnTimer = 0; }
 
         for (let i = 0; i < enemies.length; i++) {
-          enemies[i].x -= enemies[i].speed * dt * FIXED_FPS;
+          enemies[i].x -= enemies[i].speed * dt * 60;
           drawEnemy(enemies[i]);
           if (checkCollision(player, enemies[i])) { handleDeathAnimation(); return; }
         }
         enemies = enemies.filter(e => e.x + e.width > 0);
 
         for (let i = 0; i < coins.length; i++) {
-          coins[i].x -= BASE_SCROLL * dt * FIXED_FPS;
+          coins[i].x -= BASE_SCROLL * dt * 60;
           drawCoin(coins[i]);
           if (!coins[i].collected && checkCollision(player, coins[i])) {
             scoreThisRun++;
@@ -507,9 +498,9 @@
       gravity = 0.07;
       if (slowStartFrame > 72) slowStart = false;
     }
-    player.velocityY += gravity * dt * FIXED_FPS;
+    player.velocityY += gravity * dt * 60;
     if (player.velocityY > player.maxFallSpeed) player.velocityY = player.maxFallSpeed;
-    player.y += player.velocityY * dt * FIXED_FPS;
+    player.y += player.velocityY * dt * 60;
     if (player.y < 0) { player.y = 0; player.velocityY = 0; }
 
     let targetAngle = 0;
@@ -555,8 +546,8 @@
     animationId = requestAnimationFrame(updateGame);
   }
   function updateDeathFall(dt) {
-    player.y += player.velocityY * dt * FIXED_FPS * 1.1;
-    player.velocityY += 0.33 * dt * FIXED_FPS;
+    player.y += player.velocityY * dt * 60 * 1.1;
+    player.velocityY += 0.33 * dt * 60;
     kirbyAngle += (MAX_ANGLE - kirbyAngle) * Math.min(dt * 8, 1);
     if (player.y > canvasHeight + player.height) {
       deathFall = false;
