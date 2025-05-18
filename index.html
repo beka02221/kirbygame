@@ -114,7 +114,6 @@
     const tg = window.Telegram.WebApp;
     if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
     else tg.expand();
-
     // Firebase 9+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
     import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
@@ -130,7 +129,6 @@
     };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
     // DOM Elements
     const mainMenu = document.getElementById("mainMenu");
     const userPhoto = document.getElementById("userPhoto");
@@ -153,7 +151,6 @@
     const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
     const countdownOverlay = document.getElementById("countdownOverlay");
     const gameHudCoins = document.getElementById("gameHudCoins");
-
     // User
     let tgUser = tg.initDataUnsafe?.user;
     if (!tgUser) {
@@ -237,20 +234,18 @@
     let scoreThisRun = 0, bgX = 0;
     let showPlayer = false, slowStart = true, deathFall = false;
     let gameStartTime = 0, lastFrameTime = 0, firstTapDone = false;
+
+    // --- Новый способ: массив кадров ---
+    let kirbyImgs = [new Image(), new Image()];
+    kirbyImgs[0].src = "k1.png"; // основной спрайт
+    kirbyImgs[1].src = "k2.png"; // alternate frame (при тапе)
+    let kirbyCurrentFrame = 0; // 0 = k1, 1 = k2
+
+    // Остальные изображения как раньше
     let enemyImg = new Image(), coinImg = new Image(), bgImage = new Image();
     enemyImg.src = "https://i.pinimg.com/originals/4b/4f/a1/4b4fa16fff0d9782b6e53db976f89f78.gif";
     coinImg.src = "https://donatepay.ru/uploads/notification/images/830208_1664005822.gif";
-    bgImage.src = "https://i.pinimg.com/736x/d2/1f/31/d21f318b5c788b1133502b5bc12f7a31.jpg";
-
-    // ------- Для анимации Кирби -------
-    let kirbyImgs = [new Image(), new Image()];
-    kirbyImgs[0].src = "k1.png"; // кадр 1 — когда тапаем
-    kirbyImgs[1].src = "k2.png"; // кадр 2 — обычный
-
-    let kirbyFrame = 1; // по умолчанию — k2
-    let kirbyAnimTimeout = null;
-    const KIRBY_TAP_ANIM_TIME = 90; // ms
-
+    bgImage.src = "https://i.pinimg.com/736x/20/e9/cf/20e9cf219337614640886180cc5d1c34.jpg";
     function resizeCanvas() {
       canvasWidth = window.innerWidth;
       canvasHeight = window.innerHeight;
@@ -282,8 +277,7 @@
       gameStartTime = performance.now();
       lastFrameTime = gameStartTime;
       firstTapDone = false;
-      kirbyFrame = 1; // всегда k2 при старте
-      if (kirbyAnimTimeout) { clearTimeout(kirbyAnimTimeout); kirbyAnimTimeout = null; }
+      kirbyCurrentFrame = 0; // всегда стартовать с k1
       let countdown = 3;
       countdownOverlay.style.display = "flex";
       countdownOverlay.textContent = countdown;
@@ -313,9 +307,11 @@
       lastFrameTime = performance.now();
       animationId = requestAnimationFrame(updateGame);
     }
+
     function updateGame(now = performance.now()) {
       let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
       lastFrameTime = now;
+
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       drawScrollingBackground(dt);
       if (showPlayer) {
@@ -354,7 +350,7 @@
       ctx.drawImage(bgImage, bgX + canvasWidth, 0, canvasWidth, canvasHeight);
     }
     function drawPlayer() {
-      const img = kirbyImgs[kirbyFrame];
+      const img = kirbyImgs[kirbyCurrentFrame];
       if (!player.rotating)
         ctx.drawImage(img, player.x, player.y, player.width, player.height);
       else {
@@ -392,33 +388,19 @@
       if (player.y < 0) { player.y = 0; player.velocityY = 0; }
       if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
     }
-
-    // --- Обработка тапов и space --- 
-    function onKeyDown(e) {
-      if (e.code === "Space") {
-        handleFlap();
-        showTapAnimation();
-      }
-    }
-    function onClickOrTouch() {
-      handleFlap();
-      showTapAnimation();
-    }
-    // --- Логика "мигания" персонажа ---
-    function showTapAnimation() {
-      kirbyFrame = 0; // k1.png
-      if (kirbyAnimTimeout) clearTimeout(kirbyAnimTimeout);
-      kirbyAnimTimeout = setTimeout(() => {
-        kirbyFrame = 1; // k2.png
-        kirbyAnimTimeout = null;
-      }, KIRBY_TAP_ANIM_TIME);
-    }
-
+    function onKeyDown(e) { if (e.code === "Space") { handleFlap(); switchKirbyFrame(); } }
+    function onClickOrTouch() { handleFlap(); switchKirbyFrame(); }
     function handleFlap() {
       if (!player.alive) return;
       if (!firstTapDone) { firstTapDone = true; player.velocityY = player.lift; }
       else player.velocityY = player.lift;
     }
+
+    // --- Механика по тапу: просто переключение между k1 и k2 ---
+    function switchKirbyFrame() {
+      kirbyCurrentFrame = 1 - kirbyCurrentFrame; // 0→1, 1→0
+    }
+
     function checkCollision(pl, obj) {
       const pr = { x: pl.x + 10, y: pl.y + 10, width: pl.width - 20, height: pl.height - 20 };
       const ow = (obj.width  || obj.size) - 20;
@@ -500,4 +482,3 @@
   </script>
 </body>
 </html>
-
