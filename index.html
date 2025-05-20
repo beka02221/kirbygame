@@ -7,133 +7,283 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Nunito:800,700,600,400|Poppins:600,400&display=swap" rel="stylesheet">
   <style>
-    html, body { margin:0; padding:0; width:100vw; height:100vh; font-family:'Nunito','Poppins','Open Sans',sans-serif; background:#f7f4ff; overflow:hidden; user-select:none;}
-    #preloader {
-      position:fixed;top:0;left:0;width:100vw;height:100vh;background:#eee;
-      display:flex;align-items:center;justify-content:center;z-index:2000;
-      transition:opacity .3s;
-    }
-    .loader {
-      border: 10px solid #e0d4fe; border-top: 10px solid #a98be7; border-radius: 50%;
-      width: 72px; height: 72px; animation: spin 1s linear infinite;
-      box-shadow: 0 2px 22px #d1b6e799;
-    }
-    @keyframes spin { 100% { transform: rotate(360deg);} }
-    #mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup, #partnersContainer, #settingsContainer {
-      width:100vw;height:100vh;display:none;position:fixed;top:0;left:0;
-      flex-direction:column;align-items:center;justify-content:flex-start;
-      background:linear-gradient(120deg,#a2d2ff 0%,#ffe7f3 100%);
-      overflow-y:auto;padding-top:20px!important;
-    }
-    #mainMenu .menu-inner,
-    #leaderboardContainer .menu-inner,
-    #infoContainer .menu-inner,
-    #partnersContainer .menu-inner,
-    #settingsContainer .menu-inner,
-    #gameOverPopup .menu-inner {
-      margin-top:100px;width:100%;display:flex;flex-direction:column;align-items:center;
-    }
-    #gameContainer {width:100vw;height:100vh;display:none;position:fixed;top:0;left:0;background:#fff;z-index:20;overflow:hidden;}
-    #gameHudCoins {position:absolute;top:70px;left:50%;transform:translateX(-50%);font-size:2em;font-weight:900;color:#fff;background:linear-gradient(90deg,#b07cff 0,#ffb5d1 100%);padding:10px 32px;border-radius:28px;box-shadow:0 6px 28px #c2a4ff22;text-shadow:0 2px 6px #a2d2ffb2;border:2px solid #fff;pointer-events:none;z-index:110;letter-spacing:.02em;font-family:'Nunito','Poppins','Open Sans',sans-serif;transition:background 0.28s;user-select:none;}
-    .tooltip {margin-bottom:22px;background:#fff4;color:#7e47a8;font-size:1.13em;padding:9px 22px;border-radius:20px;box-shadow:0 8px 22px #b8d8fa36;letter-spacing:.03em;transition:background 0.3s;max-width:90vw;text-align:center;}
-    .user-header {display:flex;flex-direction:column;align-items:center;margin-bottom:20px;gap:6px;background:rgba(255,255,255,0.63);border-radius:18px;box-shadow:0 4px 16px #c8a2c866;padding:18px 32px 15px 32px;}
-    .user-header img {width:72px;height:72px;border-radius:50%;border:3.5px solid #fff;box-shadow:0 4px 24px 0 #a2d2ff61;background:#fff;margin-bottom:3px;object-fit:cover;}
-    .user-header span {font-size:1.14em;color:#4b3570;font-weight:700;text-shadow:0 2px 4px #eee;max-width:200px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;letter-spacing:.01em;}
-    .user-meta {display:flex;flex-direction:row;gap:10px;margin-bottom:18px;align-items:center;width:100%;justify-content:center;}
-    .user-meta div {font-size:1.01em;color:#44335b;background:#fff9;border-radius:13px;padding:5px 18px;margin:2px 0;box-shadow:0 2px 8px #a2d2ff1a;min-width:90px;text-align:center;font-weight:600;}
-    #coinsDisplay {color:#fff;background:linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);font-size:1.12em;font-weight:700;margin-bottom:16px;padding:8px 24px;border-radius:30px;box-shadow:0 3px 12px #c2a4ff1a;text-shadow:0 2px 2px #fff9;border:2px solid #fff;letter-spacing:.04em;display:inline-block;}
-    .main-btn {margin:14px 0 0 0;padding:15px 36px;font-size:1.15em;background:linear-gradient(90deg,#f7c8e0 0%,#b6eaff 100%);border:none;border-radius:29px;box-shadow:0 3px 16px #a2d2ff4d,0 1px 1px #fff;cursor:pointer;font-weight:700;color:#493a66;transition:0.16s;display:block;}
-    .main-btn:hover {background:linear-gradient(90deg,#ffc0cb 10%,#a2d2ff 100%);transform:scale(1.06);}
-    .main-btn:active {transform:scale(0.96);}
-    #leaderboardBackBtn, #infoBackBtn, #partnersBackBtn, #settingsBackBtn {position:absolute;top:100px;left:24px;padding:11px 30px;background:linear-gradient(90deg,#f8daea 0%,#d1eaff 100%);border:none;border-radius:22px;font-size:1.04em;font-weight:700;color:#4e3888;cursor:pointer;box-shadow:0 3px 0 #c8a2c8,0 2px 8px #ffdbf933;z-index:99;transition:background 0.22s;}
-    #leaderboardBackBtn:hover, #infoBackBtn:hover, #partnersBackBtn:hover, #settingsBackBtn:hover {background:linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);color:#fff;}
-    #infoContainer p {font-size:1.10em;color:#493A64;background:#fff7;border-radius:12px;padding:10px 14px;margin-top:0;}
-    #gameOverPopup {z-index:999;display:none;align-items:center;justify-content:center;background:rgba(60,30,80,0.42);animation:fadeIn 0.23s;}
-    .popup-box {background:linear-gradient(120deg,#fff 63%,#ffe3fa 100%);border-radius:32px;padding:34px 36px 28px 36px;min-width:240px;box-shadow:0 8px 30px #e3caff88;display:flex;flex-direction:column;align-items:center;gap:18px;/**/margin:0;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);}
-    .popup-box h2 {margin:0 0 8px 0;color:#9857d3;font-size:1.23em;}
-    .popup-box p {color:#47366b;font-size:1.07em;margin:0;}
-    .popup-box button {margin-top:5px;padding:13px 32px;background:linear-gradient(90deg,#f7c8e0 0,#b6eaff 100%);border-radius:20px;border:none;color:#44335b;font-weight:700;font-size:1.09em;box-shadow:0 2px 12px #a2d2ff3b;cursor:pointer;transition:background 0.14s;display:block;}
-    .popup-box button#gameOverCloseBtn {display:block;}
-    #countdownOverlay {display:none;position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:222;align-items:center;justify-content:center;background:rgba(248,245,255,0.78);font-size:3em;color:#9857d3;font-weight:900;font-family:'Nunito',sans-serif;letter-spacing:.08em;text-shadow:0 2px 12px #fff;}
-    #leaderboardContainer .menu-inner {width:95%;max-width:440px;}
-    #leaderboardBody tr {transition:background 0.17s;}
-    #leaderboardBody tr:nth-child(odd) {background:#f8e7fd70;}
-    #leaderboardBody tr:hover {background:#c186fd33;}
-    #leaderboardContainer table {
-      width:100%;border-radius:19px;box-shadow:0 2px 16px #e9c3ff5b;
-      overflow:hidden;margin-top:15px;font-size:1.12em;background:#fff8;
-      border-collapse:separate;border-spacing:0 6px;
-    }
-    #leaderboardContainer th, #leaderboardContainer td {
-      padding:14px 0;text-align:center;color:#68318d;border-bottom:1.5px solid #e8c8fd;
-      font-weight:700;letter-spacing:.02em;
-    }
-    #leaderboardContainer th {background:linear-gradient(90deg,#e7cbfa 0,#fbe1fd 100%);}
-    #leaderboardContainer td {font-weight:600;}
-    #bottomNav {
-      position:fixed;
-      left:0; right:0;
-      bottom:40px;
-      width:100vw;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      z-index:9000;
-      gap:14vw;
-      pointer-events:auto;
-    }
-    .nav-btn {
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      border:none;background:rgba(255,255,255,0.96);
-      border-radius:24px;box-shadow:0 3px 14px #a2d2ff38;
-      padding:11px 23px;margin:0 8px;min-width:80px;min-height:54px;cursor:pointer;transition:0.13s;
-      font-size:1.05em;font-weight:700;color:#a76ff5;letter-spacing:.03em;
-    }
-    .nav-btn.active, .nav-btn:hover {background:linear-gradient(90deg,#ffe7ff 0,#d7eaff 100%);color:#7b28ce;}
-    .nav-btn .nav-icon {font-size:1.47em;margin-bottom:1px;}
-    #partnersSettingsBtn {
-      position:fixed;
-      bottom:15px;
-      left:50%;transform:translateX(-50%);
-      min-width:130px;
-      z-index:9991;
-      padding:12px 36px;
-      border-radius:30px;
-      background:linear-gradient(90deg,#ffe9f7 0,#e6eaff 100%);
-      color:#8753b6;
-      font-weight:700;
-      border:none;box-shadow:0 2px 13px #d4bcff3b;
-      font-size:1.07em;
-      transition:background 0.18s;
-      cursor:pointer;
-    }
-    #partnersSettingsBtn:active {background:linear-gradient(90deg,#c7d7f9 0,#ffd2e8 100%);}
-    #settingsContainer .slider-group {
-      margin:20px 0 0 0;display:flex;flex-direction:column;gap:18px;width:100%;align-items:center;
-    }
-    .slider-label {font-size:1.13em;color:#8342bb;font-weight:700;margin-bottom:3px;}
-    .slider-wrap {display:flex;align-items:center;gap:10px;}
-    .slider-wrap input[type=range] {
-      width:160px;
-      accent-color:#ad7cf6;
-    }
-    .slider-value {font-weight:700;color:#7252c4;font-size:1.09em;}
-    .settings-title {color:#7c46a3;text-align:center;margin:15px 0 15px 0;font-size:1.28em;}
-    @media (max-width:600px){
-      .main-btn,#leaderboardBackBtn,#infoBackBtn,#partnersBackBtn,#settingsBackBtn,.popup-box button,#partnersSettingsBtn{font-size:0.97em;padding:11px 12px;}
-      .user-header img{width:60px;height:60px;}
-      .popup-box{padding:22px 10vw;}
-      #gameHudCoins{font-size:1.3em;padding:7px 10vw;}
-      #leaderboardContainer .menu-inner {margin-top:75px;}
-      .nav-btn{min-width:60px;padding:7px 8px;}
-    }
-    @media (max-width:390px){
-      #coinsDisplay{font-size:0.94em;padding:7px 10px;}
-      .user-meta div{font-size:0.92em;}
-      .user-header{padding:10px 7vw;}
-      #gameHudCoins{font-size:1.12em;padding:7px 4vw;}
-      #leaderboardContainer table{font-size:0.98em;}
-    }
+   /* Root variables for easy theming */
+:root {
+  --primary-gradient: linear-gradient(135deg, #8e2de2, #4a00e0);
+  --secondary-gradient: linear-gradient(135deg, #f953c6, #b91d73);
+  --bg-gradient: radial-gradient(circle at top left, #f5f0ff, #e0d4fe);
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --btn-hover-gradient: linear-gradient(135deg, #b91d73, #f953c6);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg-gradient);
+  overflow: hidden;
+}
+
+/* Preloader */
+#preloader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.8);
+  z-index: 2000;
+  transition: opacity .3s;
+}
+.loader {
+  border: 8px solid rgba(255,255,255,0.6);
+  border-top: 8px solid #4a00e0;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  animation: spin 0.8s linear infinite;
+  box-shadow: var(--shadow);
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Full-screen containers */
+#mainMenu,
+#leaderboardContainer,
+#infoContainer,
+#partnersContainer,
+#settingsContainer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  padding: 40px 20px;
+  backdrop-filter: blur(8px);
+  background: var(--card-bg);
+  overflow-y: auto;
+}
+
+/* Inner panels styled as cards */
+.menu-inner {
+  max-width: 480px;
+  margin: 120px auto 0;
+  background: var(--card-bg);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tooltip {
+  background: var(--secondary-gradient);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 32px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+  font-size: 1.1em;
+  text-align: center;
+}
+
+.user-header {
+  background: var(--card-bg);
+  border-radius: 32px;
+  box-shadow: var(--shadow);
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.user-header img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: var(--shadow);
+}
+.user-header span {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.2em;
+  color: #4a00e0;
+  font-weight: 700;
+}
+
+.user-meta {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.user-meta div {
+  background: #fff;
+  padding: 8px 20px;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  font-weight: 600;
+}
+
+#coinsDisplay {
+  display: inline-block;
+  background: var(--primary-gradient);
+  color: #fff;
+  padding: 10px 28px;
+  border-radius: 30px;
+  box-shadow: var(--shadow);
+  font-size: 1.15em;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+/* Buttons */
+.main-btn {
+  width: 100%;
+  max-width: 320px;
+  margin: 16px 0;
+  padding: 16px;
+  font-size: 1.15em;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: 32px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+.main-btn:hover {
+  background: var(--btn-hover-gradient);
+  transform: translateY(-2px);
+}
+.main-btn:active {
+  transform: translateY(0);
+}
+
+/* Back buttons */
+#leaderboardBackBtn,
+#infoBackBtn,
+#partnersBackBtn,
+#settingsBackBtn {
+  position: absolute;
+  top: 24px;
+  left: 20px;
+  background: var(--secondary-gradient);
+  color: #fff;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  font-size: 1em;
+  font-weight: 600;
+}
+
+/* Partners / About section */
+#partnersContainer .menu-inner h2 {
+  font-size: 1.5em;
+  color: #4a00e0;
+  margin-bottom: 16px;
+}
+.partner-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--card-bg) !important;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+.partner-item img {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+.partner-info b {
+  color: #4a00e0;
+  font-size: 1.2em;
+}
+.partner-info span {
+  display: block;
+  color: #333;
+  margin-top: 4px;
+}
+
+/* Bottom navigation */
+#bottomNav {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+  background: var(--card-bg);
+  padding: 8px 16px;
+  border-radius: 32px;
+  box-shadow: var(--shadow);
+  z-index: 9999;
+}
+.nav-btn {
+  background: transparent;
+  border: none;
+  font-size: 1em;
+  padding: 8px 12px;
+  border-radius: 24px;
+  transition: background 0.2s, color 0.2s;
+  color: #4a00e0;
+  cursor: pointer;
+}
+.nav-btn.active {
+  background: var(--primary-gradient);
+  color: #fff;
+}
+.nav-btn:hover {
+  background: var(--btn-hover-gradient);
+  color: #fff;
+}
+
+/* Settings sliders */
+.slider-label { color: #4a00e0; font-weight: 600; }
+.slider-wrap input[type=range] {
+  width: 180px;
+  accent-color: #4a00e0;
+}
+.slider-value { color: #4a00e0; font-weight: 600; }
+.settings-title { font-size: 1.4em; color: #4a00e0; margin-bottom: 16px; }
+
+/* Game Over Popup */
+.popup-box {
+  background: var(--card-bg);
+  border-radius: 32px;
+  padding: 32px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.popup-box h2 { color: #b91d73; font-size: 1.5em; margin-bottom: 12px; }
+.popup-box p { color: #333; margin-bottom: 16px; }
+.popup-box button {
+  background: var(--primary-gradient);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 32px;
+  font-size: 1.1em;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.popup-box button:hover { background: var(--btn-hover-gradient); }
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  .menu-inner { margin-top: 80px; padding: 16px; }
+  .main-btn, #leaderboardBackBtn, #infoBackBtn { font-size: 0.9em; padding: 12px; }
+  #bottomNav { bottom: 10px; gap: 12px; }
+}
+@media (max-width: 390px) {
+  #coinsDisplay { font-size: 0.9em; padding: 8px 16px; }
+  .partner-item { flex-direction: column; align-items: flex-start; }
+}
   </style>
 </head>
 <body>
