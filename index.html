@@ -8,29 +8,25 @@
   <link href="https://fonts.googleapis.com/css?family=Nunito:800,700,600,400|Poppins:600,400&display=swap" rel="stylesheet">
   <style>
     html, body { margin:0; padding:0; width:100vw; height:100vh; font-family:'Nunito','Poppins','Open Sans',sans-serif; background:#f7f4ff; overflow:hidden; user-select:none;}
-    #preloader {
-      position:fixed;top:0;left:0;width:100vw;height:100vh;background:#eee;
-      display:flex;align-items:center;justify-content:center;z-index:2000;
-      transition:opacity .3s;
-    }
-    .loader {
-      border: 10px solid #e0d4fe; border-top: 10px solid #a98be7; border-radius: 50%;
-      width: 72px; height: 72px; animation: spin 1s linear infinite;
-      box-shadow: 0 2px 22px #d1b6e799;
-    }
+    #preloader {position:fixed;top:0;left:0;width:100vw;height:100vh;background:#eee;display:flex;align-items:center;justify-content:center;z-index:2000;transition:opacity .3s;}
+    .loader {border: 10px solid #e0d4fe; border-top: 10px solid #a98be7; border-radius: 50%;width: 72px; height: 72px; animation: spin 1s linear infinite;box-shadow: 0 2px 22px #d1b6e799;}
     @keyframes spin { 100% { transform: rotate(360deg);} }
-    #mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup {
+    #mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup, #partnersContainer, #settingsContainer {
       width:100vw;height:100vh;display:none;position:fixed;top:0;left:0;
       flex-direction:column;align-items:center;justify-content:flex-start;
       background:linear-gradient(120deg,#a2d2ff 0%,#ffe7f3 100%);
-      overflow-y:auto;padding-top:20px!important;
+      overflow-y:auto;padding-top:20px!important;z-index:10;
     }
     #mainMenu .menu-inner,
     #leaderboardContainer .menu-inner,
     #infoContainer .menu-inner,
-    #gameOverPopup .menu-inner {
+    #partnersContainer .menu-inner,
+    #gameOverPopup .menu-inner,
+    #settingsContainer .menu-inner {
       margin-top:100px;width:100%;display:flex;flex-direction:column;align-items:center;
     }
+    #partnersContainer .menu-inner {margin-top:60px;}
+    #settingsContainer .menu-inner {margin-top:60px;}
     #gameContainer {width:100vw;height:100vh;display:none;position:fixed;top:0;left:0;background:#fff;z-index:20;overflow:hidden;}
     #gameHudCoins {position:absolute;top:70px;left:50%;transform:translateX(-50%);font-size:2em;font-weight:900;color:#fff;background:linear-gradient(90deg,#b07cff 0,#ffb5d1 100%);padding:10px 32px;border-radius:28px;box-shadow:0 6px 28px #c2a4ff22;text-shadow:0 2px 6px #a2d2ffb2;border:2px solid #fff;pointer-events:none;z-index:110;letter-spacing:.02em;font-family:'Nunito','Poppins',sans-serif;transition:background 0.28s;user-select:none;}
     .tooltip {margin-bottom:22px;background:#fff4;color:#7e47a8;font-size:1.13em;padding:9px 22px;border-radius:20px;box-shadow:0 8px 22px #b8d8fa36;letter-spacing:.03em;transition:background 0.3s;max-width:90vw;text-align:center;}
@@ -68,12 +64,81 @@
     }
     #leaderboardContainer th {background:linear-gradient(90deg,#e7cbfa 0,#fbe1fd 100%);}
     #leaderboardContainer td {font-weight:600;}
+    /* --- NAVIGATION BAR --- */
+    .bottom-nav {
+      position:fixed;
+      left:0;
+      width:100vw;
+      bottom:40px;
+      z-index:9999;
+      display:flex;
+      justify-content:center;
+      gap:26px;
+      pointer-events:auto;
+    }
+    .nav-btn {
+      flex:1 1 0;
+      max-width:175px;
+      font-size:1.18em;
+      padding:17px 20px;
+      background:linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);
+      border-radius:24px;
+      border:none;
+      color:#44335b;
+      font-weight:800;
+      box-shadow:0 4px 20px #c2a4ff33;
+      margin:0 10px;
+      cursor:pointer;
+      transition:.16s;
+      outline:none;
+      border:3px solid #fff9;
+    }
+    .nav-btn.active, .nav-btn:active {
+      background:linear-gradient(90deg,#b07cff 0,#ffb5d1 100%);
+      color:#fff;
+      transform:scale(1.04);
+    }
+    /* --- PARTNERS SECTION --- */
+    .partner-card {
+      background:linear-gradient(120deg,#fff 63%,#ffe3fa 100%);
+      border-radius:28px;
+      box-shadow:0 6px 24px #dab8ff36;
+      margin:18px 0 12px 0;
+      padding:26px 24px;
+      max-width:380px;
+      width:92vw;
+      display:flex; flex-direction:column; align-items:center; gap:5px;
+    }
+    .partner-card h3 {margin:4px 0 0 0;font-size:1.19em;color:#8d4dda;}
+    .partner-card a {color:#8a47be;text-decoration:none;font-size:1.06em;font-weight:700;}
+    .partner-card span {font-size:1em;color:#3b2250;margin-top:6px;}
+    .settings-title {margin:4px 0 18px 0; font-size:1.17em; color:#844dbe;}
+    .slider-label {font-size:1.05em; margin-bottom:3px; color:#6c39a5;}
+    .volume-slider {width:180px; margin-bottom:20px;}
+    .settings-btn {margin-top:25px;}
+    #openSettingsBtn {
+      margin-top:30px;
+      padding:15px 38px;
+      font-size:1.14em;
+      background:linear-gradient(90deg,#ffe7f3 0,#b6eaff 100%);
+      border:none;
+      border-radius:25px;
+      box-shadow:0 4px 15px #a2d2ff4d;
+      cursor:pointer;
+      font-weight:700;
+      color:#44335b;
+      transition:0.18s;
+    }
+    #openSettingsBtn:active {background:linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);color:#fff;}
     @media (max-width:600px){
       .main-btn,#leaderboardBackBtn,#infoBackBtn,.popup-box button{font-size:0.97em;padding:11px 12px;}
       .user-header img{width:60px;height:60px;}
       .popup-box{padding:22px 10vw;}
       #gameHudCoins{font-size:1.3em;padding:7px 10vw;}
       #leaderboardContainer .menu-inner {margin-top:75px;}
+      .nav-btn{font-size:1em;padding:14px 10px;}
+      .partner-card{padding:18px 4vw;}
+      .bottom-nav{gap:10px;}
     }
     @media (max-width:390px){
       #coinsDisplay{font-size:0.94em;padding:7px 10px;}
@@ -87,8 +152,7 @@
 <body>
   <div id="preloader"><div class="loader"></div></div>
   <!-- Main Menu -->
-  <div id="mainMenu">
-    <div class="menu-inner">
+  <div id="mainMenu"><div class="menu-inner">
       <div class="tooltip">Collect coins and dodge enemies! 🪙</div>
       <div class="user-header">
         <img id="userPhoto" src="" alt="Avatar" />
@@ -132,10 +196,42 @@
         <b>Kirby</b> flies endlessly, collecting coins and dodging enemies.<br>
         If Kirby hits an enemy or falls — the game is over.<br>
         <b>Controls:</b> Tap / Click or Space.<br>
-        The goal is to collect as many coins as possible in one run!<br>
-        <br>
+        The goal is to collect as many coins as possible in one run!<br><br>
         Your record is saved and displayed in the leaderboard. Good luck!
       </p>
+    </div>
+  </div>
+  <!-- Партнёры -->
+  <div id="partnersContainer">
+    <div class="menu-inner">
+      <h2 style="color:#7c46a3;text-align:center;margin-bottom:24px;">Partners & Creator</h2>
+      <div class="partner-card">
+        <h3>Создатель</h3>
+        <a href="https://t.me/galaxyton" target="_blank">@galaxyton</a>
+        <span>Главный разработчик и создатель игры.</span>
+      </div>
+      <div class="partner-card">
+        <h3>Партнёр 1: ONTON</h3>
+        <a href="https://t.me/ontonlive" target="_blank">@ontonlive</a>
+        <span>Игра будет запущена на платформе ONTON. Победители получат SBT от ONTON.</span>
+      </div>
+      <div class="partner-card">
+        <h3>Партнёр 2: BigKirby</h3>
+        <a href="https://t.me/bigkirby" target="_blank">@bigkirby</a>
+        <span>Игра полностью связана с проектом BigKirby. Они опубликуют новость об игре в своём канале.</span>
+      </div>
+      <button id="openSettingsBtn">Настройки</button>
+    </div>
+  </div>
+  <!-- Настройки -->
+  <div id="settingsContainer">
+    <div class="menu-inner">
+      <div class="settings-title">Настройки звука и музыки</div>
+      <label class="slider-label" for="musicVolume">Громкость музыки:</label>
+      <input type="range" min="0" max="1" step="0.01" value="0.8" id="musicVolume" class="volume-slider"><br>
+      <label class="slider-label" for="sfxVolume">Громкость звуков:</label>
+      <input type="range" min="0" max="1" step="0.01" value="0.9" id="sfxVolume" class="volume-slider"><br>
+      <button id="closeSettingsBtn" class="main-btn settings-btn">Назад</button>
     </div>
   </div>
   <!-- Game Over Popup -->
@@ -148,12 +244,18 @@
       </div>
     </div>
   </div>
+  <!-- --- Нижняя навигация --- -->
+  <div class="bottom-nav">
+    <button id="navGame" class="nav-btn active">Игра</button>
+    <button id="navPartners" class="nav-btn">Партнёры</button>
+  </div>
 <script type="module">
-// --- SOUNDS ---
 const sfx_die = new Audio("sfx_die.mp3");
 const sfx_point = new Audio("sfx_point.mp3");
-sfx_die.preload = sfx_point.preload = "auto";
-sfx_die.volume = 0.7; sfx_point.volume = 0.9;
+const bgm = new Audio("game1.wav"); // game1.wav — твой фон
+sfx_die.preload = sfx_point.preload = bgm.preload = "auto";
+sfx_die.volume = 0.9; sfx_point.volume = 0.9;
+bgm.volume = 0.8; bgm.loop = true;
 
 // Telegram WebApp
 const tg = window.Telegram.WebApp;
@@ -176,7 +278,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// DOM Elements
 const mainMenu = document.getElementById("mainMenu");
 const userPhoto = document.getElementById("userPhoto");
 const userName = document.getElementById("userName");
@@ -199,22 +300,83 @@ const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
 const countdownOverlay = document.getElementById("countdownOverlay");
 const gameHudCoins = document.getElementById("gameHudCoins");
 const preloader = document.getElementById("preloader");
-// User
+const partnersContainer = document.getElementById("partnersContainer");
+const settingsContainer = document.getElementById("settingsContainer");
+const navGame = document.getElementById("navGame");
+const navPartners = document.getElementById("navPartners");
+const openSettingsBtn = document.getElementById("openSettingsBtn");
+const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+const musicVolume = document.getElementById("musicVolume");
+const sfxVolume = document.getElementById("sfxVolume");
+
+// ======= NAVIGATION ==========
+function showSection(section) {
+  mainMenu.style.display = "none";
+  partnersContainer.style.display = "none";
+  settingsContainer.style.display = "none";
+  leaderboardContainer.style.display = "none";
+  infoContainer.style.display = "none";
+  gameContainer.style.display = "none";
+  gameOverPopup.style.display = "none";
+  if (section === "game") {
+    mainMenu.style.display = "flex";
+    navGame.classList.add("active");
+    navPartners.classList.remove("active");
+  } else if (section === "partners") {
+    partnersContainer.style.display = "flex";
+    navGame.classList.remove("active");
+    navPartners.classList.add("active");
+  } else if (section === "settings") {
+    settingsContainer.style.display = "flex";
+  }
+}
+navGame.onclick = () => showSection("game");
+navPartners.onclick = () => showSection("partners");
+openSettingsBtn.onclick = () => {
+  partnersContainer.style.display = "none";
+  settingsContainer.style.display = "flex";
+};
+closeSettingsBtn.onclick = () => {
+  settingsContainer.style.display = "none";
+  partnersContainer.style.display = "flex";
+};
+// ======= END NAVIGATION =======
+
+// Настройки громкости — localStorage
+musicVolume.oninput = () => { bgm.volume = musicVolume.value; localStorage.setItem("kirby_music_volume", musicVolume.value);}
+sfxVolume.oninput = () => {
+  sfx_die.volume = sfxVolume.value;
+  sfx_point.volume = sfxVolume.value;
+  localStorage.setItem("kirby_sfx_volume", sfxVolume.value);
+};
+window.addEventListener("DOMContentLoaded", () => {
+  if(localStorage.getItem("kirby_music_volume")) {
+    musicVolume.value = localStorage.getItem("kirby_music_volume");
+    bgm.volume = musicVolume.value;
+  }
+  if(localStorage.getItem("kirby_sfx_volume")) {
+    sfxVolume.value = localStorage.getItem("kirby_sfx_volume");
+    sfx_die.volume = sfxVolume.value;
+    sfx_point.volume = sfxVolume.value;
+  }
+});
+
+function startBGM() { try{ bgm.currentTime=0; bgm.play(); }catch{} }
+function stopBGM() { try{ bgm.pause(); bgm.currentTime=0; }catch{} }
+
 let tgUser;
 let userId, highScore = 0;
 let allLoaded = 0;
-let loadTotal = 5; // увеличили на 1 для k3
-// Preload images
+let loadTotal = 5;
 let kirbyImgs = [new Image(), new Image()];
-let kirbyEatImg = new Image(); // <--- новый спрайт k3
+let kirbyEatImg = new Image();
 let enemyImgs = [new Image(), new Image()];
 let coinImg = new Image(), bgImage = new Image();
 kirbyImgs[0].src = "k1.png"; kirbyImgs[1].src = "k2.png";
-kirbyEatImg.src = "k3.png"; // <--- путь к новому спрайту
+kirbyEatImg.src = "k3.png";
 enemyImgs[0].src = "e1.png"; enemyImgs[1].src = "e2.png";
 coinImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/c07093d1e8085ba.png";
 bgImage.src = "https://blog.itselectlab.com/wp-content/uploads/background.png";
-
 function assetLoaded() { allLoaded++; if(allLoaded>=loadTotal) showApp(); }
 [kirbyImgs[0], kirbyImgs[1], kirbyEatImg, enemyImgs[0], enemyImgs[1]].forEach(img => img.onload = assetLoaded);
 
@@ -227,7 +389,7 @@ async function finishLoading() {
   }
   userId = tgUser.id.toString();
   await loadUser();
-  showApp();
+  showSection("game");
 }
 finishLoading();
 async function loadUser() {
@@ -315,11 +477,9 @@ let kirbyAngle = 0;
 const MIN_ANGLE = -27;
 const MAX_ANGLE = 78;
 const ANGLE_RETURN_SPEED = 8;
-
-// Анимация для k3 (кушает монету)
 let kirbyEatAnimation = false;
 let kirbyEatTimer = 0;
-const KIRBY_EAT_DURATION = 220; // мс (0.22 сек)
+const KIRBY_EAT_DURATION = 220;
 
 let enemyAnimFrame = 0;
 let enemyAnimLastTime = performance.now();
@@ -365,6 +525,7 @@ function startGameWithCountdown() {
   let countdown = 3;
   countdownOverlay.style.display = "flex";
   countdownOverlay.textContent = countdown;
+  stopBGM(); startBGM();
   let cdInt = setInterval(() => {
     countdown--;
     if (countdown === 0) {
@@ -428,25 +589,20 @@ function onMouse(e) {
   }
   e.preventDefault();
 }
-
 function updateGame(now = performance.now()) {
   let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
   lastFrameTime = now;
-
   bgX -= BASE_SCROLL * dt * 60;
   if (bgX <= -canvasWidth) { bgX += canvasWidth; }
   ctx.drawImage(bgImage, Math.round(bgX), 0, canvasWidth, canvasHeight);
   ctx.drawImage(bgImage, Math.round(bgX + canvasWidth), 0, canvasWidth, canvasHeight);
-
   if (now - enemyAnimLastTime > 160) {
     enemyAnimFrame = 1 - enemyAnimFrame;
     enemyAnimLastTime = now;
   }
-
   if (showPlayer) {
     updatePlayer(dt);
     drawPlayer();
-
     if (isGameRunning) {
       ticksAfterStart++;
       if (ticksAfterStart > 120) {
@@ -455,30 +611,23 @@ function updateGame(now = performance.now()) {
       }
       coinSpawnTimer += dt;
       if (coinSpawnTimer > COIN_SPAWN_SEC) { createCoin(); coinSpawnTimer = 0; }
-
       for (let i = 0; i < enemies.length; i++) {
         enemies[i].x -= enemies[i].speed * dt * 60;
         drawEnemy(enemies[i]);
         if (checkCollision(player, enemies[i])) { handleDeathAnimation(); return; }
       }
       enemies = enemies.filter(e => e.x + e.width > 0);
-
       for (let i = 0; i < coins.length; i++) {
         coins[i].x -= BASE_SCROLL * dt * 60;
         drawCoin(coins[i]);
         if (!coins[i].collected && checkCollision(player, coins[i])) {
           scoreThisRun++;
           coins[i].collected = true;
-
-          // --- Анимация: сменить на k3 ---
           kirbyEatAnimation = true;
           kirbyEatTimer = performance.now();
-
-          // Каждый 5-й монета звук (5,10,15...)
           if (scoreThisRun % 5 === 0) {
             sfx_point.currentTime = 0; sfx_point.play();
           }
-          // Каждые 10 монет — увеличение сложности!
           if (scoreThisRun % 10 === 0) {
             BASE_SCROLL *= DIFFICULTY_SPEEDUP;
             BASE_GRAVITY *= DIFFICULTY_SPEEDUP;
@@ -488,21 +637,16 @@ function updateGame(now = performance.now()) {
         }
       }
       coins = coins.filter(c => !c.collected && c.x + c.size > 0);
-
       gameHudCoins.textContent = "Coins: " + scoreThisRun;
       if (player.alive) { animationId = requestAnimationFrame(updateGame); }
     }
   }
   if (deathFall) updateDeathFall(dt);
-
-  // Проверяем — если была анимация поедания монеты, сколько времени прошло
   if (kirbyEatAnimation && (performance.now() - kirbyEatTimer > KIRBY_EAT_DURATION)) {
     kirbyEatAnimation = false;
   }
 }
-
 function drawPlayer() {
-  // Если сейчас "анимация поедания монеты" — рисуем k3.png
   let img = kirbyEatAnimation ? kirbyEatImg : kirbyImgs[kirbyCurrentFrame];
   ctx.save();
   ctx.translate(player.x + player.width/2, player.y + player.height/2);
@@ -510,12 +654,8 @@ function drawPlayer() {
   ctx.drawImage(img, -player.width/2, -player.height/2, player.width, player.height);
   ctx.restore();
 }
-function drawEnemy(e) {
-  ctx.drawImage(enemyImgs[enemyAnimFrame], e.x, e.y, e.width, e.height);
-}
-function drawCoin(c) {
-  ctx.drawImage(coinImg, c.x, c.y, c.size, c.size);
-}
+function drawEnemy(e) { ctx.drawImage(enemyImgs[enemyAnimFrame], e.x, e.y, e.width, e.height); }
+function drawCoin(c) { ctx.drawImage(coinImg, c.x, c.y, c.size, c.size); }
 function createEnemy() {
   const randY = Math.random() * (canvasHeight - 42 - 20) + 10;
   const speed = BASE_SCROLL * (1 + Math.random() * 0.7);
@@ -525,7 +665,6 @@ function createCoin() {
   const randY = Math.random() * (canvasHeight - 40 - 20) + 10;
   coins.push({ x: canvasWidth, y: randY, size: 40, collected: false });
 }
-
 function updatePlayer(dt) {
   let gravity = player.gravity;
   if (slowStart) {
@@ -537,13 +676,11 @@ function updatePlayer(dt) {
   if (player.velocityY > player.maxFallSpeed) player.velocityY = player.maxFallSpeed;
   player.y += player.velocityY * dt * 60;
   if (player.y < 0) { player.y = 0; player.velocityY = 0; }
-
   let targetAngle = 0;
   if (player.velocityY < -1) targetAngle = MIN_ANGLE;
   else if (player.velocityY > 2) targetAngle = MAX_ANGLE;
   else targetAngle = 24;
   kirbyAngle += (targetAngle - kirbyAngle) * Math.min(dt * ANGLE_RETURN_SPEED, 1);
-
   if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
 }
 function handleFlap() {
@@ -577,6 +714,7 @@ function handleDeathAnimation() {
   player.velocityY = 3.5;
   lastFrameTime = performance.now();
   sfx_die.currentTime = 0; sfx_die.play();
+  stopBGM();
   if (window.navigator.vibrate) window.navigator.vibrate([190,80,90]);
   animationId = requestAnimationFrame(updateGame);
 }
@@ -614,6 +752,7 @@ function endGameAndReturn() {
     stopInputListeners();
     isGameRunning = false; deathFall = false;
   }
+  stopBGM();
   gameContainer.style.display = "none";
   gameOverPopup.style.display = "none";
   coinsDisplay.textContent = `Best: ${highScore}`;
@@ -631,6 +770,5 @@ async function updateScoreInDB(isNewHigh, latestScore) {
   yourHighScore.textContent = `Best: ${highScore}`;
 }
 </script>
-
 </body>
 </html>
