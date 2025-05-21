@@ -495,7 +495,7 @@
   </div>
   <div id="preloader"><div class="loader"></div></div>
 <script type="module">
-// ====================== А У Д И О  =======================
+// ====================== S O U N D S ======================
 const sfx_die   = new Audio("sfx_die.mp3");
 const sfx_point = new Audio("sfx_point.mp3");
 [sfx_die, sfx_point].forEach(a => {
@@ -522,11 +522,9 @@ function startMusic() {
   music.play().catch(()=>{});
   musicStarted = true;
 }
-// Слушаем любой жест в документе
 ["click", "touchstart", "keydown"].forEach(evt =>
   document.addEventListener(evt, startMusic, {once:true,passive:true})
 );
-// На всякий — при старте игры тоже:
 startGameBtn.addEventListener("click", startMusic, {once:true});
 
 // =================== F I R E B A S E ====================
@@ -568,7 +566,6 @@ const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
 const countdownOverlay = document.getElementById("countdownOverlay");
 const gameHudCoins = document.getElementById("gameHudCoins");
 const preloader = document.getElementById("preloader");
-// --- NEW:
 const bottomNav = document.getElementById("bottomNav");
 const navGameBtn = document.getElementById("navGameBtn");
 const navAboutBtn = document.getElementById("navAboutBtn");
@@ -580,43 +577,30 @@ const settingsCloseBtn = document.getElementById("settingsCloseBtn");
 const musicSlider = document.getElementById("musicSlider");
 const sfxSlider = document.getElementById("sfxSlider");
 
-// === VOLUME / SLIDERS ===
-musicSlider.oninput = () => {
-  music.volume = +musicSlider.value;
-};
-sfxSlider.oninput = () => {
-  sfx_point.volume = +sfxSlider.value;
-  sfx_die.volume = +sfxSlider.value;
-};
-
-// --- Обновлённые функции воспроизведения SFX ---
-function playPointSfx() {
-  sfx_point.currentTime = 0;
-  sfx_point.volume = +sfxSlider.value;
-  sfx_point.play();
-}
-function playDieSfx() {
-  sfx_die.currentTime = 0;
-  sfx_die.volume = +sfxSlider.value;
-  sfx_die.play();
-}
-
-// ================ ЗАГРУЗКА АССЕТОВ =================
-let tgUser;
-let userId, highScore = 0;
+// ============= LOADING ASSETS (fixed!) =============
+let loadTotal = 7;
 let allLoaded = 0;
-let loadTotal = 5;
 let kirbyImgs = [new Image(), new Image()];
 let kirbyEatImg = new Image();
 let enemyImgs = [new Image(), new Image()];
 let coinImg = new Image(), bgImage = new Image();
+
 kirbyImgs[0].src = "k1.png"; kirbyImgs[1].src = "k2.png";
 kirbyEatImg.src = "k3.png";
 enemyImgs[0].src = "e1.png"; enemyImgs[1].src = "e2.png";
 coinImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/c07093d1e8085ba.png";
 bgImage.src = "https://blog.itselectlab.com/wp-content/uploads/background.png";
-function assetLoaded() { allLoaded++; if(allLoaded>=loadTotal) showApp(); }
-[kirbyImgs[0], kirbyImgs[1], kirbyEatImg, enemyImgs[0], enemyImgs[1]].forEach(img => img.onload = assetLoaded);
+
+function assetLoaded() {
+  allLoaded++;
+  if(allLoaded>=loadTotal) showApp();
+}
+// !!! Новый способ: учитываем ВСЕ ассеты!
+[kirbyImgs[0], kirbyImgs[1], kirbyEatImg, enemyImgs[0], enemyImgs[1], coinImg, bgImage].forEach(img => {
+  img.onload = assetLoaded;
+  img.onerror = assetLoaded; // если ошибка - всё равно считаем!
+});
+
 function showApp() { preloader.style.opacity = 0; setTimeout(()=>{preloader.style.display="none";},320); }
 async function finishLoading() {
   tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
@@ -688,6 +672,23 @@ async function loadLeaderboard() {
   }
 }
 
+// === ГРОМКОСТЬ ===
+musicSlider.oninput = () => { music.volume = +musicSlider.value; };
+sfxSlider.oninput = () => {
+  sfx_point.volume = +sfxSlider.value;
+  sfx_die.volume = +sfxSlider.value;
+};
+function playPointSfx() {
+  sfx_point.currentTime = 0;
+  sfx_point.volume = +sfxSlider.value;
+  sfx_point.play();
+}
+function playDieSfx() {
+  sfx_die.currentTime = 0;
+  sfx_die.volume = +sfxSlider.value;
+  sfx_die.play();
+}
+
 // ================= G A M E  L O G I C ===================
 let BASE_GRAVITY = 0.23;
 let BASE_LIFT = -4.6;
@@ -715,10 +716,9 @@ const MIN_ANGLE = -27;
 const MAX_ANGLE = 78;
 const ANGLE_RETURN_SPEED = 8;
 
-// Анимация для k3 (кушает монету)
 let kirbyEatAnimation = false;
 let kirbyEatTimer = 0;
-const KIRBY_EAT_DURATION = 220; // мс (0.22 сек)
+const KIRBY_EAT_DURATION = 220;
 
 let enemyAnimFrame = 0;
 let enemyAnimLastTime = performance.now();
@@ -765,7 +765,6 @@ function startGameWithCountdown() {
   countdownOverlay.style.display = "flex";
   countdownOverlay.textContent = countdown;
 
-  // --- Hide navigation and settings while playing ---
   bottomNav.classList.add('nav-hide');
   settingsBtn.classList.add('hide');
 
@@ -785,7 +784,6 @@ function startGameWithCountdown() {
 }
 let slowStartFrame = 0, ticksAfterStart = 0;
 
-// --- ONLY ONE INPUT PER FLAP ---
 let inputLock = false;
 function startGameCore() {
   isGameRunning = true;
@@ -967,11 +965,8 @@ function handleDeathAnimation() {
   kirbyAngle = MAX_ANGLE;
   player.velocityY = 3.5;
   lastFrameTime = performance.now();
-
-  // SFX
   playDieSfx();
   if (window.navigator.vibrate) window.navigator.vibrate([190,80,90]);
-
   animationId = requestAnimationFrame(updateGame);
 }
 function updateDeathFall(dt) {
@@ -1014,8 +1009,6 @@ function endGameAndReturn() {
   yourHighScore.textContent = `Best: ${highScore}`;
   updatePlace();
   mainMenu.style.display = "flex";
-
-  // Показать назад навигацию и кнопку настроек
   bottomNav.classList.remove('nav-hide');
   settingsBtn.classList.remove('hide');
   ticksAfterStart = 0;
@@ -1059,6 +1052,7 @@ settingsBtn.onclick = () => {
 settingsCloseBtn.onclick = () => {
   settingsPanel.style.display = "none";
 };
+
 
 </script>
 </body>
