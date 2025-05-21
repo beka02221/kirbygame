@@ -275,6 +275,8 @@
   z-index: 1200; pointer-events: none;
   transition: opacity 0.25s;
 }
+  
+
 .nav-btn {
   display: flex; flex-direction: column; align-items: center;
   background: linear-gradient(90deg,#e0d4fe 0,#ffe7f3 100%);
@@ -332,7 +334,12 @@
 }
 
 /* СКРЫТИЕ НАВИГАЦИИ ВО ВРЕМЯ ИГРЫ */
-.nav-hide { opacity: 0; pointer-events: none !important; }
+.nav-hide { 
+  opacity: 0; 
+  pointer-events: none !important; 
+  display: none !important; 
+}
+
 
 @media (max-width:600px) {
   .main-btn,#leaderboardBackBtn,#infoBackBtn,.popup-box button{font-size:0.97em;padding:11px 12px;}
@@ -419,7 +426,8 @@
     </div>
   </div>
   <!-- --- ABOUT SECTION --- -->
- <div id="aboutSection">
+ <!-- --- ABOUT SECTION --- -->
+<div id="aboutSection">
   <h2>About the Game</h2>
   <div class="about-cards">
     <a class="about-card" href="https://t.me/bigkirby" target="_blank">
@@ -450,6 +458,9 @@
           Crafted and coded by <span class="link">@galaxyton</span>.<br>
         </div>
       </div>
+    </a>
+  </div> <!-- /.about-cards -->
+</div> <!-- /#aboutSection -->
 
   <!-- --- НАВИГАЦИЯ --- -->
   <div id="bottomNav">
