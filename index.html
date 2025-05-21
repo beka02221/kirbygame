@@ -498,14 +498,27 @@
 // --- SOUNDS ---
 const sfx_die = new Audio("sfx_die.mp3");
 const sfx_point = new Audio("sfx_point.mp3");
-sfx_die.preload = sfx_point.preload = "auto";
+const bg_music = new Audio("game1.wav");
+sfx_die.preload = sfx_point.preload = bg_music.preload = "auto";
 sfx_die.volume = 0.7; sfx_point.volume = 0.9;
+bg_music.loop = true;
+bg_music.volume = 1.0;
 
-// --- GAME MUSIC ---
-const music = new Audio("kirby.mp3");
-music.preload = "auto";
-music.loop = true;
-music.volume = 0.85;
+function setMusicVolume(v) { bg_music.volume = v; }
+function setSfxVolume(v) { sfx_die.volume = v; sfx_point.volume = v; }
+
+// --- Volume persistent ---
+function saveVolume() {
+  localStorage.setItem("kirby_game_music", bg_music.volume);
+  localStorage.setItem("kirby_game_sfx", sfx_point.volume);
+}
+function loadVolume() {
+  let m = +localStorage.getItem("kirby_game_music");
+  let s = +localStorage.getItem("kirby_game_sfx");
+  if (!isNaN(m)) setMusicVolume(m);
+  if (!isNaN(s)) setSfxVolume(s);
+}
+loadVolume();
 
 // Telegram WebApp
 const tg = window.Telegram.WebApp;
@@ -528,7 +541,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// DOM Elements (твои старые + новые)
+// DOM Elements
 const mainMenu = document.getElementById("mainMenu");
 const userPhoto = document.getElementById("userPhoto");
 const userName = document.getElementById("userName");
@@ -551,20 +564,19 @@ const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
 const countdownOverlay = document.getElementById("countdownOverlay");
 const gameHudCoins = document.getElementById("gameHudCoins");
 const preloader = document.getElementById("preloader");
-// --- NEW:
 const bottomNav = document.getElementById("bottomNav");
 const navGameBtn = document.getElementById("navGameBtn");
-const navAboutBtn = document.getElementById("navAboutBtn");
-const aboutSection = document.getElementById("aboutSection");
-const aboutCloseBtn = document.getElementById("aboutCloseBtn");
-const settingsBtn = document.getElementById("settingsBtn");
-const settingsPanel = document.getElementById("settingsPanel");
-const settingsCloseBtn = document.getElementById("settingsCloseBtn");
-const musicSlider = document.getElementById("musicSlider");
-const sfxSlider = document.getElementById("sfxSlider");
+const navPartnersBtn = document.getElementById("navPartnersBtn");
+const partnersContainer = document.getElementById("partnersContainer");
+const partnersBackBtn = document.getElementById("partnersBackBtn");
+const partnersSettingsBtn = document.getElementById("partnersSettingsBtn");
+const settingsContainer = document.getElementById("settingsContainer");
+const settingsBackBtn = document.getElementById("settingsBackBtn");
+const musicVolumeSlider = document.getElementById("musicVolumeSlider");
+const sfxVolumeSlider = document.getElementById("sfxVolumeSlider");
+const musicVolumeValue = document.getElementById("musicVolumeValue");
+const sfxVolumeValue = document.getElementById("sfxVolumeValue");
 
-// --- ПОЛНАЯ ЛОГИКА ПРИВЯЗКИ ---
-// --- Прелоад и старый код ---
 let tgUser;
 let userId, highScore = 0;
 let allLoaded = 0;
@@ -578,8 +590,10 @@ kirbyEatImg.src = "k3.png";
 enemyImgs[0].src = "e1.png"; enemyImgs[1].src = "e2.png";
 coinImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/c07093d1e8085ba.png";
 bgImage.src = "https://blog.itselectlab.com/wp-content/uploads/background.png";
+
 function assetLoaded() { allLoaded++; if(allLoaded>=loadTotal) showApp(); }
 [kirbyImgs[0], kirbyImgs[1], kirbyEatImg, enemyImgs[0], enemyImgs[1]].forEach(img => img.onload = assetLoaded);
+
 function showApp() { preloader.style.opacity = 0; setTimeout(()=>{preloader.style.display="none";},320); }
 async function finishLoading() {
   tgUser = tg.initDataUnsafe?.user;
@@ -600,7 +614,7 @@ async function loadUser() {
     }
   };
   userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
-  const userRef = ref(db, users/${userId});
+  const userRef = ref(db, `users/${userId}`);
   let snapshot = await get(userRef);
   if (!snapshot.exists()) {
     await set(userRef, {highScore:0,username:tgUser.username||"",photo:tgUser.photo_url||""});
@@ -608,8 +622,8 @@ async function loadUser() {
   } else {
     highScore = snapshot.val().highScore || 0;
   }
-  coinsDisplay.textContent = Best: ${highScore};
-  yourHighScore.textContent = Best: ${highScore};
+  coinsDisplay.textContent = `Best: ${highScore}`;
+  yourHighScore.textContent = `Best: ${highScore}`;
   await updatePlace();
   mainMenu.style.display = "flex";
 }
@@ -622,11 +636,11 @@ async function updatePlace() {
     const usersArray = Object.entries(data).map(([id, u]) => ({id,highScore:u.highScore||0}));
     usersArray.sort((a, b) => b.highScore - a.highScore);
     const place = usersArray.findIndex(x => x.id === userId) + 1;
-    if (place > 0) yourPlace.textContent = Rank: ${place} of ${usersArray.length};
-    else yourPlace.textContent = Rank: —;
+    if (place > 0) yourPlace.textContent = `Rank: ${place} of ${usersArray.length}`;
+    else yourPlace.textContent = `Rank: —`;
   }
 }
-startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGameWithCountdown(); };
+startGameBtn.onclick = () => { hideBottomNav(); mainMenu.style.display = "none"; startGameWithCountdown(); };
 leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; loadLeaderboard(); };
 infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "flex"; };
 leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
@@ -637,7 +651,7 @@ async function loadLeaderboard() {
   const snapshot = await get(usersRef);
   if (snapshot.exists()) {
     const data = snapshot.val();
-    const usersArray = Object.entries(data).map(([id, u]) => ({username:u.username?@${u.username}:"User "+id,highScore:u.highScore||0,}));
+    const usersArray = Object.entries(data).map(([id, u]) => ({username:u.username?`@${u.username}`:"User "+id,highScore:u.highScore||0,}));
     usersArray.sort((a, b) => b.highScore - a.highScore);
     usersArray.forEach((user, idx) => {
       const tr = document.createElement("tr");
@@ -645,15 +659,68 @@ async function loadLeaderboard() {
       if(idx === 0) topStyle = "font-weight:900;color:#a934db;background:linear-gradient(90deg,#ffd2fb 50%,#e6d7ff 100%)";
       else if(idx === 1) topStyle = "font-weight:800;color:#5351d9;background:linear-gradient(90deg,#f9e6ff 50%,#cde7f7 100%)";
       else if(idx === 2) topStyle = "font-weight:800;color:#ffb300;background:linear-gradient(90deg,#f3ebfd 50%,#fceabb 100%)";
-      tr.innerHTML = <td style="${topStyle}">${user.username}</td><td style="${topStyle}">${user.highScore}</td>;
+      tr.innerHTML = `<td style="${topStyle}">${user.username}</td><td style="${topStyle}">${user.highScore}</td>`;
       leaderboardBody.appendChild(tr);
     });
   }
 }
 
-// --- GAME LOGIC ... (оставляй без изменений) ---
+// -------- Navigation (bottomNav) --------
+function showMainMenu() {
+  mainMenu.style.display = "flex";
+  partnersContainer.style.display = "none";
+  bottomNav.style.display = "flex";
+  navGameBtn.classList.add("active");
+  navPartnersBtn.classList.remove("active");
+}
+function showPartners() {
+  partnersContainer.style.display = "flex";
+  mainMenu.style.display = "none";
+  leaderboardContainer.style.display = "none";
+  infoContainer.style.display = "none";
+  settingsContainer.style.display = "none";
+  bottomNav.style.display = "flex";
+  navPartnersBtn.classList.add("active");
+  navGameBtn.classList.remove("active");
+}
+navGameBtn.onclick = showMainMenu;
+navPartnersBtn.onclick = showPartners;
+partnersBackBtn.onclick = showMainMenu;
+partnersSettingsBtn.onclick = function() {
+  partnersContainer.style.display = "none";
+  settingsContainer.style.display = "flex";
+  bottomNav.style.display = "none";
+};
+settingsBackBtn.onclick = function() {
+  settingsContainer.style.display = "none";
+  partnersContainer.style.display = "flex";
+  bottomNav.style.display = "flex";
+};
+function hideBottomNav() { bottomNav.style.display = "none"; }
+function showBottomNav() { bottomNav.style.display = "flex"; }
+startGameBtn.onclick = () => { hideBottomNav(); mainMenu.style.display = "none"; startGameWithCountdown(); };
+
+// --- SETTINGS ---
+function updateVolumeSliders() {
+  musicVolumeSlider.value = Math.round(bg_music.volume*100);
+  sfxVolumeSlider.value = Math.round(sfx_point.volume*100);
+  musicVolumeValue.textContent = musicVolumeSlider.value;
+  sfxVolumeValue.textContent = sfxVolumeSlider.value;
+}
+musicVolumeSlider.oninput = function() {
+  setMusicVolume(musicVolumeSlider.value/100);
+  musicVolumeValue.textContent = musicVolumeSlider.value;
+  saveVolume();
+  if(bg_music.paused && bg_music.volume>0) bg_music.play().catch(()=>{});
+};
+sfxVolumeSlider.oninput = function() {
+  setSfxVolume(sfxVolumeSlider.value/100);
+  sfxVolumeValue.textContent = sfxVolumeSlider.value;
+  saveVolume();
+};
+updateVolumeSliders();
+
 // -------- CANVAS GAME --------
-// ... весь твой игровой движок ниже не меняется до функций завершения игры и возвращения меню ...
 let BASE_GRAVITY = 0.23;
 let BASE_LIFT = -4.6;
 let BASE_SCROLL = 2.16;
@@ -680,10 +747,9 @@ const MIN_ANGLE = -27;
 const MAX_ANGLE = 78;
 const ANGLE_RETURN_SPEED = 8;
 
-// Анимация для k3 (кушает монету)
 let kirbyEatAnimation = false;
 let kirbyEatTimer = 0;
-const KIRBY_EAT_DURATION = 220; // мс (0.22 сек)
+const KIRBY_EAT_DURATION = 220;
 
 let enemyAnimFrame = 0;
 let enemyAnimLastTime = performance.now();
@@ -729,14 +795,7 @@ function startGameWithCountdown() {
   let countdown = 3;
   countdownOverlay.style.display = "flex";
   countdownOverlay.textContent = countdown;
-
-  // --- Hide navigation and settings while playing ---
-  bottomNav.classList.add('nav-hide');
-  settingsBtn.classList.add('hide');
-
-  // Start music
-  try { music.currentTime = 0; music.play(); } catch(e){}
-
+  setTimeout(()=>{if(bg_music.volume>0) bg_music.play().catch(()=>{});},300);
   let cdInt = setInterval(() => {
     countdown--;
     if (countdown === 0) {
@@ -753,7 +812,6 @@ function startGameWithCountdown() {
 }
 let slowStartFrame = 0, ticksAfterStart = 0;
 
-// --- ONLY ONE INPUT PER FLAP ---
 let inputLock = false;
 function startGameCore() {
   isGameRunning = true;
@@ -765,6 +823,7 @@ function startGameCore() {
   gameCanvas.addEventListener("mousedown", onMouse, { passive: false });
   lastFrameTime = performance.now();
   animationId = requestAnimationFrame(updateGame);
+  hideBottomNav();
 }
 function stopInputListeners() {
   document.removeEventListener("keydown", onKeyDown);
@@ -804,6 +863,7 @@ function onMouse(e) {
 function updateGame(now = performance.now()) {
   let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
   lastFrameTime = now;
+
   bgX -= BASE_SCROLL * dt * 60;
   if (bgX <= -canvasWidth) { bgX += canvasWidth; }
   ctx.drawImage(bgImage, Math.round(bgX), 0, canvasWidth, canvasHeight);
@@ -817,6 +877,7 @@ function updateGame(now = performance.now()) {
   if (showPlayer) {
     updatePlayer(dt);
     drawPlayer();
+
     if (isGameRunning) {
       ticksAfterStart++;
       if (ticksAfterStart > 120) {
@@ -839,10 +900,11 @@ function updateGame(now = performance.now()) {
         if (!coins[i].collected && checkCollision(player, coins[i])) {
           scoreThisRun++;
           coins[i].collected = true;
+
           kirbyEatAnimation = true;
           kirbyEatTimer = performance.now();
+
           if (scoreThisRun % 5 === 0) {
-            sfx_point.volume = sfxSlider.value;
             sfx_point.currentTime = 0; sfx_point.play();
           }
           if (scoreThisRun % 10 === 0) {
@@ -865,6 +927,7 @@ function updateGame(now = performance.now()) {
     kirbyEatAnimation = false;
   }
 }
+
 function drawPlayer() {
   let img = kirbyEatAnimation ? kirbyEatImg : kirbyImgs[kirbyCurrentFrame];
   ctx.save();
@@ -888,6 +951,7 @@ function createCoin() {
   const randY = Math.random() * (canvasHeight - 40 - 20) + 10;
   coins.push({ x: canvasWidth, y: randY, size: 40, collected: false });
 }
+
 function updatePlayer(dt) {
   let gravity = player.gravity;
   if (slowStart) {
@@ -899,11 +963,13 @@ function updatePlayer(dt) {
   if (player.velocityY > player.maxFallSpeed) player.velocityY = player.maxFallSpeed;
   player.y += player.velocityY * dt * 60;
   if (player.y < 0) { player.y = 0; player.velocityY = 0; }
+
   let targetAngle = 0;
   if (player.velocityY < -1) targetAngle = MIN_ANGLE;
   else if (player.velocityY > 2) targetAngle = MAX_ANGLE;
   else targetAngle = 24;
   kirbyAngle += (targetAngle - kirbyAngle) * Math.min(dt * ANGLE_RETURN_SPEED, 1);
+
   if (player.y + player.height > canvasHeight) { handleDeathAnimation(); }
 }
 function handleFlap() {
@@ -936,16 +1002,11 @@ function handleDeathAnimation() {
   kirbyAngle = MAX_ANGLE;
   player.velocityY = 3.5;
   lastFrameTime = performance.now();
-
-  // SFX
-  sfx_die.volume = sfxSlider.value;
   sfx_die.currentTime = 0; sfx_die.play();
   if (window.navigator.vibrate) window.navigator.vibrate([190,80,90]);
-
-  // Музыку выключаем!
-  music.pause();
-
   animationId = requestAnimationFrame(updateGame);
+  bg_music.pause();
+  bg_music.currentTime = 0;
 }
 function updateDeathFall(dt) {
   player.y += player.velocityY * dt * 60 * 1.1;
@@ -965,9 +1026,9 @@ function showGameOverSequence() {
     newHigh = true;
   }
   updateScoreInDB(newHigh, scoreThisRun);
-  let popupText = You collected <b>${scoreThisRun}</b> coins this run.<br>;
+  let popupText = `You collected <b>${scoreThisRun}</b> coins this run.<br>`;
   if (newHigh) popupText += "<span style='color:#b13df3'>NEW RECORD!</span><br>";
-  popupText += Your best: <b>${highScore}</b>;
+  popupText += `Your best: <b>${highScore}</b>`;
   setTimeout(() => showGameOverPopup(popupText), 500);
 }
 function showGameOverPopup(html) {
@@ -983,73 +1044,22 @@ function endGameAndReturn() {
   }
   gameContainer.style.display = "none";
   gameOverPopup.style.display = "none";
-  coinsDisplay.textContent = Best: ${highScore};
-  yourHighScore.textContent = Best: ${highScore};
+  coinsDisplay.textContent = `Best: ${highScore}`;
+  yourHighScore.textContent = `Best: ${highScore}`;
   updatePlace();
-  mainMenu.style.display = "flex";
-
-  // Показать назад навигацию и кнопку настроек
-  bottomNav.classList.remove('nav-hide');
-  settingsBtn.classList.remove('hide');
-
-  // Остановить музыку, если вдруг не остановилась
-  music.pause();
-  ticksAfterStart = 0;
+  showMainMenu();
+  showBottomNav();
+  bg_music.pause();
+  bg_music.currentTime = 0;
 }
 async function updateScoreInDB(isNewHigh, latestScore) {
-  const userRef = ref(db, users/${userId});
+  const userRef = ref(db, `users/${userId}`);
   let updateData = {};
   if (isNewHigh) updateData.highScore = latestScore;
   await update(userRef, updateData);
-  coinsDisplay.textContent = Best: ${highScore};
-  yourHighScore.textContent = Best: ${highScore};
+  coinsDisplay.textContent = `Best: ${highScore}`;
+  yourHighScore.textContent = `Best: ${highScore}`;
 }
-
-
-// === НАВИГАЦИЯ: Game / About ===
-navGameBtn.onclick = function() {
-  // Всегда возвращаем в главное меню
-  aboutSection.style.display = "none";
-  mainMenu.style.display = "flex";
-  navGameBtn.classList.add("active");
-  navAboutBtn.classList.remove("active");
-};
-navAboutBtn.onclick = function() {
-  mainMenu.style.display = "none";
-  aboutSection.style.display = "flex";
-  navGameBtn.classList.remove("active");
-  navAboutBtn.classList.add("active");
-};
-// Закрыть about через кнопку
-aboutCloseBtn.onclick = function() {
-  aboutSection.style.display = "none";
-  mainMenu.style.display = "flex";
-  navGameBtn.classList.add("active");
-  navAboutBtn.classList.remove("active");
-};
-
-// --- Скрывать навигацию и кнопку настроек во время игры ---
-// (реализовано выше в startGameWithCountdown и endGameAndReturn)
-
-// === КНОПКА НАСТРОЕК и ПАНЕЛЬ ===
-settingsBtn.onclick = () => {
-  settingsPanel.style.display = "flex";
-  setTimeout(()=>{settingsPanel.querySelector('.panel-box').style.transform='scale(1.04)';},50)
-};
-settingsCloseBtn.onclick = () => {
-  settingsPanel.style.display = "none";
-};
-// Настройки громкости
-musicSlider.oninput = () => { music.volume = musicSlider.value; };
-sfxSlider.oninput = () => {
-  sfx_point.volume = sfxSlider.value;
-  sfx_die.volume = sfxSlider.value;
-};
-// При открытии панели — установить ползунки
-settingsPanel.addEventListener("show",()=>{
-  musicSlider.value = music.volume;
-  sfxSlider.value = sfx_point.volume;
-});
 
 </script>
 
