@@ -495,10 +495,50 @@
   </div>
   <div id="preloader"><div class="loader"></div></div>
 <script type="module">
+// --- SOUNDS ---
+const sfx_die = new Audio("sfx_die.mp3");
+const sfx_point = new Audio("sfx_point.mp3");
+sfx_die.preload = sfx_point.preload = "auto";
+sfx_die.volume = 0.8; sfx_point.volume = 0.8;
+
+// --- GAME MUSIC ---
+const music = new Audio("kirby.mp3");
+music.preload = "auto";
+music.loop = true;
+music.volume = 0.85;
+
+// --- Для корректного старта музыки ---
+let musicStarted = false;
+function ensureMusic() {
+  if (musicStarted) return;
+  music.volume = +musicSlider.value;
+  music.loop = true;
+  music.play().catch(()=>{});
+  musicStarted = true;
+}
+
+// --- Слушатель для любого касания/клика/нажатия клавиши ---
+['pointerdown','keydown'].forEach(evt =>
+  window.addEventListener(evt, ensureMusic, { once:true, passive:true })
+);
+
+// --- Firebase 9+ ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
 import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyBsYVTUOqyeneSEPgW81bX_Cmb6DABPiws",
+  authDomain: "kirby-fly.firebaseapp.com",
+  databaseURL: "https://kirby-fly-default-rtdb.firebaseio.com",
+  projectId: "kirby-fly",
+  storageBucket: "kirby-fly.firebasestorage.app",
+  messagingSenderId: "100130749805",
+  appId: "1:100130749805:web:4466d63dc2654fec172e64",
+  measurementId: "G-1HNHYTGNYG"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-// ====================== DOM ======================
+// DOM Elements
 const mainMenu = document.getElementById("mainMenu");
 const userPhoto = document.getElementById("userPhoto");
 const userName = document.getElementById("userName");
@@ -521,6 +561,7 @@ const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
 const countdownOverlay = document.getElementById("countdownOverlay");
 const gameHudCoins = document.getElementById("gameHudCoins");
 const preloader = document.getElementById("preloader");
+// --- NEW:
 const bottomNav = document.getElementById("bottomNav");
 const navGameBtn = document.getElementById("navGameBtn");
 const navAboutBtn = document.getElementById("navAboutBtn");
@@ -532,93 +573,22 @@ const settingsCloseBtn = document.getElementById("settingsCloseBtn");
 const musicSlider = document.getElementById("musicSlider");
 const sfxSlider = document.getElementById("sfxSlider");
 
-// ====================== SOUNDS ======================
-const sfx_die   = new Audio("sfx_die.mp3");
-const sfx_point = new Audio("sfx_point.mp3");
-[sfx_die, sfx_point].forEach(a => {
-  a.preload = "auto";
-  a.volume  = 0.8;
-  a.crossOrigin = "anonymous";
-  a.playsInline = true;
-});
-
-// --- Background Music (audio tag for safety)
-const music = document.createElement("audio");
-music.src         = "kirby.mp3";
-music.loop        = true;
-music.preload     = "auto";
-music.crossOrigin = "anonymous";
-music.playsInline = true;
-music.volume      = 0.85;
-document.body.appendChild(music);
-
-// --- Music Start Logic ---
-let musicStarted = false;
-function startMusic() {
-  if (musicStarted) return;
-  music.volume = +musicSlider.value;
-  music.play().catch(()=>{});
-  musicStarted = true;
-}
-["click", "touchstart", "keydown"].forEach(evt =>
-  document.addEventListener(evt, startMusic, {once:true,passive:true})
-);
-startGameBtn.addEventListener("click", startMusic, {once:true});
-
-// --- Volume logic
-musicSlider.oninput = () => { music.volume = +musicSlider.value; };
-sfxSlider.oninput = () => {
-  sfx_point.volume = +sfxSlider.value;
-  sfx_die.volume = +sfxSlider.value;
-};
-function playPointSfx() {
-  sfx_point.currentTime = 0;
-  sfx_point.volume = +sfxSlider.value;
-  sfx_point.play();
-}
-function playDieSfx() {
-  sfx_die.currentTime = 0;
-  sfx_die.volume = +sfxSlider.value;
-  sfx_die.play();
-}
-
-// =================== FIREBASE ====================
-const firebaseConfig = {
-  apiKey: "AIzaSyBsYVTUOqyeneSEPgW81bX_Cmb6DABPiws",
-  authDomain: "kirby-fly.firebaseapp.com",
-  databaseURL: "https://kirby-fly-default-rtdb.firebaseio.com",
-  projectId: "kirby-fly",
-  storageBucket: "kirby-fly.firebasestorage.app",
-  messagingSenderId: "100130749805",
-  appId: "1:100130749805:web:4466d63dc2654fec172e64",
-  measurementId: "G-1HNHYTGNYG"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// ============= LOADING ASSETS =============
-let loadTotal = 7;
+// --- ПОЛНАЯ ЛОГИКА ПРИВЯЗКИ ---
+let tgUser;
+let userId, highScore = 0;
 let allLoaded = 0;
+let loadTotal = 5;
 let kirbyImgs = [new Image(), new Image()];
 let kirbyEatImg = new Image();
 let enemyImgs = [new Image(), new Image()];
 let coinImg = new Image(), bgImage = new Image();
-
 kirbyImgs[0].src = "k1.png"; kirbyImgs[1].src = "k2.png";
 kirbyEatImg.src = "k3.png";
 enemyImgs[0].src = "e1.png"; enemyImgs[1].src = "e2.png";
 coinImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/c07093d1e8085ba.png";
 bgImage.src = "https://blog.itselectlab.com/wp-content/uploads/background.png";
-
-function assetLoaded() {
-  allLoaded++;
-  if(allLoaded>=loadTotal) showApp();
-}
-[kirbyImgs[0], kirbyImgs[1], kirbyEatImg, enemyImgs[0], enemyImgs[1], coinImg, bgImage].forEach(img => {
-  img.onload = assetLoaded;
-  img.onerror = assetLoaded;
-});
-
+function assetLoaded() { allLoaded++; if(allLoaded>=loadTotal) showApp(); }
+[kirbyImgs[0], kirbyImgs[1], kirbyEatImg, enemyImgs[0], enemyImgs[1]].forEach(img => img.onload = assetLoaded);
 function showApp() { preloader.style.opacity = 0; setTimeout(()=>{preloader.style.display="none";},320); }
 async function finishLoading() {
   tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
@@ -639,7 +609,7 @@ async function loadUser() {
     }
   };
   userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
-  const userRef = ref(db, `users/${userId}`);
+  const userRef = ref(db, users/${userId});
   let snapshot = await get(userRef);
   if (!snapshot.exists()) {
     await set(userRef, {highScore:0,username:tgUser.username||"",photo:tgUser.photo_url||""});
@@ -647,8 +617,8 @@ async function loadUser() {
   } else {
     highScore = snapshot.val().highScore || 0;
   }
-  coinsDisplay.textContent = `Best: ${highScore}`;
-  yourHighScore.textContent = `Best: ${highScore}`;
+  coinsDisplay.textContent = Best: ${highScore};
+  yourHighScore.textContent = Best: ${highScore};
   await updatePlace();
   mainMenu.style.display = "flex";
 }
@@ -661,8 +631,8 @@ async function updatePlace() {
     const usersArray = Object.entries(data).map(([id, u]) => ({id,highScore:u.highScore||0}));
     usersArray.sort((a, b) => b.highScore - a.highScore);
     const place = usersArray.findIndex(x => x.id === userId) + 1;
-    if (place > 0) yourPlace.textContent = `Rank: ${place} of ${usersArray.length}`;
-    else yourPlace.textContent = `Rank: —`;
+    if (place > 0) yourPlace.textContent = Rank: ${place} of ${usersArray.length};
+    else yourPlace.textContent = Rank: —;
   }
 }
 startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGameWithCountdown(); };
@@ -676,7 +646,7 @@ async function loadLeaderboard() {
   const snapshot = await get(usersRef);
   if (snapshot.exists()) {
     const data = snapshot.val();
-    const usersArray = Object.entries(data).map(([id, u]) => ({username:u.username?`@${u.username}`:"User "+id,highScore:u.highScore||0,}));
+    const usersArray = Object.entries(data).map(([id, u]) => ({username:u.username?@${u.username}:"User "+id,highScore:u.highScore||0,}));
     usersArray.sort((a, b) => b.highScore - a.highScore);
     usersArray.forEach((user, idx) => {
       const tr = document.createElement("tr");
@@ -684,13 +654,13 @@ async function loadLeaderboard() {
       if(idx === 0) topStyle = "font-weight:900;color:#a934db;background:linear-gradient(90deg,#ffd2fb 50%,#e6d7ff 100%)";
       else if(idx === 1) topStyle = "font-weight:800;color:#5351d9;background:linear-gradient(90deg,#f9e6ff 50%,#cde7f7 100%)";
       else if(idx === 2) topStyle = "font-weight:800;color:#ffb300;background:linear-gradient(90deg,#f3ebfd 50%,#fceabb 100%)";
-      tr.innerHTML = `<td style="${topStyle}">${user.username}</td><td style="${topStyle}">${user.highScore}</td>`;
+      tr.innerHTML = <td style="${topStyle}">${user.username}</td><td style="${topStyle}">${user.highScore}</td>;
       leaderboardBody.appendChild(tr);
     });
   }
 }
 
-// ================= G A M E  L O G I C ===================
+// --- GAME LOGIC ... (оставляй без изменений) ---
 let BASE_GRAVITY = 0.23;
 let BASE_LIFT = -4.6;
 let BASE_SCROLL = 2.16;
@@ -717,9 +687,10 @@ const MIN_ANGLE = -27;
 const MAX_ANGLE = 78;
 const ANGLE_RETURN_SPEED = 8;
 
+// Анимация для k3 (кушает монету)
 let kirbyEatAnimation = false;
 let kirbyEatTimer = 0;
-const KIRBY_EAT_DURATION = 220;
+const KIRBY_EAT_DURATION = 220; // мс (0.22 сек)
 
 let enemyAnimFrame = 0;
 let enemyAnimLastTime = performance.now();
@@ -766,8 +737,11 @@ function startGameWithCountdown() {
   countdownOverlay.style.display = "flex";
   countdownOverlay.textContent = countdown;
 
+  // --- Hide navigation and settings while playing ---
   bottomNav.classList.add('nav-hide');
   settingsBtn.classList.add('hide');
+
+  // (ВНИМАНИЕ! Музыка теперь уже играет постоянно, НЕ перезапускайте music.play() тут)
 
   let cdInt = setInterval(() => {
     countdown--;
@@ -785,6 +759,7 @@ function startGameWithCountdown() {
 }
 let slowStartFrame = 0, ticksAfterStart = 0;
 
+// --- ONLY ONE INPUT PER FLAP ---
 let inputLock = false;
 function startGameCore() {
   isGameRunning = true;
@@ -966,8 +941,13 @@ function handleDeathAnimation() {
   kirbyAngle = MAX_ANGLE;
   player.velocityY = 3.5;
   lastFrameTime = performance.now();
+
+  // SFX
   playDieSfx();
   if (window.navigator.vibrate) window.navigator.vibrate([190,80,90]);
+
+  // Музыку НЕ останавливаем! (music.pause() удалён)
+
   animationId = requestAnimationFrame(updateGame);
 }
 function updateDeathFall(dt) {
@@ -988,9 +968,9 @@ function showGameOverSequence() {
     newHigh = true;
   }
   updateScoreInDB(newHigh, scoreThisRun);
-  let popupText = `You collected <b>${scoreThisRun}</b> coins this run.<br>`;
+  let popupText = You collected <b>${scoreThisRun}</b> coins this run.<br>;
   if (newHigh) popupText += "<span style='color:#b13df3'>NEW RECORD!</span><br>";
-  popupText += `Your best: <b>${highScore}</b>`;
+  popupText += Your best: <b>${highScore}</b>;
   setTimeout(() => showGameOverPopup(popupText), 500);
 }
 function showGameOverPopup(html) {
@@ -1006,21 +986,25 @@ function endGameAndReturn() {
   }
   gameContainer.style.display = "none";
   gameOverPopup.style.display = "none";
-  coinsDisplay.textContent = `Best: ${highScore}`;
-  yourHighScore.textContent = `Best: ${highScore}`;
+  coinsDisplay.textContent = Best: ${highScore};
+  yourHighScore.textContent = Best: ${highScore};
   updatePlace();
   mainMenu.style.display = "flex";
+
+  // Показать назад навигацию и кнопку настроек
   bottomNav.classList.remove('nav-hide');
   settingsBtn.classList.remove('hide');
+
+  // Музыку НЕ останавливаем! (music.pause() удалён)
   ticksAfterStart = 0;
 }
 async function updateScoreInDB(isNewHigh, latestScore) {
-  const userRef = ref(db, `users/${userId}`);
+  const userRef = ref(db, users/${userId});
   let updateData = {};
   if (isNewHigh) updateData.highScore = latestScore;
   await update(userRef, updateData);
-  coinsDisplay.textContent = `Best: ${highScore}`;
-  yourHighScore.textContent = `Best: ${highScore}`;
+  coinsDisplay.textContent = Best: ${highScore};
+  yourHighScore.textContent = Best: ${highScore};
 }
 
 // === НАВИГАЦИЯ: Game / About ===
@@ -1045,6 +1029,7 @@ aboutCloseBtn.onclick = function() {
 
 // === КНОПКА НАСТРОЕК и ПАНЕЛЬ ===
 settingsBtn.onclick = () => {
+  // Синхронизация значений при открытии панели
   musicSlider.value = music.volume;
   sfxSlider.value = sfx_point.volume;
   settingsPanel.style.display = "flex";
@@ -1053,9 +1038,28 @@ settingsBtn.onclick = () => {
 settingsCloseBtn.onclick = () => {
   settingsPanel.style.display = "none";
 };
+musicSlider.oninput = () => {
+  music.volume = +musicSlider.value;
+};
+sfxSlider.oninput = () => {
+  sfx_point.volume = +sfxSlider.value;
+  sfx_die.volume = +sfxSlider.value;
+};
 
+// --- Обновлённые функции воспроизведения SFX ---
+function playPointSfx() {
+  sfx_point.currentTime = 0;
+  sfx_point.volume = +sfxSlider.value;
+  sfx_point.play();
+}
+function playDieSfx() {
+  sfx_die.currentTime = 0;
+  sfx_die.volume = +sfxSlider.value;
+  sfx_die.play();
+}
 
 </script>
+
 </body>
 </html>
 
