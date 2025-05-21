@@ -499,7 +499,7 @@
 const sfx_die = new Audio("sfx_die.mp3");
 const sfx_point = new Audio("sfx_point.mp3");
 sfx_die.preload = sfx_point.preload = "auto";
-sfx_die.volume = 0.7; sfx_point.volume = 0.9;
+sfx_die.volume = 0.8; sfx_point.volume = 0.8;
 
 // --- GAME MUSIC ---
 const music = new Audio("kirby.mp3");
@@ -528,7 +528,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// DOM Elements (твои старые + новые)
+// DOM Elements
 const mainMenu = document.getElementById("mainMenu");
 const userPhoto = document.getElementById("userPhoto");
 const userName = document.getElementById("userName");
@@ -551,7 +551,6 @@ const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
 const countdownOverlay = document.getElementById("countdownOverlay");
 const gameHudCoins = document.getElementById("gameHudCoins");
 const preloader = document.getElementById("preloader");
-// --- NEW:
 const bottomNav = document.getElementById("bottomNav");
 const navGameBtn = document.getElementById("navGameBtn");
 const navAboutBtn = document.getElementById("navAboutBtn");
@@ -563,8 +562,19 @@ const settingsCloseBtn = document.getElementById("settingsCloseBtn");
 const musicSlider = document.getElementById("musicSlider");
 const sfxSlider = document.getElementById("sfxSlider");
 
-// --- ПОЛНАЯ ЛОГИКА ПРИВЯЗКИ ---
-// --- Прелоад и старый код ---
+// --- AUTOPLAY FIX FOR BROWSERS/TELEGRAM ---
+let musicStarted = false;
+function ensureMusic () {
+  if (musicStarted) return;
+  music.volume = +musicSlider.value;
+  music.loop = true;
+  music.play().catch(() => {});
+  musicStarted = true;
+}
+document.addEventListener('pointerdown', ensureMusic, { once:true, passive:true });
+document.addEventListener('keydown', ensureMusic, { once:true, passive:true }); // на всякий случай
+
+// --- PRELOAD + OLD LOGIC ---
 let tgUser;
 let userId, highScore = 0;
 let allLoaded = 0;
@@ -651,9 +661,7 @@ async function loadLeaderboard() {
   }
 }
 
-// --- GAME LOGIC ... (оставляй без изменений) ---
-// -------- CANVAS GAME --------
-// ... весь твой игровой движок ниже не меняется до функций завершения игры и возвращения меню ...
+// --- GAME LOGIC ---
 let BASE_GRAVITY = 0.23;
 let BASE_LIFT = -4.6;
 let BASE_SCROLL = 2.16;
@@ -680,10 +688,9 @@ const MIN_ANGLE = -27;
 const MAX_ANGLE = 78;
 const ANGLE_RETURN_SPEED = 8;
 
-// Анимация для k3 (кушает монету)
 let kirbyEatAnimation = false;
 let kirbyEatTimer = 0;
-const KIRBY_EAT_DURATION = 220; // мс (0.22 сек)
+const KIRBY_EAT_DURATION = 220;
 
 let enemyAnimFrame = 0;
 let enemyAnimLastTime = performance.now();
@@ -734,8 +741,8 @@ function startGameWithCountdown() {
   bottomNav.classList.add('nav-hide');
   settingsBtn.classList.add('hide');
 
-  // Start music
-  try { music.currentTime = 0; music.play(); } catch(e){}
+  // Music ALWAYS plays
+  ensureMusic();
 
   let cdInt = setInterval(() => {
     countdown--;
@@ -753,7 +760,6 @@ function startGameWithCountdown() {
 }
 let slowStartFrame = 0, ticksAfterStart = 0;
 
-// --- ONLY ONE INPUT PER FLAP ---
 let inputLock = false;
 function startGameCore() {
   isGameRunning = true;
@@ -842,8 +848,7 @@ function updateGame(now = performance.now()) {
           kirbyEatAnimation = true;
           kirbyEatTimer = performance.now();
           if (scoreThisRun % 5 === 0) {
-            sfx_point.volume = sfxSlider.value;
-            sfx_point.currentTime = 0; sfx_point.play();
+            playPointSfx();
           }
           if (scoreThisRun % 10 === 0) {
             BASE_SCROLL *= DIFFICULTY_SPEEDUP;
@@ -937,13 +942,11 @@ function handleDeathAnimation() {
   player.velocityY = 3.5;
   lastFrameTime = performance.now();
 
-  // SFX
-  sfx_die.volume = sfxSlider.value;
-  sfx_die.currentTime = 0; sfx_die.play();
+  playDieSfx();
+
   if (window.navigator.vibrate) window.navigator.vibrate([190,80,90]);
 
-  // Музыку выключаем!
-  music.pause();
+  // Музыку больше не ставим на паузу!
 
   animationId = requestAnimationFrame(updateGame);
 }
@@ -992,8 +995,7 @@ function endGameAndReturn() {
   bottomNav.classList.remove('nav-hide');
   settingsBtn.classList.remove('hide');
 
-  // Остановить музыку, если вдруг не остановилась
-  music.pause();
+  // Музыка не останавливается!
   ticksAfterStart = 0;
 }
 async function updateScoreInDB(isNewHigh, latestScore) {
@@ -1005,10 +1007,8 @@ async function updateScoreInDB(isNewHigh, latestScore) {
   yourHighScore.textContent = `Best: ${highScore}`;
 }
 
-
 // === НАВИГАЦИЯ: Game / About ===
 navGameBtn.onclick = function() {
-  // Всегда возвращаем в главное меню
   aboutSection.style.display = "none";
   mainMenu.style.display = "flex";
   navGameBtn.classList.add("active");
@@ -1020,7 +1020,6 @@ navAboutBtn.onclick = function() {
   navGameBtn.classList.remove("active");
   navAboutBtn.classList.add("active");
 };
-// Закрыть about через кнопку
 aboutCloseBtn.onclick = function() {
   aboutSection.style.display = "none";
   mainMenu.style.display = "flex";
@@ -1028,28 +1027,38 @@ aboutCloseBtn.onclick = function() {
   navAboutBtn.classList.remove("active");
 };
 
-// --- Скрывать навигацию и кнопку настроек во время игры ---
-// (реализовано выше в startGameWithCountdown и endGameAndReturn)
-
 // === КНОПКА НАСТРОЕК и ПАНЕЛЬ ===
 settingsBtn.onclick = () => {
+  // всегда подтягиваем актуальные значения!
+  musicSlider.value = music.volume;
+  sfxSlider.value = sfx_point.volume;
   settingsPanel.style.display = "flex";
   setTimeout(()=>{settingsPanel.querySelector('.panel-box').style.transform='scale(1.04)';},50)
 };
 settingsCloseBtn.onclick = () => {
   settingsPanel.style.display = "none";
 };
-// Настройки громкости
-musicSlider.oninput = () => { music.volume = musicSlider.value; };
-sfxSlider.oninput = () => {
-  sfx_point.volume = sfxSlider.value;
-  sfx_die.volume = sfxSlider.value;
+musicSlider.oninput = () => {
+  const v = +musicSlider.value;
+  music.volume = v;
 };
-// При открытии панели — установить ползунки
-settingsPanel.addEventListener("show",()=>{
-  musicSlider.value = music.volume;
-  sfxSlider.value = sfx_point.volume;
-});
+sfxSlider.oninput = () => {
+  const v = +sfxSlider.value;
+  sfx_point.volume = v;
+  sfx_die.volume = v;
+};
+
+// SFX as functions, always use latest volume
+function playPointSfx () {
+  sfx_point.volume = +sfxSlider.value;
+  sfx_point.currentTime = 0;
+  sfx_point.play();
+}
+function playDieSfx () {
+  sfx_die.volume = +sfxSlider.value;
+  sfx_die.currentTime = 0;
+  sfx_die.play();
+}
 
 </script>
 </body>
