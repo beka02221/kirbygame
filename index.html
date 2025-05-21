@@ -7,309 +7,81 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Nunito:800,700,600,400|Poppins:600,400&display=swap" rel="stylesheet">
   <style>
-  
-html, body {
-  margin:0; padding:0; width:100vw; height:100vh;
-  font-family:'Nunito','Poppins','Open Sans',sans-serif;
-  background: radial-gradient(ellipse at 70% 20%, #fff4fa 0%, #ffe4ff 32%, #d0bfff 90%, #98c6ff 100%);
-  /* Динамический неоновый блик */
-  background-attachment: fixed;
-  overflow:hidden; user-select:none;
-}
-body:before {
-  content: "";
-  position: fixed;
-  z-index: 0;
-  left: 0; right: 0; top: 0; bottom: 0;
-  background: radial-gradient(circle at 80% 10%, #ffc3fe88 0%, #a3d8fa22 45%, #d0bfff11 100%);
-  pointer-events: none;
-}
-#preloader {
-  position:fixed;top:0;left:0;width:100vw;height:100vh;
-  background:linear-gradient(120deg,#e6e6fa 0%,#fce1fc 100%);
-  display:flex;align-items:center;justify-content:center;z-index:2000;
-  transition:opacity .3s;
-}
-.loader {
-  border: 10px solid #e0d4fe;
-  border-top: 10px solid #a98be7;
-  border-radius: 50%;
-  width: 72px; height: 72px;
-  animation: spin 1s linear infinite;
-  box-shadow: 0 2px 32px #d1b6e799, 0 0px 110px 10px #ffd6f7aa;
-}
-@keyframes spin { 100% { transform: rotate(360deg);} }
-#mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup, #partnersContainer, #settingsContainer {
-  width:100vw;height:100vh;display:none;position:fixed;top:0;left:0;
-  flex-direction:column;align-items:center;justify-content:flex-start;
-  background:linear-gradient(120deg,#f8f8ff 0%,#eceaff 50%,#f9f4ff 100%);
-  overflow-y:auto;
-  padding-top:44px!important;
-  z-index:1;
-}
-.menu-inner {
-  margin-top:48px !important;
-  width:100%;max-width:460px;
-  display:flex;flex-direction:column;align-items:center;
-  position:relative;z-index:2;
-}
-.tooltip {
-  margin-bottom:28px;
-  background:rgba(255,255,255,0.72);
-  color:#7e47a8;
-  font-size:1.19em;padding:13px 32px;
-  border-radius:26px;
-  box-shadow:0 10px 34px #b8d8fa24,0 2px 14px #c1b1f8a8;
-  letter-spacing:.04em;
-  transition:background 0.3s;
-  max-width:95vw;text-align:center;
-  font-weight:600;
-}
-.user-header {
-  display:flex;flex-direction:column;align-items:center;
-  margin-bottom:22px;gap:8px;
-  background:rgba(255,255,255,0.67);
-  border-radius:22px;
-  box-shadow:0 4px 26px #c8a2c866,0 4px 50px #c38cf5a8;
-  padding:25px 38px 17px 38px;
-}
-.user-header img {
-  width:84px;height:84px;
-  border-radius:50%;
-  border:4px solid #fff;
-  box-shadow:0 4px 24px 0 #a2d2ff61, 0 0 26px #edb1f7a2;
-  background:#fff;margin-bottom:7px;object-fit:cover;
-}
-.user-header span {
-  font-size:1.17em;color:#4b3570;font-weight:800;
-  text-shadow:0 2px 6px #f5e5ffd7;
-  max-width:210px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;letter-spacing:.02em;
-}
-.user-meta {
-  display:flex;flex-direction:row;gap:13px;margin-bottom:18px;align-items:center;width:100%;justify-content:center;
-}
-.user-meta div {
-  font-size:1.07em;color:#44335b;background:linear-gradient(90deg,#fbe8ff 0,#e5fff7 100%);
-  border-radius:17px;padding:7px 23px;margin:2px 0;
-  box-shadow:0 2px 10px #a2d2ff18;
-  min-width:90px;text-align:center;font-weight:700;
-  border:1.5px solid #efd1fa77;
-}
-#coinsDisplay {
-  color:#fff;
-  background:linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);
-  font-size:1.21em;font-weight:900;
-  margin-bottom:21px;padding:10px 34px;
-  border-radius:32px;box-shadow:0 4px 18px #e4c2fa23, 0 1.5px 8px #efd6f7a8;
-  text-shadow:0 2px 5px #c7d2ffb7, 0 0 20px #a6f0eaa5;
-  border:2.5px solid #fff;letter-spacing:.05em;display:inline-block;
-}
-
-.main-btn {
-  margin:17px 0 0 0;padding:18px 44px;font-size:1.17em;
-  background:linear-gradient(91deg,#ffe1f6 0%,#b6eaff 100%);
-  border:none;border-radius:34px;box-shadow:0 5px 22px #e6cfff3a,0 1px 1px #fff;
-  cursor:pointer;font-weight:800;color:#493a66;
-  transition:box-shadow 0.14s,background 0.17s,transform 0.17s;
-  display:block;letter-spacing:.03em;
-  position:relative;z-index:2;
-}
-.main-btn:hover {
-  background:linear-gradient(89deg,#ffc0cb 10%,#a2d2ff 100%);
-  transform:scale(1.06);box-shadow:0 9px 36px #c8a2c844;
-}
-.main-btn:active {transform:scale(0.96);}
-#leaderboardBackBtn, #infoBackBtn, #partnersBackBtn, #settingsBackBtn {
-  position:absolute;top:19px;left:20px;padding:11px 30px;
-  background:linear-gradient(90deg,#f8daea 0%,#d1eaff 100%);
-  border:none;border-radius:25px;font-size:1.04em;
-  font-weight:700;color:#4e3888;cursor:pointer;box-shadow:0 2.5px 10px #e0bffa44;
-  z-index:99;transition:background 0.21s,box-shadow 0.13s;
-}
-#leaderboardBackBtn:hover, #infoBackBtn:hover, #partnersBackBtn:hover, #settingsBackBtn:hover {
-  background:linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);color:#fff;
-  box-shadow:0 6px 22px #e2c6fe70;
-}
-#infoContainer p {
-  font-size:1.14em;color:#493A64;
-  background:rgba(255,255,255,0.73);
-  border-radius:16px;
-  padding:16px 18px;
-  margin-top:0;
-  box-shadow:0 4px 18px #c2d3fc17;
-}
-#gameOverPopup {
-  z-index:999;display:none;align-items:center;justify-content:center;
-  background:rgba(60,30,80,0.46);animation:fadeIn 0.23s;
-}
-.popup-box {
-  background:linear-gradient(120deg,#fff 63%,#ffe3fa 100%);
-  border-radius:38px;padding:40px 38px 32px 38px;min-width:260px;
-  box-shadow:0 10px 36px #e3caff66, 0 0 140px #ffcafc1a;
-  display:flex;flex-direction:column;align-items:center;gap:21px;
-  margin:0;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-}
-.popup-box h2 {
-  margin:0 0 10px 0;
-  color:#b351e7;
-  font-size:1.39em;
-  letter-spacing:.01em;
-  text-shadow:0 2px 8px #ffe6fd55;
-}
-.popup-box p {color:#47366b;font-size:1.13em;margin:0;}
-.popup-box button {
-  margin-top:8px;padding:16px 36px;
-  background:linear-gradient(90deg,#f7c8e0 0,#b6eaff 100%);
-  border-radius:22px;border:none;color:#44335b;font-weight:800;
-  font-size:1.13em;box-shadow:0 2px 15px #a2d2ff2a;cursor:pointer;
-  transition:background 0.13s;
-  display:block;
-}
-.popup-box button#gameOverCloseBtn {display:block;}
-#countdownOverlay {
-  display:none;position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:222;
-  align-items:center;justify-content:center;
-  background:rgba(248,245,255,0.78);
-  font-size:3em;color:#b351e7;font-weight:900;font-family:'Nunito',sans-serif;letter-spacing:.08em;
-  text-shadow:0 2px 16px #fff,0 1px 20px #ea97fc55;
-}
-#leaderboardContainer .menu-inner {width:98%;max-width:500px;}
-#leaderboardBody tr {transition:background 0.17s;}
-#leaderboardBody tr:nth-child(odd) {background:#f8e7fd72;}
-#leaderboardBody tr:hover {background:#c186fd41;}
-#leaderboardContainer table {
-  width:100%;border-radius:21px;box-shadow:0 2px 18px #e9c3ff5b;
-  overflow:hidden;margin-top:20px;font-size:1.19em;background:#fff7;
-  border-collapse:separate;border-spacing:0 8px;
-}
-#leaderboardContainer th, #leaderboardContainer td {
-  padding:17px 0;text-align:center;color:#68318d;border-bottom:2px solid #e8c8fd;
-  font-weight:900;letter-spacing:.02em;
-  background:linear-gradient(90deg,#f4d7ff 0,#e7d5fd 100%);
-}
-#leaderboardContainer th {background:linear-gradient(90deg,#e7cbfa 0,#fbe1fd 100%);}
-#leaderboardContainer td {font-weight:700;}
-
-#partnersContainer .menu-inner {
-  margin-top: 40px !important;
-  width: 100%; max-width: 520px;
-  gap: 0;
-}
-#partnersContainer h2 {
-  color: #a367f9;
-  font-size: 1.3em;
-  margin: 2px 0 22px 0;
-  text-shadow: 0 2px 18px #f5e5ffd7, 0 0 10px #d2c6ff44;
-  font-weight:900;
-}
-#partnersContainer > .menu-inner > div {
-  margin-bottom: 32px;
-  width: 100%;
-}
-#partnersContainer .about-card {
-  background: linear-gradient(120deg, #f7f3ff 70%, #e7d7ff 100%);
-  border-radius: 25px;
-  box-shadow: 0 6px 32px #c3a1f529, 0 0px 42px 6px #edb1f722;
-  padding: 18px 24px 18px 20px;
-  display: flex; align-items: center; gap: 18px;
-  margin-bottom: 22px; min-height: 74px; position:relative;
-  border: 2px solid #ecd3fb59;
-  transition: box-shadow 0.16s;
-}
-#partnersContainer .about-card:hover {
-  box-shadow: 0 8px 45px #be79fd44, 0 2px 24px #f4c2ff3a;
-}
-#partnersContainer .about-card img {
-  width: 56px; height: 56px; border-radius: 18px;
-  box-shadow: 0 4px 14px #a2d2ff34, 0 0 8px #edb1f744;
-  background: #fff;
-}
-#partnersContainer .about-card .about-info {
-  display: flex; flex-direction: column;
-}
-#partnersContainer .about-card .about-title {
-  font-size: 1.18em; font-weight: 900; color: #9e64d7; margin-bottom: 2px;
-  letter-spacing: .02em;
-}
-#partnersContainer .about-card .about-sub {
-  font-size: 1.06em; color: #594980; font-weight: 600;
-  margin-bottom: 1px;
-}
-#partnersContainer .about-card .about-link {
-  color: #9869e9;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1em;
-  margin-top: 4px;
-}
-#partnersContainer .about-card .about-link:hover { color: #ff88e4; }
-#partnersSettingsBtn {
-  position:fixed; bottom:19px; left:50%; transform:translateX(-50%);
-  min-width:150px; z-index:9991;
-  padding:15px 44px; border-radius:32px;
-  background:linear-gradient(90deg,#ffe9f7 0,#e6eaff 100%);
-  color:#8753b6; font-weight:800; border:none;
-  box-shadow:0 3px 18px #d4bcff3b;
-  font-size:1.11em;transition:background 0.14s,box-shadow 0.14s;
-  cursor:pointer;letter-spacing:.04em;
-}
-#partnersSettingsBtn:active {
-  background:linear-gradient(90deg,#c7d7f9 0,#ffd2e8 100%);
-  box-shadow:0 5px 22px #f0c8ff33;
-}
-#settingsContainer .slider-group {
-  margin:28px 0 0 0;display:flex;flex-direction:column;gap:28px;width:100%;align-items:center;
-}
-.slider-label {
-  font-size:1.17em;color:#8342bb;font-weight:800;margin-bottom:3px;
-}
-.slider-wrap {display:flex;align-items:center;gap:13px;}
-.slider-wrap input[type=range] {
-  width:180px; accent-color:#ad7cf6;
-}
-.slider-value {font-weight:800;color:#7252c4;font-size:1.13em;}
-.settings-title {
-  color:#7c46a3;text-align:center;margin:22px 0 18px 0;
-  font-size:1.32em;font-weight:900;letter-spacing:.04em;
-}
-#bottomNav {
-  position:fixed;
-  left:0; right:0; bottom:44px;
-  width:100vw; display:flex;justify-content:center;align-items:center;
-  z-index:9000; gap:18vw; pointer-events:auto;
-}
-.nav-btn {
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  border:none;background:rgba(255,255,255,0.97);
-  border-radius:27px;box-shadow:0 5px 18px #a2d2ff32;
-  padding:14px 28px;margin:0 9px;min-width:88px;min-height:58px;cursor:pointer;
-  transition:box-shadow 0.17s,background 0.14s,transform 0.13s;
-  font-size:1.09em;font-weight:900;color:#a76ff5;letter-spacing:.04em;
-}
-.nav-btn.active, .nav-btn:hover {
-  background:linear-gradient(90deg,#ffe7ff 0,#d7eaff 100%);
-  color:#7b28ce; box-shadow:0 6px 22px #c8a2c842;
-  transform:scale(1.03);
-}
-.nav-btn .nav-icon {
-  font-size:1.53em;margin-bottom:3px;text-shadow:0 2px 7px #ffd8fb55;
-}
-@media (max-width:600px){
-  .main-btn,#leaderboardBackBtn,#infoBackBtn,#partnersBackBtn,#settingsBackBtn,
-  .popup-box button,#partnersSettingsBtn{font-size:1em;padding:10px 10vw;}
-  .user-header img{width:62px;height:62px;}
-  .popup-box{padding:22px 8vw;}
-  #gameHudCoins{font-size:1.2em;padding:7px 6vw;}
-  #leaderboardContainer .menu-inner {margin-top:40px;}
-  .nav-btn{min-width:65px;padding:7px 8px;}
-}
-@media (max-width:390px){
-  #coinsDisplay{font-size:0.92em;padding:6px 7vw;}
-  .user-meta div{font-size:0.92em;}
-  .user-header{padding:10px 4vw;}
-  #gameHudCoins{font-size:1.1em;padding:7px 2vw;}
-  #leaderboardContainer table{font-size:0.98em;}
-}
+    html, body { margin:0; padding:0; width:100vw; height:100vh; font-family:'Nunito','Poppins','Open Sans',sans-serif; background:#f7f4ff; overflow:hidden; user-select:none;}
+    #preloader {
+      position:fixed;top:0;left:0;width:100vw;height:100vh;background:#eee;
+      display:flex;align-items:center;justify-content:center;z-index:2000;
+      transition:opacity .3s;
+    }
+    .loader {
+      border: 10px solid #e0d4fe; border-top: 10px solid #a98be7; border-radius: 50%;
+      width: 72px; height: 72px; animation: spin 1s linear infinite;
+      box-shadow: 0 2px 22px #d1b6e799;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg);} }
+    #mainMenu, #leaderboardContainer, #infoContainer, #gameOverPopup {
+      width:100vw;height:100vh;display:none;position:fixed;top:0;left:0;
+      flex-direction:column;align-items:center;justify-content:flex-start;
+      background:linear-gradient(120deg,#a2d2ff 0%,#ffe7f3 100%);
+      overflow-y:auto;padding-top:20px!important;
+    }
+    #mainMenu .menu-inner,
+    #leaderboardContainer .menu-inner,
+    #infoContainer .menu-inner,
+    #gameOverPopup .menu-inner {
+      margin-top:100px;width:100%;display:flex;flex-direction:column;align-items:center;
+    }
+    #gameContainer {width:100vw;height:100vh;display:none;position:fixed;top:0;left:0;background:#fff;z-index:20;overflow:hidden;}
+    #gameHudCoins {position:absolute;top:70px;left:50%;transform:translateX(-50%);font-size:2em;font-weight:900;color:#fff;background:linear-gradient(90deg,#b07cff 0,#ffb5d1 100%);padding:10px 32px;border-radius:28px;box-shadow:0 6px 28px #c2a4ff22;text-shadow:0 2px 6px #a2d2ffb2;border:2px solid #fff;pointer-events:none;z-index:110;letter-spacing:.02em;font-family:'Nunito','Poppins',sans-serif;transition:background 0.28s;user-select:none;}
+    .tooltip {margin-bottom:22px;background:#fff4;color:#7e47a8;font-size:1.13em;padding:9px 22px;border-radius:20px;box-shadow:0 8px 22px #b8d8fa36;letter-spacing:.03em;transition:background 0.3s;max-width:90vw;text-align:center;}
+    .user-header {display:flex;flex-direction:column;align-items:center;margin-bottom:20px;gap:6px;background:rgba(255,255,255,0.63);border-radius:18px;box-shadow:0 4px 16px #c8a2c866;padding:18px 32px 15px 32px;}
+    .user-header img {width:72px;height:72px;border-radius:50%;border:3.5px solid #fff;box-shadow:0 4px 24px 0 #a2d2ff61;background:#fff;margin-bottom:3px;object-fit:cover;}
+    .user-header span {font-size:1.14em;color:#4b3570;font-weight:700;text-shadow:0 2px 4px #eee;max-width:200px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;letter-spacing:.01em;}
+    .user-meta {display:flex;flex-direction:row;gap:10px;margin-bottom:18px;align-items:center;width:100%;justify-content:center;}
+    .user-meta div {font-size:1.01em;color:#44335b;background:#fff9;border-radius:13px;padding:5px 18px;margin:2px 0;box-shadow:0 2px 8px #a2d2ff1a;min-width:90px;text-align:center;font-weight:600;}
+    #coinsDisplay {color:#fff;background:linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);font-size:1.12em;font-weight:700;margin-bottom:16px;padding:8px 24px;border-radius:30px;box-shadow:0 3px 12px #c2a4ff1a;text-shadow:0 2px 2px #fff9;border:2px solid #fff;letter-spacing:.04em;display:inline-block;}
+    .main-btn {margin:14px 0 0 0;padding:15px 36px;font-size:1.15em;background:linear-gradient(90deg,#f7c8e0 0%,#b6eaff 100%);border:none;border-radius:29px;box-shadow:0 3px 16px #a2d2ff4d,0 1px 1px #fff;cursor:pointer;font-weight:700;color:#493a66;transition:0.16s;display:block;}
+    .main-btn:hover {background:linear-gradient(90deg,#ffc0cb 10%,#a2d2ff 100%);transform:scale(1.06);}
+    .main-btn:active {transform:scale(0.96);}
+    #leaderboardBackBtn, #infoBackBtn {position:absolute;top:100px;left:24px;padding:11px 30px;background:linear-gradient(90deg,#f8daea 0%,#d1eaff 100%);border:none;border-radius:22px;font-size:1.04em;font-weight:700;color:#4e3888;cursor:pointer;box-shadow:0 3px 0 #c8a2c8,0 2px 8px #ffdbf933;z-index:99;transition:background 0.22s;}
+    #leaderboardBackBtn:hover, #infoBackBtn:hover {background:linear-gradient(90deg,#c186fd 0,#ffb5d1 100%);color:#fff;}
+    #infoContainer p {font-size:1.10em;color:#493A64;background:#fff7;border-radius:12px;padding:10px 14px;margin-top:0;}
+    #gameOverPopup {z-index:999;display:none;align-items:center;justify-content:center;background:rgba(60,30,80,0.42);animation:fadeIn 0.23s;}
+    .popup-box {background:linear-gradient(120deg,#fff 63%,#ffe3fa 100%);border-radius:32px;padding:34px 36px 28px 36px;min-width:240px;box-shadow:0 8px 30px #e3caff88;display:flex;flex-direction:column;align-items:center;gap:18px;/**/margin:0;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);}
+    .popup-box h2 {margin:0 0 8px 0;color:#9857d3;font-size:1.23em;}
+    .popup-box p {color:#47366b;font-size:1.07em;margin:0;}
+    .popup-box button {margin-top:5px;padding:13px 32px;background:linear-gradient(90deg,#f7c8e0 0,#b6eaff 100%);border-radius:20px;border:none;color:#44335b;font-weight:700;font-size:1.09em;box-shadow:0 2px 12px #a2d2ff3b;cursor:pointer;transition:background 0.14s;display:block;}
+    .popup-box button#gameOverCloseBtn {display:block;}
+    #countdownOverlay {display:none;position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:222;align-items:center;justify-content:center;background:rgba(248,245,255,0.78);font-size:3em;color:#9857d3;font-weight:900;font-family:'Nunito',sans-serif;letter-spacing:.08em;text-shadow:0 2px 12px #fff;}
+    #leaderboardContainer .menu-inner {width:95%;max-width:440px;}
+    #leaderboardBody tr {transition:background 0.17s;}
+    #leaderboardBody tr:nth-child(odd) {background:#f8e7fd70;}
+    #leaderboardBody tr:hover {background:#c186fd33;}
+    #leaderboardContainer table {
+      width:100%;border-radius:19px;box-shadow:0 2px 16px #e9c3ff5b;
+      overflow:hidden;margin-top:15px;font-size:1.12em;background:#fff8;
+      border-collapse:separate;border-spacing:0 6px;
+    }
+    #leaderboardContainer th, #leaderboardContainer td {
+      padding:14px 0;text-align:center;color:#68318d;border-bottom:1.5px solid #e8c8fd;
+      font-weight:700;letter-spacing:.02em;
+    }
+    #leaderboardContainer th {background:linear-gradient(90deg,#e7cbfa 0,#fbe1fd 100%);}
+    #leaderboardContainer td {font-weight:600;}
+    @media (max-width:600px){
+      .main-btn,#leaderboardBackBtn,#infoBackBtn,.popup-box button{font-size:0.97em;padding:11px 12px;}
+      .user-header img{width:60px;height:60px;}
+      .popup-box{padding:22px 10vw;}
+      #gameHudCoins{font-size:1.3em;padding:7px 10vw;}
+      #leaderboardContainer .menu-inner {margin-top:75px;}
+    }
+    @media (max-width:390px){
+      #coinsDisplay{font-size:0.94em;padding:7px 10px;}
+      .user-meta div{font-size:0.92em;}
+      .user-header{padding:10px 7vw;}
+      #gameHudCoins{font-size:1.12em;padding:7px 4vw;}
+      #leaderboardContainer table{font-size:0.98em;}
+    }
   </style>
 </head>
 <body>
@@ -366,64 +138,6 @@ body:before {
       </p>
     </div>
   </div>
-  <!-- Partners / About -->
-  <div id="partnersContainer" style="display:none;">
-    <div class="menu-inner">
-      <button id="partnersBackBtn" class="main-btn" style="position:absolute;">Back</button>
-      <h2 style="color:#a367f9;text-align:center;margin:5px 0 10px 0;">About & Partners</h2>
-     <div style="margin-bottom:32px;max-width:480px;width:100%;">
-  <div class="about-card">
-    <img src="https://bigkirby.com/favicon.ico" width="40" height="40">
-    <div class="about-info">
-      <span class="about-title">BIGKIRBY</span>
-      <span class="about-sub">Main project & inspiration for this game.<br>
-        <a class="about-link" href="https://t.me/bigkirby" target="_blank">Telegram Channel</a>
-      </span>
-    </div>
-  </div>
-  <div class="about-card">
-    <img src="https://cdn4.iconfinder.com/data/icons/social-media-icons-the-circle-set/48/telegram_circle-512.png" width="40" height="40">
-    <div class="about-info">
-      <span class="about-title" style="color:#52b6c4;">ONTON</span>
-      <span class="about-sub">Launched on their platform. Winners receive SBT.<br>
-        <a class="about-link" href="https://t.me/ontonlive" style="color:#4091c9;" target="_blank">@ontonlive</a>
-      </span>
-    </div>
-  </div>
-  <div class="about-card">
-    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" width="40" height="40">
-    <div class="about-info">
-      <span class="about-title" style="color:#7c46a3;">Developer</span>
-      <span class="about-sub">@galaxyton — Creator and developer of the game</span>
-    </div>
-  </div>
-</div>
-    </div>
-    <button id="partnersSettingsBtn">Settings</button>
-  </div>
-  <!-- Settings -->
-  <div id="settingsContainer" style="display:none;">
-    <div class="menu-inner">
-      <button id="settingsBackBtn" class="main-btn" style="position:absolute;">Back</button>
-      <div class="settings-title">Settings</div>
-      <div class="slider-group">
-        <div>
-          <div class="slider-label">Music Volume</div>
-          <div class="slider-wrap">
-            <input type="range" min="0" max="100" id="musicVolumeSlider">
-            <span class="slider-value" id="musicVolumeValue">100</span>
-          </div>
-        </div>
-        <div>
-          <div class="slider-label">SFX Volume</div>
-          <div class="slider-wrap">
-            <input type="range" min="0" max="100" id="sfxVolumeSlider">
-            <span class="slider-value" id="sfxVolumeValue">90</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
   <!-- Game Over Popup -->
   <div id="gameOverPopup">
     <div class="menu-inner">
@@ -434,42 +148,12 @@ body:before {
       </div>
     </div>
   </div>
-  <!-- Navigation -->
-  <div id="bottomNav">
-    <button id="navGameBtn" class="nav-btn active">
-      <span class="nav-icon">🎮</span>
-      Game
-    </button>
-    <button id="navPartnersBtn" class="nav-btn">
-      <span class="nav-icon">🤝</span>
-      Partners
-    </button>
-  </div>
 <script type="module">
 // --- SOUNDS ---
 const sfx_die = new Audio("sfx_die.mp3");
 const sfx_point = new Audio("sfx_point.mp3");
-const bg_music = new Audio("game1.wav");
-sfx_die.preload = sfx_point.preload = bg_music.preload = "auto";
+sfx_die.preload = sfx_point.preload = "auto";
 sfx_die.volume = 0.7; sfx_point.volume = 0.9;
-bg_music.loop = true;
-bg_music.volume = 1.0;
-
-function setMusicVolume(v) { bg_music.volume = v; }
-function setSfxVolume(v) { sfx_die.volume = v; sfx_point.volume = v; }
-
-// --- Volume persistent ---
-function saveVolume() {
-  localStorage.setItem("kirby_game_music", bg_music.volume);
-  localStorage.setItem("kirby_game_sfx", sfx_point.volume);
-}
-function loadVolume() {
-  let m = +localStorage.getItem("kirby_game_music");
-  let s = +localStorage.getItem("kirby_game_sfx");
-  if (!isNaN(m)) setMusicVolume(m);
-  if (!isNaN(s)) setSfxVolume(s);
-}
-loadVolume();
 
 // Telegram WebApp
 const tg = window.Telegram.WebApp;
@@ -515,29 +199,18 @@ const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
 const countdownOverlay = document.getElementById("countdownOverlay");
 const gameHudCoins = document.getElementById("gameHudCoins");
 const preloader = document.getElementById("preloader");
-const bottomNav = document.getElementById("bottomNav");
-const navGameBtn = document.getElementById("navGameBtn");
-const navPartnersBtn = document.getElementById("navPartnersBtn");
-const partnersContainer = document.getElementById("partnersContainer");
-const partnersBackBtn = document.getElementById("partnersBackBtn");
-const partnersSettingsBtn = document.getElementById("partnersSettingsBtn");
-const settingsContainer = document.getElementById("settingsContainer");
-const settingsBackBtn = document.getElementById("settingsBackBtn");
-const musicVolumeSlider = document.getElementById("musicVolumeSlider");
-const sfxVolumeSlider = document.getElementById("sfxVolumeSlider");
-const musicVolumeValue = document.getElementById("musicVolumeValue");
-const sfxVolumeValue = document.getElementById("sfxVolumeValue");
-
+// User
 let tgUser;
 let userId, highScore = 0;
 let allLoaded = 0;
-let loadTotal = 5;
+let loadTotal = 5; // увеличили на 1 для k3
+// Preload images
 let kirbyImgs = [new Image(), new Image()];
-let kirbyEatImg = new Image();
+let kirbyEatImg = new Image(); // <--- новый спрайт k3
 let enemyImgs = [new Image(), new Image()];
 let coinImg = new Image(), bgImage = new Image();
 kirbyImgs[0].src = "k1.png"; kirbyImgs[1].src = "k2.png";
-kirbyEatImg.src = "k3.png";
+kirbyEatImg.src = "k3.png"; // <--- путь к новому спрайту
 enemyImgs[0].src = "e1.png"; enemyImgs[1].src = "e2.png";
 coinImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/c07093d1e8085ba.png";
 bgImage.src = "https://blog.itselectlab.com/wp-content/uploads/background.png";
@@ -591,7 +264,7 @@ async function updatePlace() {
     else yourPlace.textContent = `Rank: —`;
   }
 }
-startGameBtn.onclick = () => { hideBottomNav(); mainMenu.style.display = "none"; startGameWithCountdown(); };
+startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGameWithCountdown(); };
 leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; loadLeaderboard(); };
 infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "flex"; };
 leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
@@ -615,61 +288,6 @@ async function loadLeaderboard() {
     });
   }
 }
-
-// -------- Navigation (bottomNav) --------
-function showMainMenu() {
-  mainMenu.style.display = "flex";
-  partnersContainer.style.display = "none";
-  bottomNav.style.display = "flex";
-  navGameBtn.classList.add("active");
-  navPartnersBtn.classList.remove("active");
-}
-function showPartners() {
-  partnersContainer.style.display = "flex";
-  mainMenu.style.display = "none";
-  leaderboardContainer.style.display = "none";
-  infoContainer.style.display = "none";
-  settingsContainer.style.display = "none";
-  bottomNav.style.display = "flex";
-  navPartnersBtn.classList.add("active");
-  navGameBtn.classList.remove("active");
-}
-navGameBtn.onclick = showMainMenu;
-navPartnersBtn.onclick = showPartners;
-partnersBackBtn.onclick = showMainMenu;
-partnersSettingsBtn.onclick = function() {
-  partnersContainer.style.display = "none";
-  settingsContainer.style.display = "flex";
-  bottomNav.style.display = "none";
-};
-settingsBackBtn.onclick = function() {
-  settingsContainer.style.display = "none";
-  partnersContainer.style.display = "flex";
-  bottomNav.style.display = "flex";
-};
-function hideBottomNav() { bottomNav.style.display = "none"; }
-function showBottomNav() { bottomNav.style.display = "flex"; }
-startGameBtn.onclick = () => { hideBottomNav(); mainMenu.style.display = "none"; startGameWithCountdown(); };
-
-// --- SETTINGS ---
-function updateVolumeSliders() {
-  musicVolumeSlider.value = Math.round(bg_music.volume*100);
-  sfxVolumeSlider.value = Math.round(sfx_point.volume*100);
-  musicVolumeValue.textContent = musicVolumeSlider.value;
-  sfxVolumeValue.textContent = sfxVolumeSlider.value;
-}
-musicVolumeSlider.oninput = function() {
-  setMusicVolume(musicVolumeSlider.value/100);
-  musicVolumeValue.textContent = musicVolumeSlider.value;
-  saveVolume();
-  if(bg_music.paused && bg_music.volume>0) bg_music.play().catch(()=>{});
-};
-sfxVolumeSlider.oninput = function() {
-  setSfxVolume(sfxVolumeSlider.value/100);
-  sfxVolumeValue.textContent = sfxVolumeSlider.value;
-  saveVolume();
-};
-updateVolumeSliders();
 
 // -------- CANVAS GAME --------
 let BASE_GRAVITY = 0.23;
@@ -698,9 +316,10 @@ const MIN_ANGLE = -27;
 const MAX_ANGLE = 78;
 const ANGLE_RETURN_SPEED = 8;
 
+// Анимация для k3 (кушает монету)
 let kirbyEatAnimation = false;
 let kirbyEatTimer = 0;
-const KIRBY_EAT_DURATION = 220;
+const KIRBY_EAT_DURATION = 220; // мс (0.22 сек)
 
 let enemyAnimFrame = 0;
 let enemyAnimLastTime = performance.now();
@@ -746,7 +365,6 @@ function startGameWithCountdown() {
   let countdown = 3;
   countdownOverlay.style.display = "flex";
   countdownOverlay.textContent = countdown;
-  setTimeout(()=>{if(bg_music.volume>0) bg_music.play().catch(()=>{});},300);
   let cdInt = setInterval(() => {
     countdown--;
     if (countdown === 0) {
@@ -763,6 +381,7 @@ function startGameWithCountdown() {
 }
 let slowStartFrame = 0, ticksAfterStart = 0;
 
+// --- ONLY ONE INPUT PER FLAP ---
 let inputLock = false;
 function startGameCore() {
   isGameRunning = true;
@@ -774,7 +393,6 @@ function startGameCore() {
   gameCanvas.addEventListener("mousedown", onMouse, { passive: false });
   lastFrameTime = performance.now();
   animationId = requestAnimationFrame(updateGame);
-  hideBottomNav();
 }
 function stopInputListeners() {
   document.removeEventListener("keydown", onKeyDown);
@@ -852,12 +470,15 @@ function updateGame(now = performance.now()) {
           scoreThisRun++;
           coins[i].collected = true;
 
+          // --- Анимация: сменить на k3 ---
           kirbyEatAnimation = true;
           kirbyEatTimer = performance.now();
 
+          // Каждый 5-й монета звук (5,10,15...)
           if (scoreThisRun % 5 === 0) {
             sfx_point.currentTime = 0; sfx_point.play();
           }
+          // Каждые 10 монет — увеличение сложности!
           if (scoreThisRun % 10 === 0) {
             BASE_SCROLL *= DIFFICULTY_SPEEDUP;
             BASE_GRAVITY *= DIFFICULTY_SPEEDUP;
@@ -874,12 +495,14 @@ function updateGame(now = performance.now()) {
   }
   if (deathFall) updateDeathFall(dt);
 
+  // Проверяем — если была анимация поедания монеты, сколько времени прошло
   if (kirbyEatAnimation && (performance.now() - kirbyEatTimer > KIRBY_EAT_DURATION)) {
     kirbyEatAnimation = false;
   }
 }
 
 function drawPlayer() {
+  // Если сейчас "анимация поедания монеты" — рисуем k3.png
   let img = kirbyEatAnimation ? kirbyEatImg : kirbyImgs[kirbyCurrentFrame];
   ctx.save();
   ctx.translate(player.x + player.width/2, player.y + player.height/2);
@@ -956,8 +579,6 @@ function handleDeathAnimation() {
   sfx_die.currentTime = 0; sfx_die.play();
   if (window.navigator.vibrate) window.navigator.vibrate([190,80,90]);
   animationId = requestAnimationFrame(updateGame);
-  bg_music.pause();
-  bg_music.currentTime = 0;
 }
 function updateDeathFall(dt) {
   player.y += player.velocityY * dt * 60 * 1.1;
@@ -998,10 +619,8 @@ function endGameAndReturn() {
   coinsDisplay.textContent = `Best: ${highScore}`;
   yourHighScore.textContent = `Best: ${highScore}`;
   updatePlace();
-  showMainMenu();
-  showBottomNav();
-  bg_music.pause();
-  bg_music.currentTime = 0;
+  mainMenu.style.display = "flex";
+  ticksAfterStart = 0;
 }
 async function updateScoreInDB(isNewHigh, latestScore) {
   const userRef = ref(db, `users/${userId}`);
@@ -1012,7 +631,6 @@ async function updateScoreInDB(isNewHigh, latestScore) {
   yourHighScore.textContent = `Best: ${highScore}`;
 }
 </script>
+
 </body>
 </html>
-
-
