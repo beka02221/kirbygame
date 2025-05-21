@@ -495,55 +495,10 @@
   </div>
   <div id="preloader"><div class="loader"></div></div>
 <script type="module">
-// ====================== S O U N D S ======================
-const sfx_die   = new Audio("sfx_die.mp3");
-const sfx_point = new Audio("sfx_point.mp3");
-[sfx_die, sfx_point].forEach(a => {
-  a.preload = "auto";
-  a.volume  = 0.8;
-  a.crossOrigin = "anonymous";
-  a.playsInline = true;
-});
-
-// --- Background Music: отдельный тег <audio> для надёжности!
-const music = document.createElement("audio");
-music.src         = "kirby.mp3";
-music.loop        = true;
-music.preload     = "auto";
-music.crossOrigin = "anonymous";
-music.playsInline = true;
-music.volume      = 0.85;
-document.body.appendChild(music);
-
-let musicStarted = false;
-function startMusic() {
-  if (musicStarted) return;
-  music.volume = +musicSlider.value;
-  music.play().catch(()=>{});
-  musicStarted = true;
-}
-["click", "touchstart", "keydown"].forEach(evt =>
-  document.addEventListener(evt, startMusic, {once:true,passive:true})
-);
-startGameBtn.addEventListener("click", startMusic, {once:true});
-
-// =================== F I R E B A S E ====================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
 import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
-const firebaseConfig = {
-  apiKey: "AIzaSyBsYVTUOqyeneSEPgW81bX_Cmb6DABPiws",
-  authDomain: "kirby-fly.firebaseapp.com",
-  databaseURL: "https://kirby-fly-default-rtdb.firebaseio.com",
-  projectId: "kirby-fly",
-  storageBucket: "kirby-fly.firebasestorage.app",
-  messagingSenderId: "100130749805",
-  appId: "1:100130749805:web:4466d63dc2654fec172e64",
-  measurementId: "G-1HNHYTGNYG"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
 
-// ========== D O M  Э Л Е М Е Н Т Ы ===========
+// ====================== DOM ======================
 const mainMenu = document.getElementById("mainMenu");
 const userPhoto = document.getElementById("userPhoto");
 const userName = document.getElementById("userName");
@@ -577,7 +532,71 @@ const settingsCloseBtn = document.getElementById("settingsCloseBtn");
 const musicSlider = document.getElementById("musicSlider");
 const sfxSlider = document.getElementById("sfxSlider");
 
-// ============= LOADING ASSETS (fixed!) =============
+// ====================== SOUNDS ======================
+const sfx_die   = new Audio("sfx_die.mp3");
+const sfx_point = new Audio("sfx_point.mp3");
+[sfx_die, sfx_point].forEach(a => {
+  a.preload = "auto";
+  a.volume  = 0.8;
+  a.crossOrigin = "anonymous";
+  a.playsInline = true;
+});
+
+// --- Background Music (audio tag for safety)
+const music = document.createElement("audio");
+music.src         = "kirby.mp3";
+music.loop        = true;
+music.preload     = "auto";
+music.crossOrigin = "anonymous";
+music.playsInline = true;
+music.volume      = 0.85;
+document.body.appendChild(music);
+
+// --- Music Start Logic ---
+let musicStarted = false;
+function startMusic() {
+  if (musicStarted) return;
+  music.volume = +musicSlider.value;
+  music.play().catch(()=>{});
+  musicStarted = true;
+}
+["click", "touchstart", "keydown"].forEach(evt =>
+  document.addEventListener(evt, startMusic, {once:true,passive:true})
+);
+startGameBtn.addEventListener("click", startMusic, {once:true});
+
+// --- Volume logic
+musicSlider.oninput = () => { music.volume = +musicSlider.value; };
+sfxSlider.oninput = () => {
+  sfx_point.volume = +sfxSlider.value;
+  sfx_die.volume = +sfxSlider.value;
+};
+function playPointSfx() {
+  sfx_point.currentTime = 0;
+  sfx_point.volume = +sfxSlider.value;
+  sfx_point.play();
+}
+function playDieSfx() {
+  sfx_die.currentTime = 0;
+  sfx_die.volume = +sfxSlider.value;
+  sfx_die.play();
+}
+
+// =================== FIREBASE ====================
+const firebaseConfig = {
+  apiKey: "AIzaSyBsYVTUOqyeneSEPgW81bX_Cmb6DABPiws",
+  authDomain: "kirby-fly.firebaseapp.com",
+  databaseURL: "https://kirby-fly-default-rtdb.firebaseio.com",
+  projectId: "kirby-fly",
+  storageBucket: "kirby-fly.firebasestorage.app",
+  messagingSenderId: "100130749805",
+  appId: "1:100130749805:web:4466d63dc2654fec172e64",
+  measurementId: "G-1HNHYTGNYG"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ============= LOADING ASSETS =============
 let loadTotal = 7;
 let allLoaded = 0;
 let kirbyImgs = [new Image(), new Image()];
@@ -595,10 +614,9 @@ function assetLoaded() {
   allLoaded++;
   if(allLoaded>=loadTotal) showApp();
 }
-// !!! Новый способ: учитываем ВСЕ ассеты!
 [kirbyImgs[0], kirbyImgs[1], kirbyEatImg, enemyImgs[0], enemyImgs[1], coinImg, bgImage].forEach(img => {
   img.onload = assetLoaded;
-  img.onerror = assetLoaded; // если ошибка - всё равно считаем!
+  img.onerror = assetLoaded;
 });
 
 function showApp() { preloader.style.opacity = 0; setTimeout(()=>{preloader.style.display="none";},320); }
@@ -670,23 +688,6 @@ async function loadLeaderboard() {
       leaderboardBody.appendChild(tr);
     });
   }
-}
-
-// === ГРОМКОСТЬ ===
-musicSlider.oninput = () => { music.volume = +musicSlider.value; };
-sfxSlider.oninput = () => {
-  sfx_point.volume = +sfxSlider.value;
-  sfx_die.volume = +sfxSlider.value;
-};
-function playPointSfx() {
-  sfx_point.currentTime = 0;
-  sfx_point.volume = +sfxSlider.value;
-  sfx_point.play();
-}
-function playDieSfx() {
-  sfx_die.currentTime = 0;
-  sfx_die.volume = +sfxSlider.value;
-  sfx_die.play();
 }
 
 // ================= G A M E  L O G I C ===================
