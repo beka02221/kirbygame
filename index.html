@@ -6,148 +6,152 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Nunito:800,700,600,400|Poppins:600,400&display=swap" rel="stylesheet">
+  <!-- Иконки для навигации и About -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
     html, body { margin:0; padding:0; width:100vw; height:100vh; font-family:'Nunito','Poppins','Open Sans',sans-serif; background:#f7f4ff; overflow:hidden; user-select:none;}
+    /* ... оставляем твои стили без изменений ... */
 
-    /* --- Навигация и нижняя панель --- */
+    /* --- НАВИГАЦИОННАЯ ПАНЕЛЬ --- */
     #bottomNav {
-      position:fixed;left:0;right:0;
-      bottom:40px; /* 40px выше низа */
-      display:flex;justify-content:center;gap:40px;z-index:2001;
-      pointer-events:auto;
-      transition:opacity .23s;
+      position:fixed;
+      left:0; right:0;
+      bottom:40px;
+      display:flex;
+      justify-content:center;
+      gap:26px;
+      z-index:1200;
+      pointer-events:none;
+      transition:opacity 0.25s;
     }
     .nav-btn {
-      background:linear-gradient(120deg,#e9c3ff 0%,#a7d6ff 100%);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      background:linear-gradient(90deg,#e0d4fe 0,#ffe7f3 100%);
       border:none;
-      border-radius:25px;
-      box-shadow:0 4px 18px #c7b6e7a1;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      padding:8px 24px 7px 24px;
-      font-size:1.09em;
-      color:#743fb8;
+      border-radius:26px;
+      box-shadow:0 4px 16px #c8a2c866;
+      color:#7c46a3;
+      font-size:1.01em;
       font-weight:700;
-      min-width:80px;
+      padding:8px 28px 8px 28px;
       cursor:pointer;
-      transition:transform .12s, background .2s;
-      gap:4px;
-      letter-spacing:0.03em;
+      transition:0.14s;
+      min-width:84px;
+      pointer-events:auto;
     }
-    .nav-btn:active {transform:scale(0.94);}
-    .nav-btn.selected, .nav-btn:hover {
-      background:linear-gradient(120deg,#a894f8 0%,#e0c5fc 100%);
-      color:#d44ee2;
-      box-shadow:0 6px 20px #cfa7e7e9;
+    .nav-btn i {
+      font-size:1.6em;
+      margin-bottom:3px;
     }
-    .nav-btn .fa-solid {font-size:1.4em;}
-    /* Настройки — отдельная кнопка снизу */
-    #settingsFab {
-      position:fixed;left:50%;transform:translateX(-50%);
-      bottom:105px; /* 40+65px */
-      z-index:2002;
-      background:linear-gradient(110deg,#a29bfe 10%,#e0c3fc 95%);
-      color:#6937aa;
-      border:none;
-      border-radius:22px;
-      padding:13px 26px 11px 26px;
-      font-size:1.13em;
-      font-weight:800;
-      display:flex;align-items:center;gap:13px;
-      box-shadow:0 8px 28px #c2a4ff2a,0 2px 12px #ffe5f430;
-      transition:background .17s, transform .13s;
-      cursor:pointer;
+    .nav-btn.active, .nav-btn:hover {
+      background:linear-gradient(90deg,#b07cff 0,#ffb5d1 100%);
+      color:#fff;
     }
-    #settingsFab:active {transform:scale(0.96);}
-    #settingsFab .fa-solid {font-size:1.25em;}
-    @media(max-width:440px){
-      #bottomNav{gap:12vw;}
-      .nav-btn{min-width:64px;font-size:.98em;padding:7px 10vw 6px 10vw;}
-      #settingsFab{padding:11px 12vw 9px 12vw;}
+
+    /* --- СЕКЦИЯ ABOUT --- */
+    #aboutSection {
+      display:none; flex-direction:column; align-items:center; justify-content:flex-start;
+      position:fixed;top:0;left:0;width:100vw;height:100vh;
+      background:linear-gradient(120deg,#ffe7f3 0,#a2d2ff 100%);
+      z-index:1100; overflow-y:auto; padding-top:42px;
     }
-    /* Панель настроек */
-    #settingsPanel {
-      position:fixed;bottom:0;left:0;right:0;
-      background:linear-gradient(120deg,#fff 60%,#ffe7fa 100%);
-      box-shadow:0 -6px 40px #b99ef230;
-      z-index:2100;
-      border-radius:24px 24px 0 0;
-      display:none;flex-direction:column;align-items:center;gap:16px;
-      padding:36px 24px 26px 24px;
-      animation:fadeIn .23s;
+    #aboutSection h2 {
+      color:#7c46a3; margin:8px 0 25px 0; font-size:2em;
     }
-    #settingsPanel h3 {
-      color:#a842e0;font-size:1.22em;margin-bottom:0;
-      margin-top:0;text-align:center;font-weight:900;letter-spacing:.03em;
-    }
-    .settings-row {display:flex;align-items:center;gap:15px;width:100%;max-width:380px;justify-content:space-between;}
-    .settings-row label{font-size:1.11em;color:#633a9a;font-weight:700;}
-    .settings-slider{width:130px;}
-    #closeSettingsBtn {
-      margin-top:8px;
-      background:linear-gradient(90deg,#e9c3ff 0,#a2d2ff 100%);
-      color:#743fb8;border:none;border-radius:18px;
-      padding:8px 30px;font-weight:800;cursor:pointer;
-      box-shadow:0 2px 8px #c2a4ff27;
-      font-size:1.09em;
-      transition:background .13s, color .12s;
-    }
-    #closeSettingsBtn:active {color:#c13ee5;background:linear-gradient(90deg,#a2d2ff 0,#e9c3ff 100%);}
-    /* --- ABOUT Section --- */
-    #aboutContainer {
-      display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
-      z-index:1200;
-      background:linear-gradient(120deg,#f8eaff 0,#e4f4ff 100%);
-      flex-direction:column;align-items:center;overflow-y:auto;padding-top:32px;
-      animation:fadeIn .21s;
-    }
-    .about-inner {margin-top:36px;width:100vw;display:flex;flex-direction:column;align-items:center;gap:20px;}
+    .about-cards { display:flex; flex-direction:column; gap:22px; align-items:center;}
     .about-card {
-      background:linear-gradient(110deg,#fff 60%,#ffe7fa 100%);
-      box-shadow:0 8px 22px #a2d2ff25,0 2px 7px #ffe6fa22;
-      border-radius:25px;
-      padding:25px 38px 21px 38px;
-      min-width:260px;max-width:92vw;
-      display:flex;flex-direction:row;align-items:center;gap:18px;
-      margin-bottom:0;
+      background:linear-gradient(120deg,#fff 65%,#f5e7fa 100%);
+      border-radius:26px;
+      box-shadow:0 4px 20px #c2a4ff22;
+      min-width:260px; max-width:92vw;
+      display:flex; flex-direction:row; align-items:center;
+      gap:20px; padding:18px 30px;
+      transition:box-shadow 0.15s,transform 0.15s;
+      text-decoration:none; color:inherit;
     }
-    .about-card .about-icon{
-      width:55px;height:55px;min-width:55px;
-      background:linear-gradient(110deg,#e2c3fc 10%,#a6e1fa 100%);
-      border-radius:50%;display:flex;align-items:center;justify-content:center;
-      font-size:2.1em;color:#924be2;box-shadow:0 4px 16px #f0d6ff38;
+    .about-card:hover {
+      box-shadow:0 8px 36px #c2a4ff55;
+      transform:scale(1.035);
     }
-    .about-card .about-main{
-      display:flex;flex-direction:column;gap:6px;align-items:flex-start;
+    .about-card .icon {
+      width:54px;height:54px;display:flex;align-items:center;justify-content:center;
+      font-size:2.2em; color:#b07cff; background:#fff; border-radius:50%;
+      box-shadow:0 2px 14px #c8a2c866; margin-right:5px; flex-shrink:0;
     }
-    .about-card .about-title{
-      font-size:1.12em;font-weight:800;color:#7d3fd8;margin-bottom:2px;letter-spacing:.03em;
-    }
-    .about-card .about-desc{
-      font-size:1.05em;color:#492b8e;font-weight:600;
-      letter-spacing:0.01em;
-    }
-    .about-card a, .about-card a:visited {color:#723fff;text-decoration:underline;}
-    #aboutCloseBtn {
-      position:absolute;top:25px;right:22px;
+    .about-card .desc {display:flex;flex-direction:column;}
+    .about-card .desc .title {font-size:1.18em;font-weight:800; color:#7c46a3; margin-bottom:2px;}
+    .about-card .desc .text {font-size:1.03em; color:#493A64;}
+    .about-card .desc .link {color:#7c46a3;font-weight:700;text-decoration:underline;}
+    .about-close-btn {
+      margin-top:38px;
+      padding:13px 32px;
       background:linear-gradient(90deg,#f7c8e0 0,#b6eaff 100%);
-      border:none;border-radius:20px;font-size:1.11em;
-      padding:8px 23px;color:#44335b;font-weight:800;cursor:pointer;
-      box-shadow:0 3px 14px #a2d2ff29;
-      transition:background .14s;
-      z-index:1201;
+      border-radius:20px;border:none;
+      color:#44335b;font-weight:700;
+      font-size:1.09em;box-shadow:0 2px 12px #a2d2ff3b;
+      cursor:pointer;transition:background 0.14s;
+      display:block;
     }
-    #aboutCloseBtn:active {background:linear-gradient(90deg,#a2d2ff 0,#f7c8e0 100%);}
-    @media(max-width:460px){
-      .about-card{padding:14px 8vw 12px 8vw;min-width:0;}
-      .about-card .about-icon{width:45px;height:45px;min-width:45px;font-size:1.37em;}
+
+    /* --- НАСТРОЙКИ --- */
+    #settingsBtn {
+      position:fixed;
+      left:50%; transform:translateX(-50%);
+      bottom:95px;
+      z-index:1300;
+      background:linear-gradient(90deg,#f7c8e0 0,#b6eaff 100%);
+      border:none;
+      border-radius:50px;
+      box-shadow:0 4px 16px #c8a2c866;
+      color:#7c46a3;
+      font-size:1.12em;
+      font-weight:700;
+      padding:10px 38px 10px 38px;
+      display:flex; align-items:center; gap:10px;
+      cursor:pointer;
+      transition:0.16s;
     }
-    /* Анимация появления */
-    @keyframes fadeIn{0%{opacity:0;}100%{opacity:1;}}
+    #settingsBtn i { font-size:1.45em; }
+    #settingsBtn.hide {display:none;}
+
+    #settingsPanel {
+      display:none;flex-direction:column;align-items:center;justify-content:center;
+      position:fixed;left:0;top:0;width:100vw;height:100vh;
+      background:rgba(230,225,255,0.92);z-index:2000;
+      animation:fadeIn 0.23s;
+    }
+    #settingsPanel .panel-box {
+      background:linear-gradient(120deg,#fff 65%,#ffe3fa 100%);
+      border-radius:28px;box-shadow:0 6px 30px #e3caff88;
+      padding:36px 38px 30px 38px;min-width:220px;
+      display:flex;flex-direction:column;align-items:center;gap:19px;
+    }
+    #settingsPanel .panel-box h2 {margin:0 0 12px 0;color:#7c46a3;}
+    .slider-group {display:flex;flex-direction:row;align-items:center;gap:16px;}
+    .slider-label {font-size:1.08em;min-width:64px;color:#493a64;}
+    .slider {width:128px;}
+    #settingsCloseBtn {
+      margin-top:10px;
+      padding:11px 28px;background:linear-gradient(90deg,#f7c8e0 0,#b6eaff 100%);
+      border-radius:20px;border:none;
+      color:#44335b;font-weight:700;
+      font-size:1.01em;box-shadow:0 2px 12px #a2d2ff3b;
+      cursor:pointer;transition:background 0.14s;display:block;
+    }
+
+    /* --- Скрываем навигацию при игре --- */
+    .nav-hide { opacity:0; pointer-events:none !important; }
+    @media (max-width:600px){
+      .about-card{min-width:92vw;padding:11px 12px;}
+      #settingsBtn{font-size:0.98em;padding:9px 16vw;}
+    }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
   </style>
 </head>
 <body>
-  <div id="preloader"><div class="loader"></div></div>
+  <!-- ... Оставляем все твои секции ... -->
   <!-- Main Menu -->
   <div id="mainMenu">
     <div class="menu-inner">
@@ -210,138 +214,75 @@
       </div>
     </div>
   </div>
-  <!-- ABOUT SECTION (NEW) -->
-  <div id="aboutContainer">
-    <button id="aboutCloseBtn">Close</button>
-    <div class="about-inner">
-      <div class="about-card">
-        <div class="about-icon"><i class="fa-solid fa-gamepad"></i></div>
-        <div class="about-main">
-          <span class="about-title">BigKirby Channel</span>
-          <span class="about-desc">Game created for <a href="https://t.me/bigkirby" target="_blank">@BigKirby</a> channel</span>
+  <!-- --- ABOUT SECTION --- -->
+  <div id="aboutSection">
+    <h2>About Game</h2>
+    <div class="about-cards">
+      <a class="about-card" href="https://t.me/bigkirby" target="_blank">
+        <div class="icon" style="background:#ffe1f0;"><i class="fa-solid fa-crown"></i></div>
+        <div class="desc">
+          <div class="title">BigKirby</div>
+          <div class="text">Game created for <span class="link">@bigkirby channel</span></div>
         </div>
-      </div>
-      <div class="about-card">
-        <div class="about-icon"><i class="fa-solid fa-bolt"></i></div>
-        <div class="about-main">
-          <span class="about-title">ONTON Platform</span>
-          <span class="about-desc">
-            Game runs on <a href="https://t.me/ontonlive" target="_blank">@ONTONLive</a> platform,<br>
-            winners get SBT from ONTON
-          </span>
+      </a>
+      <a class="about-card" href="https://t.me/ontonlive" target="_blank">
+        <div class="icon" style="background:#daf5ff;"><i class="fa-solid fa-network-wired"></i></div>
+        <div class="desc">
+          <div class="title">ONTON Platform</div>
+          <div class="text">Game runs on <span class="link">ONTON platform</span>, winners get SBT from ONTON</div>
         </div>
-      </div>
-      <div class="about-card">
-        <div class="about-icon"><i class="fa-solid fa-user-astronaut"></i></div>
-        <div class="about-main">
-          <span class="about-title">Developer</span>
-          <span class="about-desc">
-            Game developed by <a href="https://t.me/galaxyton" target="_blank">@galaxyton</a>
-          </span>
+      </a>
+      <a class="about-card" href="https://t.me/galaxyton" target="_blank">
+        <div class="icon" style="background:#f5eaff;"><i class="fa-solid fa-user-astronaut"></i></div>
+        <div class="desc">
+          <div class="title">Developer</div>
+          <div class="text">Game developed by <span class="link">@galaxyton</span></div>
         </div>
-      </div>
+      </a>
     </div>
+    <button class="about-close-btn" id="aboutCloseBtn">Back</button>
   </div>
-  <!-- SETTINGS PANEL (NEW) -->
-  <div id="settingsPanel">
-    <h3><i class="fa-solid fa-sliders"></i> Game Settings</h3>
-    <div class="settings-row">
-      <label for="musicVolume">Music</label>
-      <input id="musicVolume" class="settings-slider" type="range" min="0" max="1" step="0.01" value="0.7" />
-    </div>
-    <div class="settings-row">
-      <label for="sfxVolume">SFX</label>
-      <input id="sfxVolume" class="settings-slider" type="range" min="0" max="1" step="0.01" value="0.8" />
-    </div>
-    <button id="closeSettingsBtn">Done</button>
-  </div>
-  <!-- NAVIGATION (NEW) -->
+  <!-- --- НАВИГАЦИЯ --- -->
   <div id="bottomNav">
-    <button class="nav-btn" id="navGame"><i class="fa-solid fa-gamepad"></i><span>Game</span></button>
-    <button class="nav-btn" id="navAbout"><i class="fa-solid fa-circle-info"></i><span>About</span></button>
+    <button class="nav-btn active" id="navGameBtn">
+      <i class="fa-solid fa-gamepad"></i>
+      Game
+    </button>
+    <button class="nav-btn" id="navAboutBtn">
+      <i class="fa-solid fa-circle-info"></i>
+      About
+    </button>
   </div>
-  <button id="settingsFab"><i class="fa-solid fa-sliders"></i> Settings</button>
+  <!-- --- КНОПКА НАСТРОЕК --- -->
+  <button id="settingsBtn"><i class="fa-solid fa-sliders"></i>Settings</button>
+  <!-- --- ПАНЕЛЬ НАСТРОЕК --- -->
+  <div id="settingsPanel">
+    <div class="panel-box">
+      <h2>Settings</h2>
+      <div class="slider-group">
+        <span class="slider-label">Music</span>
+        <input type="range" id="musicSlider" class="slider" min="0" max="1" step="0.01" value="0.85">
+      </div>
+      <div class="slider-group">
+        <span class="slider-label">Sounds</span>
+        <input type="range" id="sfxSlider" class="slider" min="0" max="1" step="0.01" value="0.8">
+      </div>
+      <button id="settingsCloseBtn">Close</button>
+    </div>
+  </div>
+  <div id="preloader"><div class="loader"></div></div>
 <script type="module">
 // --- SOUNDS ---
 const sfx_die = new Audio("sfx_die.mp3");
 const sfx_point = new Audio("sfx_point.mp3");
+sfx_die.preload = sfx_point.preload = "auto";
+sfx_die.volume = 0.7; sfx_point.volume = 0.9;
+
+// --- GAME MUSIC ---
 const music = new Audio("game1.wav");
-sfx_die.preload = sfx_point.preload = music.preload = "auto";
-sfx_die.volume = 0.8; sfx_point.volume = 0.8; music.volume = 0.7;
-music.loop = true; // зацикливаем музыку
-
-// --- Панель настроек ---
-const settingsFab = document.getElementById('settingsFab');
-const settingsPanel = document.getElementById('settingsPanel');
-const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-const musicVolume = document.getElementById('musicVolume');
-const sfxVolume = document.getElementById('sfxVolume');
-
-settingsFab.onclick = () => { settingsPanel.style.display='flex'; settingsFab.style.display='none'; };
-closeSettingsBtn.onclick = () => { settingsPanel.style.display='none'; settingsFab.style.display='flex'; };
-// Слайды громкости
-musicVolume.oninput = () => { music.volume = musicVolume.valueAsNumber; };
-sfxVolume.oninput = () => { sfx_die.volume = sfx_point.volume = sfxVolume.valueAsNumber; };
-
-// --- Нижняя навигация ---
-const bottomNav = document.getElementById('bottomNav');
-const navGame = document.getElementById('navGame');
-const navAbout = document.getElementById('navAbout');
-const aboutContainer = document.getElementById('aboutContainer');
-const aboutCloseBtn = document.getElementById('aboutCloseBtn');
-function showNav(selected='game') {
-  bottomNav.style.display = 'flex';
-  settingsFab.style.display = 'flex';
-  navGame.classList.remove('selected'); navAbout.classList.remove('selected');
-  if(selected==='about') navAbout.classList.add('selected');
-  else navGame.classList.add('selected');
-}
-function hideNav() {
-  bottomNav.style.display = 'none';
-  settingsFab.style.display = 'none';
-  settingsPanel.style.display = 'none';
-}
-navGame.onclick = () => {
-  aboutContainer.style.display='none';
-  mainMenu.style.display='flex';
-  showNav('game');
-}
-navAbout.onclick = () => {
-  mainMenu.style.display='none';
-  leaderboardContainer.style.display='none';
-  infoContainer.style.display='none';
-  aboutContainer.style.display='flex';
-  showNav('about');
-}
-aboutCloseBtn.onclick = () => {
-  aboutContainer.style.display='none';
-  mainMenu.style.display='flex';
-  showNav('game');
-}
-
-// --- Telegram/Firebase/DOM ---
-const mainMenu = document.getElementById("mainMenu");
-const userPhoto = document.getElementById("userPhoto");
-const userName = document.getElementById("userName");
-const coinsDisplay = document.getElementById("coinsDisplay");
-const startGameBtn = document.getElementById("startGameBtn");
-const leaderboardBtn = document.getElementById("leaderboardBtn");
-const infoBtn = document.getElementById("infoBtn");
-const gameContainer = document.getElementById("gameContainer");
-const gameCanvas = document.getElementById("gameCanvas");
-const leaderboardContainer = document.getElementById("leaderboardContainer");
-const leaderboardBackBtn = document.getElementById("leaderboardBackBtn");
-const leaderboardBody = document.getElementById("leaderboardBody");
-const infoContainer = document.getElementById("infoContainer");
-const infoBackBtn = document.getElementById("infoBackBtn");
-const yourPlace = document.getElementById("yourPlace");
-const yourHighScore = document.getElementById("yourHighScore");
-const gameOverPopup = document.getElementById("gameOverPopup");
-const gameOverText = document.getElementById("gameOverText");
-const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
-const countdownOverlay = document.getElementById("countdownOverlay");
-const gameHudCoins = document.getElementById("gameHudCoins");
-const preloader = document.getElementById("preloader");
+music.preload = "auto";
+music.loop = true;
+music.volume = 0.85;
 
 // Telegram WebApp
 const tg = window.Telegram.WebApp;
@@ -364,27 +305,68 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// --- Открытие/скрытие экранов и навигации ---
-startGameBtn.onclick = () => { mainMenu.style.display = "none"; hideNav(); startGameWithCountdown(); };
-leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; infoContainer.style.display = 'none'; aboutContainer.style.display='none'; showNav('game'); loadLeaderboard(); };
-infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "flex"; aboutContainer.style.display='none'; showNav('game'); };
-leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; showNav('game'); };
-infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; showNav('game'); };
+// DOM Elements (твои старые + новые)
+const mainMenu = document.getElementById("mainMenu");
+const userPhoto = document.getElementById("userPhoto");
+const userName = document.getElementById("userName");
+const coinsDisplay = document.getElementById("coinsDisplay");
+const startGameBtn = document.getElementById("startGameBtn");
+const leaderboardBtn = document.getElementById("leaderboardBtn");
+const infoBtn = document.getElementById("infoBtn");
+const gameContainer = document.getElementById("gameContainer");
+const gameCanvas = document.getElementById("gameCanvas");
+const leaderboardContainer = document.getElementById("leaderboardContainer");
+const leaderboardBackBtn = document.getElementById("leaderboardBackBtn");
+const leaderboardBody = document.getElementById("leaderboardBody");
+const infoContainer = document.getElementById("infoContainer");
+const infoBackBtn = document.getElementById("infoBackBtn");
+const yourPlace = document.getElementById("yourPlace");
+const yourHighScore = document.getElementById("yourHighScore");
+const gameOverPopup = document.getElementById("gameOverPopup");
+const gameOverText = document.getElementById("gameOverText");
+const gameOverCloseBtn = document.getElementById("gameOverCloseBtn");
+const countdownOverlay = document.getElementById("countdownOverlay");
+const gameHudCoins = document.getElementById("gameHudCoins");
+const preloader = document.getElementById("preloader");
+// --- NEW:
+const bottomNav = document.getElementById("bottomNav");
+const navGameBtn = document.getElementById("navGameBtn");
+const navAboutBtn = document.getElementById("navAboutBtn");
+const aboutSection = document.getElementById("aboutSection");
+const aboutCloseBtn = document.getElementById("aboutCloseBtn");
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsPanel = document.getElementById("settingsPanel");
+const settingsCloseBtn = document.getElementById("settingsCloseBtn");
+const musicSlider = document.getElementById("musicSlider");
+const sfxSlider = document.getElementById("sfxSlider");
 
-let tgUser; let userId, highScore = 0; let allLoaded = 0; let loadTotal = 5;
-let kirbyImgs = [new Image(), new Image()]; let kirbyEatImg = new Image();
-let enemyImgs = [new Image(), new Image()]; let coinImg = new Image(), bgImage = new Image();
-kirbyImgs[0].src = "k1.png"; kirbyImgs[1].src = "k2.png"; kirbyEatImg.src = "k3.png";
+// --- ПОЛНАЯ ЛОГИКА ПРИВЯЗКИ ---
+// --- Прелоад и старый код ---
+let tgUser;
+let userId, highScore = 0;
+let allLoaded = 0;
+let loadTotal = 5;
+let kirbyImgs = [new Image(), new Image()];
+let kirbyEatImg = new Image();
+let enemyImgs = [new Image(), new Image()];
+let coinImg = new Image(), bgImage = new Image();
+kirbyImgs[0].src = "k1.png"; kirbyImgs[1].src = "k2.png";
+kirbyEatImg.src = "k3.png";
 enemyImgs[0].src = "e1.png"; enemyImgs[1].src = "e2.png";
 coinImg.src = "https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/c07093d1e8085ba.png";
 bgImage.src = "https://blog.itselectlab.com/wp-content/uploads/background.png";
 function assetLoaded() { allLoaded++; if(allLoaded>=loadTotal) showApp(); }
 [kirbyImgs[0], kirbyImgs[1], kirbyEatImg, enemyImgs[0], enemyImgs[1]].forEach(img => img.onload = assetLoaded);
-function showApp() { preloader.style.opacity = 0; setTimeout(()=>{preloader.style.display="none";showNav();},320);}
+function showApp() { preloader.style.opacity = 0; setTimeout(()=>{preloader.style.display="none";},320); }
 async function finishLoading() {
   tgUser = tg.initDataUnsafe?.user;
-  if (!tgUser) { mainMenu.innerHTML = "<h2>Please open in Telegram!</h2>"; throw new Error("Not Telegram WebApp"); }
-  userId = tgUser.id.toString(); await loadUser(); showApp();
+  if (!tgUser) {
+    mainMenu.innerHTML = "<h2>Please open in Telegram!</h2>";
+    throw new Error("Not Telegram WebApp");
+  }
+  userId = tgUser.id.toString();
+  await loadUser();
+  showApp();
 }
 finishLoading();
 async function loadUser() {
@@ -397,9 +379,14 @@ async function loadUser() {
   userName.textContent = tgUser.username ? "@" + tgUser.username : "No username";
   const userRef = ref(db, `users/${userId}`);
   let snapshot = await get(userRef);
-  if (!snapshot.exists()) { await set(userRef, {highScore:0,username:tgUser.username||"",photo:tgUser.photo_url||""}); highScore = 0; }
-  else { highScore = snapshot.val().highScore || 0; }
-  coinsDisplay.textContent = `Best: ${highScore}`; yourHighScore.textContent = `Best: ${highScore}`;
+  if (!snapshot.exists()) {
+    await set(userRef, {highScore:0,username:tgUser.username||"",photo:tgUser.photo_url||""});
+    highScore = 0;
+  } else {
+    highScore = snapshot.val().highScore || 0;
+  }
+  coinsDisplay.textContent = `Best: ${highScore}`;
+  yourHighScore.textContent = `Best: ${highScore}`;
   await updatePlace();
   mainMenu.style.display = "flex";
 }
@@ -416,6 +403,11 @@ async function updatePlace() {
     else yourPlace.textContent = `Rank: —`;
   }
 }
+startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGameWithCountdown(); };
+leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; loadLeaderboard(); };
+infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "flex"; };
+leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
+infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
 async function loadLeaderboard() {
   leaderboardBody.innerHTML = "";
   const usersRef = ref(db, "users/");
@@ -436,22 +428,48 @@ async function loadLeaderboard() {
   }
 }
 
+// --- GAME LOGIC ... (оставляй без изменений) ---
 // -------- CANVAS GAME --------
-let BASE_GRAVITY = 0.23; let BASE_LIFT = -4.6; let BASE_SCROLL = 2.16;
-let BASE_MAXFALL = 4.7; let ENEMY_SPAWN_SEC = 1; let COIN_SPAWN_SEC = 0.95;
-let DIFFICULTY_SPEEDUP = 1.13; let ENEMY_SPAWN_ACCEL = 0.16;
+// ... весь твой игровой движок ниже не меняется до функций завершения игры и возвращения меню ...
+let BASE_GRAVITY = 0.23;
+let BASE_LIFT = -4.6;
+let BASE_SCROLL = 2.16;
+let BASE_MAXFALL = 4.7;
+let ENEMY_SPAWN_SEC = 1;
+let COIN_SPAWN_SEC = 0.95;
+let DIFFICULTY_SPEEDUP = 1.13;
+let ENEMY_SPAWN_ACCEL = 0.16;
+
 let ctx, animationId, isGameRunning = false;
-let canvasWidth = 0, canvasHeight = 0; let player = {};
-let enemies = []; let coins = []; let enemySpawnTimer = 0; let coinSpawnTimer = 0;
-let scoreThisRun = 0, bgX = 0; let showPlayer = false, slowStart = true, deathFall = false;
+let canvasWidth = 0, canvasHeight = 0;
+let player = {};
+let enemies = [];
+let coins = [];
+let enemySpawnTimer = 0;
+let coinSpawnTimer = 0;
+let scoreThisRun = 0, bgX = 0;
+let showPlayer = false, slowStart = true, deathFall = false;
 let gameStartTime = 0, lastFrameTime = 0, firstTapDone = false;
-let kirbyCurrentFrame = 0; let kirbyAngle = 0; const MIN_ANGLE = -27; const MAX_ANGLE = 78; const ANGLE_RETURN_SPEED = 8;
-let kirbyEatAnimation = false; let kirbyEatTimer = 0; const KIRBY_EAT_DURATION = 220;
-let enemyAnimFrame = 0; let enemyAnimLastTime = performance.now();
+
+let kirbyCurrentFrame = 0;
+let kirbyAngle = 0;
+const MIN_ANGLE = -27;
+const MAX_ANGLE = 78;
+const ANGLE_RETURN_SPEED = 8;
+
+// Анимация для k3 (кушает монету)
+let kirbyEatAnimation = false;
+let kirbyEatTimer = 0;
+const KIRBY_EAT_DURATION = 220; // мс (0.22 сек)
+
+let enemyAnimFrame = 0;
+let enemyAnimLastTime = performance.now();
 
 function resizeCanvas() {
-  canvasWidth = window.innerWidth; canvasHeight = window.innerHeight;
-  gameCanvas.width = canvasWidth; gameCanvas.height = canvasHeight;
+  canvasWidth = window.innerWidth;
+  canvasHeight = window.innerHeight;
+  gameCanvas.width = canvasWidth;
+  gameCanvas.height = canvasHeight;
   if (ctx) ctx.imageSmoothingEnabled = false;
 }
 window.addEventListener("resize", () => { if (isGameRunning) resizeCanvas(); });
@@ -469,16 +487,33 @@ function startGameWithCountdown() {
     x: 100, y: canvasHeight/2, width: 48, height: 48, velocityY: 0, gravity: BASE_GRAVITY,
     lift: BASE_LIFT, alive: true, maxFallSpeed: BASE_MAXFALL, rotating: false
   };
-  enemies = []; coins = []; enemySpawnTimer = 0; coinSpawnTimer = 0; bgX = 0; deathFall = false; showPlayer = false;
-  slowStart = true; slowStartFrame = 0; gameStartTime = performance.now(); lastFrameTime = gameStartTime; firstTapDone = false; kirbyCurrentFrame = 0; kirbyAngle = 0;
-  kirbyEatAnimation = false; kirbyEatTimer = 0;
-  // Скрываем навигацию и настройки
-  hideNav();
-  // Запускаем музыку
-  try { music.currentTime = 0; music.play(); } catch(e){}
+  enemies = [];
+  coins = [];
+  enemySpawnTimer = 0;
+  coinSpawnTimer = 0;
+  bgX = 0;
+  deathFall = false;
+  showPlayer = false;
+  slowStart = true;
+  slowStartFrame = 0;
+  gameStartTime = performance.now();
+  lastFrameTime = gameStartTime;
+  firstTapDone = false;
+  kirbyCurrentFrame = 0;
+  kirbyAngle = 0;
+  kirbyEatAnimation = false;
+  kirbyEatTimer = 0;
   let countdown = 3;
   countdownOverlay.style.display = "flex";
   countdownOverlay.textContent = countdown;
+
+  // --- Hide navigation and settings while playing ---
+  bottomNav.classList.add('nav-hide');
+  settingsBtn.classList.add('hide');
+
+  // Start music
+  try { music.currentTime = 0; music.play(); } catch(e){}
+
   let cdInt = setInterval(() => {
     countdown--;
     if (countdown === 0) {
@@ -494,9 +529,12 @@ function startGameWithCountdown() {
   }, 900);
 }
 let slowStartFrame = 0, ticksAfterStart = 0;
+
+// --- ONLY ONE INPUT PER FLAP ---
 let inputLock = false;
 function startGameCore() {
-  isGameRunning = true; slowStart = true; slowStartFrame = 0; ticksAfterStart = 0;
+  isGameRunning = true;
+  slowStart = true; slowStartFrame = 0; ticksAfterStart = 0;
   gameHudCoins.textContent = "Coins: 0";
   gameHudCoins.style.display = "block";
   document.addEventListener("keydown", onKeyDown, { passive: false });
@@ -543,7 +581,6 @@ function onMouse(e) {
 function updateGame(now = performance.now()) {
   let dt = Math.min((now - lastFrameTime) / 1000, 0.2);
   lastFrameTime = now;
-
   bgX -= BASE_SCROLL * dt * 60;
   if (bgX <= -canvasWidth) { bgX += canvasWidth; }
   ctx.drawImage(bgImage, Math.round(bgX), 0, canvasWidth, canvasHeight);
@@ -557,7 +594,6 @@ function updateGame(now = performance.now()) {
   if (showPlayer) {
     updatePlayer(dt);
     drawPlayer();
-
     if (isGameRunning) {
       ticksAfterStart++;
       if (ticksAfterStart > 120) {
@@ -583,6 +619,7 @@ function updateGame(now = performance.now()) {
           kirbyEatAnimation = true;
           kirbyEatTimer = performance.now();
           if (scoreThisRun % 5 === 0) {
+            sfx_point.volume = sfxSlider.value;
             sfx_point.currentTime = 0; sfx_point.play();
           }
           if (scoreThisRun % 10 === 0) {
@@ -613,8 +650,12 @@ function drawPlayer() {
   ctx.drawImage(img, -player.width/2, -player.height/2, player.width, player.height);
   ctx.restore();
 }
-function drawEnemy(e) { ctx.drawImage(enemyImgs[enemyAnimFrame], e.x, e.y, e.width, e.height); }
-function drawCoin(c) { ctx.drawImage(coinImg, c.x, c.y, c.size, c.size); }
+function drawEnemy(e) {
+  ctx.drawImage(enemyImgs[enemyAnimFrame], e.x, e.y, e.width, e.height);
+}
+function drawCoin(c) {
+  ctx.drawImage(coinImg, c.x, c.y, c.size, c.size);
+}
 function createEnemy() {
   const randY = Math.random() * (canvasHeight - 42 - 20) + 10;
   const speed = BASE_SCROLL * (1 + Math.random() * 0.7);
@@ -663,17 +704,24 @@ function checkCollision(pl, obj) {
 }
 function handleDeathAnimation() {
   if (!player.alive) return;
-  player.alive = false; isGameRunning = false; deathFall = true;
+  player.alive = false;
+  isGameRunning = false;
+  deathFall = true;
   gameHudCoins.style.display = "none";
   stopInputListeners();
   player.rotating = true;
   kirbyAngle = MAX_ANGLE;
   player.velocityY = 3.5;
   lastFrameTime = performance.now();
+
+  // SFX
+  sfx_die.volume = sfxSlider.value;
   sfx_die.currentTime = 0; sfx_die.play();
   if (window.navigator.vibrate) window.navigator.vibrate([190,80,90]);
-  // Остановить музыку при проигрыше
-  try{music.pause();music.currentTime=0;}catch(e){}
+
+  // Музыку выключаем!
+  music.pause();
+
   animationId = requestAnimationFrame(updateGame);
 }
 function updateDeathFall(dt) {
@@ -710,15 +758,19 @@ function endGameAndReturn() {
     stopInputListeners();
     isGameRunning = false; deathFall = false;
   }
-  // Остановить музыку (на всякий)
-  try{music.pause();music.currentTime=0;}catch(e){}
   gameContainer.style.display = "none";
   gameOverPopup.style.display = "none";
   coinsDisplay.textContent = `Best: ${highScore}`;
   yourHighScore.textContent = `Best: ${highScore}`;
   updatePlace();
   mainMenu.style.display = "flex";
-  showNav('game');
+
+  // Показать назад навигацию и кнопку настроек
+  bottomNav.classList.remove('nav-hide');
+  settingsBtn.classList.remove('hide');
+
+  // Остановить музыку, если вдруг не остановилась
+  music.pause();
   ticksAfterStart = 0;
 }
 async function updateScoreInDB(isNewHigh, latestScore) {
@@ -729,6 +781,54 @@ async function updateScoreInDB(isNewHigh, latestScore) {
   coinsDisplay.textContent = `Best: ${highScore}`;
   yourHighScore.textContent = `Best: ${highScore}`;
 }
+
+
+// === НАВИГАЦИЯ: Game / About ===
+navGameBtn.onclick = function() {
+  // Всегда возвращаем в главное меню
+  aboutSection.style.display = "none";
+  mainMenu.style.display = "flex";
+  navGameBtn.classList.add("active");
+  navAboutBtn.classList.remove("active");
+};
+navAboutBtn.onclick = function() {
+  mainMenu.style.display = "none";
+  aboutSection.style.display = "flex";
+  navGameBtn.classList.remove("active");
+  navAboutBtn.classList.add("active");
+};
+// Закрыть about через кнопку
+aboutCloseBtn.onclick = function() {
+  aboutSection.style.display = "none";
+  mainMenu.style.display = "flex";
+  navGameBtn.classList.add("active");
+  navAboutBtn.classList.remove("active");
+};
+
+// --- Скрывать навигацию и кнопку настроек во время игры ---
+// (реализовано выше в startGameWithCountdown и endGameAndReturn)
+
+// === КНОПКА НАСТРОЕК и ПАНЕЛЬ ===
+settingsBtn.onclick = () => {
+  settingsPanel.style.display = "flex";
+  setTimeout(()=>{settingsPanel.querySelector('.panel-box').style.transform='scale(1.04)';},50)
+};
+settingsCloseBtn.onclick = () => {
+  settingsPanel.style.display = "none";
+};
+// Настройки громкости
+musicSlider.oninput = () => { music.volume = musicSlider.value; };
+sfxSlider.oninput = () => {
+  sfx_point.volume = sfxSlider.value;
+  sfx_die.volume = sfxSlider.value;
+};
+// При открытии панели — установить ползунки
+settingsPanel.addEventListener("show",()=>{
+  musicSlider.value = music.volume;
+  sfxSlider.value = sfx_point.volume;
+});
+
 </script>
 </body>
 </html>
+
