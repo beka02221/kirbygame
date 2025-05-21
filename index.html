@@ -495,34 +495,41 @@
   </div>
   <div id="preloader"><div class="loader"></div></div>
 <script type="module">
-// --- SOUNDS ---
-const sfx_die = new Audio("sfx_die.mp3");
+// ====================== А У Д И О  =======================
+const sfx_die   = new Audio("sfx_die.mp3");
 const sfx_point = new Audio("sfx_point.mp3");
-sfx_die.preload = sfx_point.preload = "auto";
-sfx_die.volume = 0.8; sfx_point.volume = 0.8;
+[sfx_die, sfx_point].forEach(a => {
+  a.preload = "auto";
+  a.volume  = 0.8;
+  a.crossOrigin = "anonymous";
+  a.playsInline = true;
+});
 
-// --- GAME MUSIC ---
-const music = new Audio("kirby.mp3");
-music.preload = "auto";
-music.loop = true;
-music.volume = 0.85;
+// --- Background Music: отдельный тег <audio> для надёжности!
+const music = document.createElement("audio");
+music.src         = "kirby.mp3";
+music.loop        = true;
+music.preload     = "auto";
+music.crossOrigin = "anonymous";
+music.playsInline = true;
+music.volume      = 0.85;
+document.body.appendChild(music);
 
-// --- Для корректного старта музыки ---
 let musicStarted = false;
-function ensureMusic() {
+function startMusic() {
   if (musicStarted) return;
   music.volume = +musicSlider.value;
-  music.loop = true;
   music.play().catch(()=>{});
   musicStarted = true;
 }
-
-// --- Слушатель для любого касания/клика/нажатия клавиши ---
-['pointerdown','keydown'].forEach(evt =>
-  window.addEventListener(evt, ensureMusic, { once:true, passive:true })
+// Слушаем любой жест в документе
+["click", "touchstart", "keydown"].forEach(evt =>
+  document.addEventListener(evt, startMusic, {once:true,passive:true})
 );
+// На всякий — при старте игры тоже:
+startGameBtn.addEventListener("click", startMusic, {once:true});
 
-// --- Firebase 9+ ---
+// =================== F I R E B A S E ====================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
 import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
 const firebaseConfig = {
@@ -538,7 +545,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// DOM Elements
+// ========== D O M  Э Л Е М Е Н Т Ы ===========
 const mainMenu = document.getElementById("mainMenu");
 const userPhoto = document.getElementById("userPhoto");
 const userName = document.getElementById("userName");
@@ -573,7 +580,28 @@ const settingsCloseBtn = document.getElementById("settingsCloseBtn");
 const musicSlider = document.getElementById("musicSlider");
 const sfxSlider = document.getElementById("sfxSlider");
 
-// --- ПОЛНАЯ ЛОГИКА ПРИВЯЗКИ ---
+// === VOLUME / SLIDERS ===
+musicSlider.oninput = () => {
+  music.volume = +musicSlider.value;
+};
+sfxSlider.oninput = () => {
+  sfx_point.volume = +sfxSlider.value;
+  sfx_die.volume = +sfxSlider.value;
+};
+
+// --- Обновлённые функции воспроизведения SFX ---
+function playPointSfx() {
+  sfx_point.currentTime = 0;
+  sfx_point.volume = +sfxSlider.value;
+  sfx_point.play();
+}
+function playDieSfx() {
+  sfx_die.currentTime = 0;
+  sfx_die.volume = +sfxSlider.value;
+  sfx_die.play();
+}
+
+// ================ ЗАГРУЗКА АССЕТОВ =================
 let tgUser;
 let userId, highScore = 0;
 let allLoaded = 0;
@@ -660,7 +688,7 @@ async function loadLeaderboard() {
   }
 }
 
-// --- GAME LOGIC ... (оставляй без изменений) ---
+// ================= G A M E  L O G I C ===================
 let BASE_GRAVITY = 0.23;
 let BASE_LIFT = -4.6;
 let BASE_SCROLL = 2.16;
@@ -740,8 +768,6 @@ function startGameWithCountdown() {
   // --- Hide navigation and settings while playing ---
   bottomNav.classList.add('nav-hide');
   settingsBtn.classList.add('hide');
-
-  // (ВНИМАНИЕ! Музыка теперь уже играет постоянно, НЕ перезапускайте music.play() тут)
 
   let cdInt = setInterval(() => {
     countdown--;
@@ -946,8 +972,6 @@ function handleDeathAnimation() {
   playDieSfx();
   if (window.navigator.vibrate) window.navigator.vibrate([190,80,90]);
 
-  // Музыку НЕ останавливаем! (music.pause() удалён)
-
   animationId = requestAnimationFrame(updateGame);
 }
 function updateDeathFall(dt) {
@@ -994,8 +1018,6 @@ function endGameAndReturn() {
   // Показать назад навигацию и кнопку настроек
   bottomNav.classList.remove('nav-hide');
   settingsBtn.classList.remove('hide');
-
-  // Музыку НЕ останавливаем! (music.pause() удалён)
   ticksAfterStart = 0;
 }
 async function updateScoreInDB(isNewHigh, latestScore) {
@@ -1029,7 +1051,6 @@ aboutCloseBtn.onclick = function() {
 
 // === КНОПКА НАСТРОЕК и ПАНЕЛЬ ===
 settingsBtn.onclick = () => {
-  // Синхронизация значений при открытии панели
   musicSlider.value = music.volume;
   sfxSlider.value = sfx_point.volume;
   settingsPanel.style.display = "flex";
@@ -1038,26 +1059,6 @@ settingsBtn.onclick = () => {
 settingsCloseBtn.onclick = () => {
   settingsPanel.style.display = "none";
 };
-musicSlider.oninput = () => {
-  music.volume = +musicSlider.value;
-};
-sfxSlider.oninput = () => {
-  sfx_point.volume = +sfxSlider.value;
-  sfx_die.volume = +sfxSlider.value;
-};
-
-// --- Обновлённые функции воспроизведения SFX ---
-function playPointSfx() {
-  sfx_point.currentTime = 0;
-  sfx_point.volume = +sfxSlider.value;
-  sfx_point.play();
-}
-function playDieSfx() {
-  sfx_die.currentTime = 0;
-  sfx_die.volume = +sfxSlider.value;
-  sfx_die.play();
-}
-
 
 </script>
 </body>
