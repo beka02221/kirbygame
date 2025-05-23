@@ -1078,5 +1078,71 @@ function playDieSfx () {
 
 
 </script>
+
+  <!-- === ANTI-DESKTOP & ANTI-INSPECT (вставьте сразу после <body>) === -->
+<script>
+(function () {
+  /* ---------- 1. Проверяем среду ---------- */
+  const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
+  const isTelegram = !!(window.Telegram && window.Telegram.WebApp && Telegram.WebApp.initData);
+
+  /* Если не мобильный Telegram — показываем заглушку и прекращаем выполнение остальных скриптов */
+  if (!isMobile || !isTelegram) {
+    document.body.innerHTML = `
+      <style>
+        body{margin:0;display:flex;align-items:center;justify-content:center;
+             height:100vh;font-family:'Nunito','Poppins',sans-serif;
+             background:#1b1723;color:#fff;text-align:center;padding:24px;}
+        h3{margin:0 0 12px;font-size:1.6em;}
+      </style>
+      <div>
+        <h3>Mobile Telegram only</h3>
+        <p>Please open this game inside the <b>Telegram</b> mobile app.</p>
+      </div>`;
+    return; /* ⛔ дальнейшие скрипты не выполняются */
+  }
+
+  /* ---------- 2. Запрещаем контекст-меню ---------- */
+  document.addEventListener('contextmenu', e => e.preventDefault(), { passive: false });
+
+  /* ---------- 3. Блокируем горячие клавиши DevTools / View Source ---------- */
+  document.addEventListener('keydown', e => {
+    const k = e.key.toUpperCase();
+    if (
+      k === 'F12' ||                              /* F12 */
+      (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(k)) || /* Ctrl+Shift+I/J/C */
+      (e.metaKey && e.altKey && k === 'I') ||     /* ⌘+⌥+I (Mac)  */
+      (e.ctrlKey && k === 'U')                    /* Ctrl+U (View Source) */
+    ) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }, { capture: true });
+
+  /* ---------- 4. Детект открытые DevTools через задержку debugger ---------- */
+  let devtoolsShown = false;
+  const devtoolsThreshold = 160; // ms
+  setInterval(() => {
+    const t0 = performance.now();
+    debugger;
+    if (performance.now() - t0 > devtoolsThreshold && !devtoolsShown) {
+      devtoolsShown = true;
+      document.body.innerHTML = `
+        <style>
+          body{margin:0;display:flex;align-items:center;justify-content:center;
+               height:100vh;font-family:'Nunito','Poppins',sans-serif;
+               background:#1b1723;color:#fff;text-align:center;padding:24px;}
+          h3{margin:0 0 12px;font-size:1.6em;}
+        </style>
+        <div>
+          <h3>DevTools blocked</h3>
+          <p>Please reload the page without developer tools.</p>
+        </div>`;
+    }
+  }, 1000);
+})();
+</script>
+<!-- === /ANTI-DESKTOP & ANTI-INSPECT === -->
+
 </body>
 </html>
