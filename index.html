@@ -512,17 +512,7 @@ const tg = window.Telegram.WebApp;
 if (typeof tg.requestFullscreen === 'function') tg.requestFullscreen();
 else tg.expand();
 
-
-
-
-
-
 // Firebase 9+
-
-
-
-
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
 import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
 const firebaseConfig = {
@@ -648,31 +638,83 @@ async function updatePlace() {
   }
 }
 startGameBtn.onclick = () => { mainMenu.style.display = "none"; startGameWithCountdown(); };
-leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; loadLeaderboard(); };
+leaderboardBtn.onclick = () => { mainMenu.style.display = "none"; leaderboardContainer.style.display = "flex"; loadLeaderboardPaginated(); };
 infoBtn.onclick = () => { mainMenu.style.display = "none"; infoContainer.style.display = "flex"; };
 leaderboardBackBtn.onclick = () => { leaderboardContainer.style.display = "none"; mainMenu.style.display = "flex"; };
 infoBackBtn.onclick = () => { infoContainer.style.display = "none"; mainMenu.style.display = "flex"; };
-async function loadLeaderboard() {
+
+// === ЛИДЕРБОРД С ПАГИНАЦИЕЙ ===
+const DEFAULT_LIMIT = 25;
+let leaderboardPage = 1;
+
+async function loadLeaderboardPaginated(page = 1, limit = DEFAULT_LIMIT) {
+  leaderboardPage = page;
   leaderboardBody.innerHTML = "";
+
   const usersRef = ref(db, "users/");
   const snapshot = await get(usersRef);
   if (snapshot.exists()) {
     const data = snapshot.val();
-    const usersArray = Object.entries(data).map(([id, u]) => ({username:u.username?`@${u.username}`:"User "+id,highScore:u.highScore||0,}));
+    const usersArray = Object.entries(data).map(([id, u]) => ({
+      username: u.username ? `@${u.username}` : "User " + id,
+      highScore: u.highScore || 0,
+    }));
     usersArray.sort((a, b) => b.highScore - a.highScore);
-    usersArray.forEach((user, idx) => {
+
+    const total = usersArray.length;
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const pageData = usersArray.slice(start, end);
+
+    pageData.forEach((user, idx) => {
       const tr = document.createElement("tr");
       let topStyle = "";
-      if(idx === 0) topStyle = "font-weight:900;color:#a934db;background:linear-gradient(90deg,#ffd2fb 50%,#e6d7ff 100%)";
-      else if(idx === 1) topStyle = "font-weight:800;color:#5351d9;background:linear-gradient(90deg,#f9e6ff 50%,#cde7f7 100%)";
-      else if(idx === 2) topStyle = "font-weight:800;color:#ffb300;background:linear-gradient(90deg,#f3ebfd 50%,#fceabb 100%)";
+      if (start + idx === 0) topStyle = "font-weight:900;color:#a934db;background:linear-gradient(90deg,#ffd2fb 50%,#e6d7ff 100%)";
+      else if (start + idx === 1) topStyle = "font-weight:800;color:#5351d9;background:linear-gradient(90deg,#f9e6ff 50%,#cde7f7 100%)";
+      else if (start + idx === 2) topStyle = "font-weight:800;color:#ffb300;background:linear-gradient(90deg,#f3ebfd 50%,#fceabb 100%)";
       tr.innerHTML = `<td style="${topStyle}">${user.username}</td><td style="${topStyle}">${user.highScore}</td>`;
       leaderboardBody.appendChild(tr);
     });
+
+    addPaginationControls(page, limit, total);
   }
 }
 
+function addPaginationControls(page, limit, total) {
+  // Удаляем старые кнопки
+  const oldControls = document.getElementById('leaderboardPagination');
+  if (oldControls) oldControls.remove();
+
+  const controls = document.createElement('div');
+  controls.id = 'leaderboardPagination';
+  controls.style.margin = "18px 0";
+  controls.style.display = "flex";
+  controls.style.justifyContent = "center";
+  controls.style.gap = "8px";
+
+  // Кнопка назад
+  if (page > 1) {
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = '← Prev';
+    prevBtn.className = 'main-btn';
+    prevBtn.onclick = () => loadLeaderboardPaginated(page - 1, limit);
+    controls.appendChild(prevBtn);
+  }
+
+  // Кнопка вперёд
+  if (page * limit < total) {
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Next →';
+    nextBtn.className = 'main-btn';
+    nextBtn.onclick = () => loadLeaderboardPaginated(page + 1, limit);
+    controls.appendChild(nextBtn);
+  }
+
+  leaderboardBody.parentElement.appendChild(controls);
+}
+
 // --- GAME LOGIC ---
+// (Без изменений. Всё как в твоём коде ниже)
 let BASE_GRAVITY = 0.23;
 let BASE_LIFT = -4.6;
 let BASE_SCROLL = 2.16;
@@ -698,7 +740,6 @@ let kirbyAngle = 0;
 const MIN_ANGLE = -27;
 const MAX_ANGLE = 78;
 const ANGLE_RETURN_SPEED = 8;
-
 
 let kirbyEatAnimation = false;
 let kirbyEatTimer = 0;
@@ -771,7 +812,6 @@ function startGameWithCountdown() {
   }, 900);
 }
 let slowStartFrame = 0, ticksAfterStart = 0;
-
 
 let inputLock = false;
 function startGameCore() {
@@ -955,7 +995,6 @@ function handleDeathAnimation() {
   player.velocityY = 3.5;
   lastFrameTime = performance.now();
 
-
   playDieSfx();
 
   if (window.navigator.vibrate) window.navigator.vibrate([190,80,90]);
@@ -1066,15 +1105,14 @@ sfxSlider.oninput = () => {
 function playPointSfx () {
   sfx_point.volume = +sfxSlider.value;
   sfx_point.currentTime = 0;
-
   sfx_point.play();
 }
 function playDieSfx () {
   sfx_die.volume = +sfxSlider.value;
   sfx_die.currentTime = 0;
-
   sfx_die.play();
 }
+
 
 
 </script>
